@@ -17,7 +17,7 @@ const countryOptions: Array<{
     locale: "ko",
     name: "대한민국",
     language: "한국어",
-    flag: "/flags/kr.svg",
+    flag: "/flags/kr.png",
     accent: "group-hover:border-blue-200 group-hover:bg-blue-50/50",
   },
   {
@@ -93,7 +93,11 @@ export default function HomePage() {
                       fill
                       priority
                       sizes="112px"
-                      className="object-cover transition duration-300 group-hover:scale-105"
+                      className={`object-cover transition duration-300 ${
+                        country.locale === "ko"
+                          ? "scale-[1.14] group-hover:scale-[1.18]"
+                          : "group-hover:scale-105"
+                      }`}
                     />
                   </span>
 
