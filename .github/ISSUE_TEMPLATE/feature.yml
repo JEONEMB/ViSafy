@@ -1,0 +1,24 @@
+name: Feature
+description: 기능 구현 작업
+title: "[Feature] "
+labels: ["feature"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: 목표
+      description: 해결하려는 사용자 문제와 완료 상태를 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 완료 조건
+      placeholder: "- [ ] ..."
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: 관련 명세 및 Source
+

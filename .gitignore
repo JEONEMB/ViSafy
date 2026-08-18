@@ -1,0 +1,40 @@
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/coverage/
+
+# Backend
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Data and local services
+infra/mysql-data/
+ai-service/chroma-data/
+data-pipeline/snapshots/*
+!data-pipeline/snapshots/.gitkeep
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
