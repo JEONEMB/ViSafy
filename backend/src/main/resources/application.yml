@@ -16,16 +16,21 @@ spring:
       hibernate:
         jdbc:
           time_zone: Asia/Seoul
+  flyway:
+    enabled: true
 
 ai-service:
   url: ${AI_SERVICE_URL:http://localhost:8000}
 
 app:
   admin-jwt-secret: ${ADMIN_JWT_SECRET:local-development-only-secret}
+  source:
+    allowed-domains: ${SOURCE_ALLOWED_DOMAINS:kbstar.com,shinhan.com,wooribank.com,hanabank.com,ibk.co.kr,nhbank.com,kdb.co.kr,sc.co.kr,citibank.co.kr,kakaobank.com,kbanknow.com,tossbank.com,fss.or.kr,fsc.go.kr,finlife.fss.or.kr}
+  security:
+    admin-enabled: ${ADMIN_SECURITY_ENABLED:false}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
 
 logging:
   level:
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
-

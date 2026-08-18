@@ -8,10 +8,17 @@ export default function HomePage() {
       <p className="max-w-2xl text-lg leading-8 text-slate-600">
         공식 출처와 검수된 규칙을 기반으로 외국인 사용자의 금융상품 사전자격을 안내하는 서비스입니다.
       </p>
-      <Link className="w-fit rounded-lg bg-teal-700 px-5 py-3 font-semibold text-white" href="/health">
-        시스템 상태 확인
-      </Link>
+      <div className="flex flex-wrap gap-3">
+        <Link className="rounded-lg bg-teal-700 px-5 py-3 font-semibold text-white" href="/profile">
+          프로필 입력하기
+        </Link>
+        <Link className="rounded-lg border border-slate-300 bg-white px-5 py-3 font-semibold" href="/admin/sources">
+          Source · Rule 검수
+        </Link>
+        <Link className="rounded-lg border border-slate-300 bg-white px-5 py-3 font-semibold" href="/health">
+          시스템 상태
+        </Link>
+      </div>
     </main>
   );
 }
-

@@ -18,5 +18,15 @@
 4. 사용자 프로필과 결과 Dashboard
 5. Source 기반 RAG, 설명, 번역, Unknown Resolver
 
-가입 가능성을 보장하거나 확률로 표현하지 않으며, 불명확한 조건은 `UNKNOWN`으로 유지합니다.
+## DATA-001~006 / FR-101~103 진행 상태
 
+- [x] 공식 도메인 allowlist 기반 Source 등록
+- [x] Snapshot 및 content hash 보존
+- [x] Rule Candidate 저장 계약과 관리자 입력 화면
+- [ ] LLM 기반 Rule Candidate 자동 추출
+- [x] Source 및 Rule Human Verification
+- [x] 충돌 Rule의 `NEED_REVIEW` 전환
+- [x] 최근 검증일·유효기간·상태 표시
+- [x] 24시간 임시 금융 프로필과 지원 비자 목록
+
+가입 가능성을 보장하거나 확률로 표현하지 않으며, 불명확한 조건은 `UNKNOWN`으로 유지합니다.
