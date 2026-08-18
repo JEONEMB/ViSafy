@@ -37,4 +37,4 @@ data-pipeline/snapshots/*
 *.iml
 .DS_Store
 Thumbs.db
-
+*.disabled

@@ -56,7 +56,7 @@ public class TempProfileController {
             @NotNull @DecimalMin("0.0") BigDecimal monthlyIncome,
             @NotNull @Min(0) Integer employmentDurationMonths,
             @NotBlank String financialPurpose,
-            @NotBlank @Pattern(regexp = "ko|en|zh") String language,
+            @NotBlank @Pattern(regexp = "ko|en|vi") String language,
             Boolean hasBankAccount,
             String housingType,
             @DecimalMin("0.0") BigDecimal desiredAmount,
