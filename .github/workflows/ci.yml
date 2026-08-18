@@ -59,6 +59,7 @@ jobs:
       - run: docker compose config --quiet
 
   integration:
+    needs: [frontend, backend, ai-service, compose]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
