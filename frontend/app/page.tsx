@@ -8,6 +8,7 @@ import type { Locale } from "@/i18n/config";
 
 const countryOptions: Array<{
   locale: Locale;
+  nationality: string;
   name: string;
   language: string;
   flag: string;
@@ -15,6 +16,7 @@ const countryOptions: Array<{
 }> = [
   {
     locale: "ko",
+    nationality: "KR",
     name: "대한민국",
     language: "한국어",
     flag: "/flags/kr.png",
@@ -22,6 +24,7 @@ const countryOptions: Array<{
   },
   {
     locale: "en",
+    nationality: "US",
     name: "United States",
     language: "English",
     flag: "/flags/us.svg",
@@ -29,6 +32,7 @@ const countryOptions: Array<{
   },
   {
     locale: "vi",
+    nationality: "VN",
     name: "Việt Nam",
     language: "Tiếng Việt",
     flag: "/flags/vn.svg",
@@ -40,8 +44,9 @@ export default function HomePage() {
   const router = useRouter();
   const { setLocale } = useLocale();
 
-  const selectCountry = (locale: Locale) => {
-    setLocale(locale);
+  const selectCountry = (country: (typeof countryOptions)[number]) => {
+    setLocale(country.locale);
+    localStorage.setItem("visafyNationality", country.nationality);
     router.push("/profile");
   };
 
@@ -82,7 +87,7 @@ export default function HomePage() {
                 <button
                   key={country.locale}
                   type="button"
-                  onClick={() => selectCountry(country.locale)}
+                  onClick={() => selectCountry(country)}
                   aria-label={`${country.language} 선택`}
                   className={`group relative flex min-h-64 flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white/90 px-6 py-8 text-center shadow-[0_12px_36px_rgba(15,23,42,0.06)] backdrop-blur transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_44px_rgba(15,23,42,0.11)] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-blue-500 ${country.accent}`}
                 >

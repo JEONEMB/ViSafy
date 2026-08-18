@@ -28,8 +28,9 @@ export default function ProfilePage() {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    const fallbackNationality = locale === "ko" ? "KR" : locale === "en" ? "US" : "VN";
     mutation.mutate({
-      nationality: data.get("nationality"),
+      nationality: localStorage.getItem("visafyNationality") ?? fallbackNationality,
       birthDate: data.get("birthDate"),
       visaType: data.get("visaType"),
       visaExpiry: data.get("visaExpiry"),
@@ -81,7 +82,6 @@ export default function ProfilePage() {
       <form className="mt-8 space-y-8 rounded-xl border bg-white p-6 shadow-sm" onSubmit={submit}>
         <fieldset className="grid gap-4 sm:grid-cols-2">
           <legend className="mb-4 text-xl font-bold">{profileText.required}</legend>
-          <label className="text-sm font-medium">{profileText.nationality}<input className={inputClass} name="nationality" placeholder={profileText.nationalityExample} required /></label>
           <label className="text-sm font-medium">{profileText.birthDate}<input className={inputClass} name="birthDate" type="date" required /></label>
           <label className="text-sm font-medium">{profileText.visaType}
             <select className={inputClass} name="visaType" required defaultValue="">
