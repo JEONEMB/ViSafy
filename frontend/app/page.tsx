@@ -1,38 +1,55 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+
 import { useLocale } from "@/components/providers/locale-provider";
-import { localeOptions, type Locale } from "@/i18n/config";
+import type { Locale } from "@/i18n/config";
+
+const countryOptions: Array<{
+  locale: Locale;
+  name: string;
+  flag: string;
+}> = [
+  { locale: "ko", name: "대한민국", flag: "/flags/kr.svg" },
+  { locale: "en", name: "US", flag: "/flags/us.svg" },
+  { locale: "vi", name: "Việt Nam", flag: "/flags/vn.svg" },
+];
 
 export default function HomePage() {
   const router = useRouter();
-  const { locale, setLocale, text } = useLocale();
+  const { setLocale } = useLocale();
 
-  function chooseLanguage(nextLocale: Locale) {
-    setLocale(nextLocale);
+  const selectCountry = (locale: Locale) => {
+    setLocale(locale);
     router.push("/profile");
-  }
+  };
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-69px)] max-w-5xl flex-col justify-center px-6 py-16">
-      <p className="text-sm font-semibold uppercase tracking-widest text-teal-700">{text.landing.eyebrow}</p>
-      <h1 className="mt-5 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">{text.landing.title}</h1>
-      <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">{text.landing.description}</p>
-
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">{text.landing.choose}</h2>
-        <p className="mt-2 text-slate-600">{text.landing.hint}</p>
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          {localeOptions.map((option) => (
+    <main className="min-h-screen bg-slate-100 p-4 sm:p-8">
+      <section className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-[1500px] items-center justify-center bg-white px-6 py-16 shadow-[0_18px_55px_rgba(15,23,42,0.08)] sm:min-h-[calc(100vh-4rem)] sm:px-12">
+        <div className="grid w-full max-w-[1340px] gap-10 md:grid-cols-3 md:gap-12 xl:gap-24">
+          {countryOptions.map((country) => (
             <button
-              className={`rounded-2xl border bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-teal-500 hover:shadow-md ${locale === option.locale ? "border-teal-600 ring-2 ring-teal-100" : "border-slate-200"}`}
-              key={option.locale}
-              onClick={() => chooseLanguage(option.locale)}
+              key={country.locale}
               type="button"
+              onClick={() => selectCountry(country.locale)}
+              aria-label={`${country.name} 언어 선택`}
+              className="group mx-auto flex aspect-square w-full max-w-[340px] flex-col items-center justify-center rounded-[38px] border-2 border-slate-900 bg-white px-8 py-10 transition duration-200 hover:-translate-y-1 hover:shadow-xl focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-blue-600"
             >
-              <span aria-hidden className="text-5xl">{option.flag}</span>
-              <span className="mt-5 block text-xl font-bold">{option.country}</span>
-              <span className="mt-1 block text-sm text-slate-500">{option.language}</span>
+              <span className="relative block aspect-square w-[72%] max-w-[235px] overflow-hidden rounded-full">
+                <Image
+                  src={country.flag}
+                  alt=""
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 235px, 22vw"
+                  className="object-cover transition duration-200 group-hover:scale-[1.03]"
+                />
+              </span>
+              <span className="mt-7 whitespace-nowrap text-3xl font-medium tracking-tight text-black sm:text-4xl">
+                {country.name}
+              </span>
             </button>
           ))}
         </div>
