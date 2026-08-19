@@ -1,45 +1,68 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { Locale } from "@/i18n/config";
+import { useState, type ChangeEvent, type FocusEvent } from "react";
 
 type Props = {
   label: string;
-  locale: Locale;
   name: string;
-  yearLabel: string;
-  monthLabel: string;
-  dayLabel: string;
   minYear: number;
   maxYear: number;
+  hint: string;
+  invalidMessage: string;
 };
 
-const selectClass = "mt-1 min-w-0 rounded-lg border border-slate-300 bg-white px-2 py-2";
+const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2";
 
-export function LocalizedDateField({ label, locale, name, yearLabel, monthLabel, dayLabel, minYear, maxYear }: Props) {
-  const [year, setYear] = useState("");
-  const [month, setMonth] = useState("");
-  const [day, setDay] = useState("");
-  const years = useMemo(() => Array.from({ length: maxYear - minYear + 1 }, (_, index) => maxYear - index), [minYear, maxYear]);
-  const maxDay = year && month ? new Date(Number(year), Number(month), 0).getDate() : 31;
+function formatDateInput(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 4) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+  return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+}
 
-  useEffect(() => {
-    if (day && Number(day) > maxDay) setDay("");
-  }, [day, maxDay]);
+function isValidDate(value: string, minYear: number, maxYear: number) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const [, yearText, monthText, dayText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  if (year < minYear || year > maxYear) return false;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
 
-  const parts = {
-    year: <select aria-label={yearLabel} className={`${selectClass} flex-[1.25]`} key="year" required value={year} onChange={(event) => setYear(event.target.value)}><option value="" disabled>{yearLabel}</option>{years.map((value) => <option key={value} value={value}>{value}</option>)}</select>,
-    month: <select aria-label={monthLabel} className={`${selectClass} flex-1`} key="month" required value={month} onChange={(event) => setMonth(event.target.value)}><option value="" disabled>{monthLabel}</option>{Array.from({ length: 12 }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value}</option>)}</select>,
-    day: <select aria-label={dayLabel} className={`${selectClass} flex-1`} key="day" required value={day} onChange={(event) => setDay(event.target.value)}><option value="" disabled>{dayLabel}</option>{Array.from({ length: maxDay }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value}</option>)}</select>,
-  };
-  const order: Array<keyof typeof parts> = locale === "ko" ? ["year", "month", "day"] : locale === "en" ? ["month", "day", "year"] : ["day", "month", "year"];
-  const value = year && month && day ? `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}` : "";
+export function LocalizedDateField({ label, name, minYear, maxYear, hint, invalidMessage }: Props) {
+  const [value, setValue] = useState("");
+
+  function change(event: ChangeEvent<HTMLInputElement>) {
+    event.currentTarget.setCustomValidity("");
+    setValue(formatDateInput(event.currentTarget.value));
+  }
+
+  function validate(event: FocusEvent<HTMLInputElement>) {
+    event.currentTarget.setCustomValidity(isValidDate(value, minYear, maxYear) ? "" : invalidMessage);
+  }
 
   return (
     <label className="text-sm font-medium">
       {label}
-      <span className="flex gap-2">{order.map((part) => parts[part])}</span>
-      <input name={name} type="hidden" value={value} />
+      <input
+        aria-describedby={`${name}-hint`}
+        autoComplete="off"
+        className={inputClass}
+        inputMode="numeric"
+        maxLength={10}
+        name={name}
+        onBlur={validate}
+        onChange={change}
+        onInvalid={validate}
+        pattern="\d{4}-\d{2}-\d{2}"
+        placeholder="YYYY-MM-DD"
+        required
+        value={value}
+      />
+      <span className="mt-1 block text-xs text-slate-500" id={`${name}-hint`}>{hint}</span>
     </label>
   );
 }

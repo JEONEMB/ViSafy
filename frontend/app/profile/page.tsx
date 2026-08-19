@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { LocalizedDateField } from "@/components/localized-date-field";
 import { localeOptions } from "@/i18n/config";
+import { amountInWords, digitsOnly, formatGroupedDigits } from "@/lib/amount-words";
 import { createProfile, getVisas } from "@/services/profile";
 
 const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2";
@@ -15,6 +16,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const profileText = text.profile;
   const [hasError, setHasError] = useState(false);
+  const [monthlyIncome, setMonthlyIncome] = useState("");
   const visas = useQuery({ queryKey: ["visas"], queryFn: getVisas });
   const mutation = useMutation({
     mutationFn: createProfile,
@@ -39,7 +41,7 @@ export default function ProfilePage() {
       residencyStartDate: data.get("residencyStartDate"),
       occupation: data.get("occupation"),
       employmentType: data.get("employmentType"),
-      monthlyIncome: Number(data.get("monthlyIncome")),
+      monthlyIncome: Number(monthlyIncome),
       employmentDurationMonths: Number(data.get("employmentDurationMonths")),
       financialPurpose: data.get("financialPurpose"),
       language: locale,
@@ -76,7 +78,7 @@ export default function ProfilePage() {
       <form className="mt-8 space-y-8 rounded-xl border bg-white p-6 shadow-sm" onSubmit={submit}>
         <fieldset className="grid gap-4 sm:grid-cols-2">
           <legend className="mb-4 text-xl font-bold">{profileText.required}</legend>
-          <LocalizedDateField label={profileText.birthDate} locale={locale} name="birthDate" yearLabel={profileText.dateParts.year} monthLabel={profileText.dateParts.month} dayLabel={profileText.dateParts.day} minYear={new Date().getFullYear() - 100} maxYear={new Date().getFullYear()} />
+          <LocalizedDateField label={profileText.birthDate} name="birthDate" minYear={new Date().getFullYear() - 100} maxYear={new Date().getFullYear()} hint={profileText.dateInputHint} invalidMessage={profileText.invalidDate} />
           <label className="text-sm font-medium">{profileText.visaType}
             <select className={inputClass} name="visaType" required defaultValue="">
               <option value="" disabled>{profileText.chooseVisa}</option>
@@ -87,8 +89,8 @@ export default function ProfilePage() {
               ))}
             </select>
           </label>
-          <LocalizedDateField label={profileText.visaExpiry} locale={locale} name="visaExpiry" yearLabel={profileText.dateParts.year} monthLabel={profileText.dateParts.month} dayLabel={profileText.dateParts.day} minYear={new Date().getFullYear()} maxYear={new Date().getFullYear() + 20} />
-          <LocalizedDateField label={profileText.residencyStartDate} locale={locale} name="residencyStartDate" yearLabel={profileText.dateParts.year} monthLabel={profileText.dateParts.month} dayLabel={profileText.dateParts.day} minYear={new Date().getFullYear() - 60} maxYear={new Date().getFullYear()} />
+          <LocalizedDateField label={profileText.visaExpiry} name="visaExpiry" minYear={new Date().getFullYear()} maxYear={new Date().getFullYear() + 20} hint={profileText.dateInputHint} invalidMessage={profileText.invalidDate} />
+          <LocalizedDateField label={profileText.residencyStartDate} name="residencyStartDate" minYear={new Date().getFullYear() - 60} maxYear={new Date().getFullYear()} hint={profileText.dateInputHint} invalidMessage={profileText.invalidDate} />
           <label className="text-sm font-medium">{profileText.occupation}<input className={inputClass} name="occupation" placeholder={profileText.occupationExample} required /></label>
           <label className="text-sm font-medium">{profileText.employmentType}
             <select className={inputClass} name="employmentType">
@@ -99,7 +101,21 @@ export default function ProfilePage() {
               <option value="STUDENT">{profileText.employment.student}</option>
             </select>
           </label>
-          <label className="text-sm font-medium">{profileText.monthlyIncome}<input className={inputClass} min="0" name="monthlyIncome" type="number" required /></label>
+          <label className="text-sm font-medium">{profileText.monthlyIncome}
+            <input
+              aria-describedby="monthly-income-words"
+              className={inputClass}
+              inputMode="numeric"
+              onChange={(event) => setMonthlyIncome(digitsOnly(event.target.value))}
+              placeholder="3,000,000"
+              required
+              type="text"
+              value={formatGroupedDigits(monthlyIncome, locale)}
+            />
+            <span className="mt-1 block min-h-5 text-xs font-medium text-teal-700" id="monthly-income-words">
+              {monthlyIncome ? `${profileText.monthlyIncomeWords}: ${amountInWords(monthlyIncome, locale)}` : ""}
+            </span>
+          </label>
           <label className="text-sm font-medium">{profileText.employmentDuration}<input className={inputClass} min="0" name="employmentDurationMonths" type="number" required /></label>
           <label className="text-sm font-medium">{profileText.financialPurpose}
             <select className={inputClass} name="financialPurpose">
