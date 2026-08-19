@@ -1,4 +1,5 @@
 from app.explain.models import BankInquiry, EasyTerm, ExplanationRequest, ExplanationResponse
+from app.guardrail.answer_builder import DISCLAIMERS
 
 GUARDRAILS = [
     "ELIGIBILITY_RESULT_IMMUTABLE",
@@ -6,6 +7,7 @@ GUARDRAILS = [
     "STRUCTURED_NUMBERS_ONLY",
     "STRUCTURED_VISA_CODE_ONLY",
     "UNKNOWN_REQUIRES_CONFIRMATION",
+    "LLM_HAS_NO_ELIGIBILITY_DECISION_AUTHORITY",
 ]
 
 
@@ -196,10 +198,4 @@ class ExplanationBuilder:
         return labels.get(key, {}).get(normalized_language, key)
 
     def _disclaimer(self, language: str) -> str:
-        if language == "en":
-            return "This explanation is a preliminary guide based on public conditions and does not guarantee enrollment or approval."
-        if language == "vi":
-            return "Giải thích này chỉ là hướng dẫn sơ bộ dựa trên điều kiện công khai và không bảo đảm đăng ký hoặc phê duyệt."
-        return (
-            "이 설명은 공개조건을 기반으로 한 사전 안내이며 상품 가입이나 승인을 보장하지 않습니다."
-        )
+        return DISCLAIMERS.get(language, DISCLAIMERS["ko"])

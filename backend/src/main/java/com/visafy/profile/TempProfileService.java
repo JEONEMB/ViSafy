@@ -72,6 +72,8 @@ public class TempProfileService {
 
     private void validate(ProfileData data) {
         LocalDate today = LocalDate.now();
+        SensitiveDataGuard.rejectProhibitedValues(data.nationality(), data.visaType(), data.occupation(),
+                data.employmentType(), data.financialPurpose(), data.housingType(), data.preferredBank());
         if (!visaCatalog.supports(data.visaType())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported visa type");
         }

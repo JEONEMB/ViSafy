@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from urllib.parse import urlparse
 
 import chromadb
@@ -56,20 +56,29 @@ class OfficialDocumentStore:
         collection = self._collection()
         if collection.count() == 0:
             return []
+        today_ordinal = date.today().toordinal()
         combined_query = f"Rule {rule_key}. {query}"
         result = collection.query(
             query_embeddings=[self.embedding.embed(combined_query)],
-            where={"product_id": product_id},
+            where={
+                "$and": [
+                    {"product_id": product_id},
+                    {"review_status": "APPROVED"},
+                    {"valid_from_ordinal": {"$lte": today_ordinal}},
+                    {"valid_to_ordinal": {"$gte": today_ordinal}},
+                ]
+            },
             n_results=min(top_k, collection.count()),
             include=["documents", "metadatas", "distances"],
         )
         documents = result.get("documents", [[]])[0]
         metadatas = result.get("metadatas", [[]])[0]
         distances = result.get("distances", [[]])[0]
-        return [
+        candidates = [
             self._to_result(content, metadata, distance)
             for content, metadata, distance in zip(documents, metadatas, distances, strict=True)
         ]
+        return [document for document in candidates if self._is_trusted_result(document)]
 
     def _collection(self):
         return self.client.get_or_create_collection(
@@ -87,6 +96,8 @@ class OfficialDocumentStore:
             raise ValueError(f"Source domain is not allowed: {host}")
         if document.valid_to and document.valid_to < datetime.now(UTC).date():
             raise ValueError(f"Expired document cannot be indexed: {document.document_id}")
+        if document.valid_from and document.valid_from > datetime.now(UTC).date():
+            raise ValueError(f"Not-yet-valid document cannot be indexed: {document.document_id}")
 
     def _metadata(self, document: OfficialDocument, chunk_index: int) -> dict[str, str | int]:
         return {
@@ -98,6 +109,9 @@ class OfficialDocumentStore:
             "retrieved_at": document.retrieved_at.isoformat(),
             "valid_from": document.valid_from.isoformat() if document.valid_from else "",
             "valid_to": document.valid_to.isoformat() if document.valid_to else "",
+            "valid_from_ordinal": document.valid_from.toordinal() if document.valid_from else 1,
+            "valid_to_ordinal": document.valid_to.toordinal() if document.valid_to else 9999999,
+            "review_status": document.review_status,
             "product_id": document.product_id,
             "language": document.language,
             "content_hash": document.content_hash,
@@ -119,4 +133,17 @@ class OfficialDocumentStore:
             validTo=str(metadata["valid_to"]) or None,
             productId=int(metadata["product_id"]),
             language=str(metadata["language"]),
+        )
+
+    def _is_trusted_result(self, document: RetrievedDocument) -> bool:
+        host = (urlparse(str(document.source_url)).hostname or "").lower()
+        domain_allowed = any(
+            host == domain or host.endswith(f".{domain}")
+            for domain in self.settings.source_domain_allowlist
+        )
+        today = date.today()
+        return (
+            domain_allowed
+            and (document.valid_from is None or document.valid_from <= today)
+            and (document.valid_to is None or document.valid_to >= today)
         )

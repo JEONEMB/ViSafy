@@ -2,6 +2,7 @@ import pytest
 
 from app.explain.builder import ExplanationBuilder
 from app.explain.models import ExplanationRequest
+from app.guardrail.answer_builder import DISCLAIMERS
 
 
 def request(language: str = "ko", status: str = "NEED_BANK_CONFIRMATION") -> ExplanationRequest:
@@ -42,5 +43,5 @@ def test_met_result_never_claims_the_user_can_enroll_and_needs_no_inquiry() -> N
     result = ExplanationBuilder().build(payload)
 
     assert "가입할 수 있습니다" not in result.explanation
-    assert "가입이나 승인을 보장하지 않습니다" in result.disclaimer
+    assert result.disclaimer == DISCLAIMERS["ko"]
     assert result.inquiry is None

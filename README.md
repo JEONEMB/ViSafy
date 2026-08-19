@@ -380,3 +380,14 @@ GET  /api/admin/rules/{id}/history
 ## 안전 원칙
 
 Official Source가 사실의 기준이며, Human Verification을 거쳐 `APPROVED`인 Source와 Rule만 Runtime에서 사용할 수 있습니다. Rule Engine만 사전자격을 진단하고 RAG와 LLM은 근거 설명·번역·문의문 생성을 담당합니다. 확인할 수 없는 조건은 추측하지 않고 `UNKNOWN`으로 유지합니다.
+
+### AI 안전장치
+
+- `Official Source → Human Verification → Rule Engine → RAG → 설명`의 권한 경계를 유지합니다. AI 응답은 Backend가 계산한 Eligibility 상태와 Rule 결과를 변경할 수 없습니다.
+- RAG 검색 결과가 없으면 조건을 추측하지 않고 “현재 등록된 공식 자료만으로는 해당 조건을 정확히 확인할 수 없습니다. 금융기관에 추가 확인이 필요합니다.”라는 고정 안내를 반환합니다.
+- 모든 사전자격 설명에는 실제 가입 여부와 한도·금리가 금융기관의 최종 심사에 따라 달라진다는 공통 면책문구를 한국어·영어·베트남어로 제공합니다.
+- 사용자 질문은 신뢰할 수 없는 검색 입력으로만 취급합니다. System Prompt 공개, 기존 지침 무시, Eligibility/Rule/Source 정책 변경을 요구하는 대표적인 Prompt Injection은 검색 전에 차단하며 내부 AI API는 `RAG_INTERNAL_TOKEN`으로 보호합니다.
+- Vector DB 검색은 `product_id`, `review_status=APPROVED`, 현재 유효기간을 동시에 필터링합니다. 반환 직전에도 Source URL이 `SOURCE_ALLOWED_DOMAINS`의 공식 도메인인지 다시 확인합니다.
+- 임시 프로필에는 주민등록번호, 외국인등록번호, 여권번호, 계좌번호, 카드번호 필드가 없습니다. 자유입력 필드에 해당 형식의 값을 붙여 넣어도 Backend가 `400 Bad Request`로 거부합니다.
+
+운영 환경에서는 `SOURCE_ALLOWED_DOMAINS`를 실제 금융기관·공공기관 공식 도메인만으로 구성하고, Source 상태나 유효기간을 변경한 뒤 `POST /api/admin/rag/reindex`를 실행하세요.

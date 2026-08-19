@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 
@@ -12,6 +12,8 @@ def document(
     product_id: int,
     content: str,
     source_url: str = "https://www.kbstar.com/product",
+    valid_from: date | None = None,
+    valid_to: date | None = None,
 ) -> OfficialDocument:
     return OfficialDocument(
         documentId=document_id,
@@ -20,8 +22,8 @@ def document(
         sourceType="PRODUCT_DESCRIPTION",
         sourceUrl=source_url,
         retrievedAt=datetime.now(UTC),
-        validFrom=None,
-        validTo=None,
+        validFrom=valid_from,
+        validTo=valid_to,
         productId=product_id,
         language="ko",
         reviewStatus="APPROVED",
@@ -64,3 +66,17 @@ def test_unapproved_domain_is_rejected_before_collection_reset(tmp_path) -> None
 
     with pytest.raises(ValueError, match="not allowed"):
         store.sync([document(1, 10, "content", "https://example.com/product")])
+
+
+def test_expired_or_not_yet_valid_source_cannot_be_indexed(tmp_path) -> None:
+    settings = Settings(
+        vector_db_path=str(tmp_path),
+        rag_collection_name="test_documents",
+        allowed_source_domains="kbstar.com",
+    )
+    store = OfficialDocumentStore(settings)
+
+    with pytest.raises(ValueError, match="Expired"):
+        store.sync([document(1, 10, "content", valid_to=date.today() - timedelta(days=1))])
+    with pytest.raises(ValueError, match="Not-yet-valid"):
+        store.sync([document(2, 10, "content", valid_from=date.today() + timedelta(days=1))])

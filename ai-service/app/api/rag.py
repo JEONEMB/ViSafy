@@ -3,7 +3,11 @@ import secrets
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 
 from app.config import settings
-from app.guardrail.answer_builder import GUARDRAILS, GroundedAnswerBuilder
+from app.guardrail.answer_builder import (
+    GUARDRAILS,
+    GroundedAnswerBuilder,
+    contains_prompt_injection,
+)
 from app.ingestion.models import SyncDocumentsRequest, SyncDocumentsResponse
 from app.rag.dependencies import get_document_store
 from app.rag.models import RagAnswerRequest, RagAnswerResponse, RetrievalRequest, RetrievalResponse
@@ -62,8 +66,17 @@ def answer(
     request: RagAnswerRequest,
     store: OfficialDocumentStore = Depends(get_document_store),
 ) -> RagAnswerResponse:
+    builder = GroundedAnswerBuilder()
+    if contains_prompt_injection(request.query):
+        return RagAnswerResponse(
+            answer=builder.blocked(request),
+            eligibilityStatus=request.eligibility_status,
+            ruleResult=request.rule_result,
+            documents=[],
+            guardrailsApplied=[*GUARDRAILS, "PROMPT_INJECTION_BLOCKED"],
+        )
     documents = store.retrieve(request.product_id, request.rule_key, request.query, request.top_k)
-    grounded_answer = GroundedAnswerBuilder().build(request, documents)
+    grounded_answer = builder.build(request, documents)
     return RagAnswerResponse(
         answer=grounded_answer,
         eligibilityStatus=request.eligibility_status,
