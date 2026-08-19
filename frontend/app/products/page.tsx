@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
+import { RecommendationBoard } from "@/components/recommendation-board";
 import { getProducts } from "@/services/product";
 import type { DiagnosisStatus, ProductFilters } from "@/types/product";
 
@@ -33,6 +34,8 @@ export default function ProductsPage() {
       <p className="text-sm font-semibold text-blue-700">{text.eyebrow}</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{text.title}</h1>
       <p className="mt-3 text-slate-600">{text.description}</p>
+
+      <RecommendationBoard />
 
       <section className="mt-8 grid gap-3 rounded-2xl border bg-white p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-5" aria-label="Product filters">
         <label className="text-xs font-semibold text-slate-600">{text.purpose}<select className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" value={filters.financialPurpose ?? ""} onChange={(event) => setFilter("financialPurpose", event.target.value)}><option value="">{text.all}</option><option value="ACCOUNT">{text.account}</option><option value="SAVINGS">{text.savings}</option><option value="LOAN">{text.loan}</option><option value="CARD">{text.card}</option></select></label>

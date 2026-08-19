@@ -156,7 +156,19 @@ Runtime `PRODUCT_RULE`은 `product_id`, `rule_key`, `operator`, `rule_value`, `r
 
 진단 결과는 DB에 저장하지 않습니다. 모든 결과는 공개조건을 기반으로 한 사전 확인이며 최종 가입승인이 아닙니다.
 
-### 8. 현재 제한사항
+### 8. 상품 추천 및 정렬
+
+프로필 저장 후 http://localhost:3000/products 상단에서 개인화 추천을 확인할 수 있습니다.
+
+- `PUBLIC_CONDITIONS_MET`, `NEED_BANK_CONFIRMATION` 상품은 **추천 후보**에 표시됩니다.
+- `INSUFFICIENT_INFORMATION` 상품은 **추가 정보 필요** 영역에 분리됩니다.
+- `PUBLIC_CONDITIONS_NOT_MET` 상품은 추천 후보에서 제외되며, 제외된 상품 수만 안내합니다.
+- 추천 후보는 HARD Rule 충족 수 내림차순, UNKNOWN 수 오름차순, 금융 목적 일치, 선호 은행 일치 순으로 정렬됩니다.
+- `92%` 같은 가입 가능 확률은 계산하거나 표시하지 않습니다. 대신 `확인된 공개조건 4/4`, `추가 확인 2개`처럼 검증 가능한 개수를 보여줍니다.
+
+추천 결과 역시 저장하지 않고 요청할 때 현재 승인 Rule과 임시 프로필로 다시 계산합니다. 희망 금액 등 상품에 대응 필드가 아직 없는 선호조건은 정렬에 사용하지 않으며, 현재 MVP의 선호조건 일치는 `preferredBank`와 기관명 비교를 의미합니다.
+
+### 9. 현재 제한사항
 
 - DATA-003의 LLM 자동 추출은 아직 연결하지 않았습니다. 현재는 관리자 화면에서 후보 구조를 직접 입력합니다.
 - `/api/admin/**`, 상품 관리, Source·Rule 검수 화면은 기본적으로 관리자 인증이 필요합니다. 로그인 정보는 브라우저 탭의 `sessionStorage`에만 유지되며 탭을 닫으면 삭제됩니다.
@@ -199,6 +211,7 @@ GET  /api/admin/products
 GET  /api/products
 GET  /api/products/{id}
 POST /api/eligibility/pre-check
+POST /api/recommendations
 ```
 
 ## 브랜치 정책

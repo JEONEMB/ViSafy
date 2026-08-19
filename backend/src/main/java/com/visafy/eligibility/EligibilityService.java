@@ -45,6 +45,17 @@ public class EligibilityService {
         FinancialProduct product = productRepository.findOneById(productId)
                 .filter(FinancialProduct::isActive)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        return precheck(profile, product, productId);
+    }
+
+    public EligibilityResult precheck(TempProfile profile, FinancialProduct product) {
+        if (!product.isActive()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+        return precheck(profile, product, product.getId());
+    }
+
+    private EligibilityResult precheck(TempProfile profile, FinancialProduct product, Long productId) {
         LocalDate today = LocalDate.now();
         EligibilityMessages messages = new EligibilityMessages(profile.getLanguage());
         List<RuleDetail> passed = new ArrayList<>();
