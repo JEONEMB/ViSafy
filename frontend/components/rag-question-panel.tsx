@@ -8,14 +8,24 @@ import { askOfficialDocuments } from "@/services/rag";
 import type { ProductRule } from "@/types/product";
 
 const copy = {
-  ko: { eyebrow: "AI-101 ~ AI-105", title: "공식 금융문서에 질문하기", description: "선택한 상품과 Rule의 공식 Source만 검색합니다. Eligibility 판정은 변경하지 않습니다.", rule: "질문할 Rule", question: "질문", placeholder: "예: E-9 비자는 이 상품의 체류자격 조건을 충족하나요?", ask: "공식 근거 검색", asking: "근거 검색 중...", noProfile: "먼저 임시 금융 프로필을 입력해 주세요.", profile: "프로필 입력", noRules: "질문에 연결할 현재 유효 Rule이 없습니다.", error: "공식 근거 답변을 생성하지 못했습니다. 관리자가 RAG 색인을 완료했는지 확인해 주세요.", engine: "Eligibility Engine 결과", ruleResult: "구조화된 Rule 결과", sources: "검색된 공식 근거", similarity: "검색 유사도", retrieved: "수집일", noSource: "현재 상품과 Rule에 맞는 색인된 공식 근거가 없습니다." },
+  ko: { eyebrow: "AI Chat · P1 보조기능", title: "공식 금융문서에 질문하기", description: "이 상품과 선택한 Rule의 공식 Source만 검색합니다. 일반 투자·대출 추천을 하지 않으며 Eligibility 판정을 변경하지 않습니다.", rule: "질문할 Rule", question: "질문", placeholder: "예: 왜 이 조건은 은행 확인이 필요한가요?", ask: "공식 근거 검색", asking: "근거 검색 중...", noProfile: "먼저 임시 금융 프로필을 입력해 주세요.", profile: "프로필 입력", noRules: "질문에 연결할 현재 유효 Rule이 없습니다.", error: "공식 근거 답변을 생성하지 못했습니다. 관리자가 RAG 색인을 완료했는지 확인해 주세요.", engine: "Eligibility Engine 결과", ruleResult: "구조화된 Rule 결과", sources: "검색된 공식 근거", similarity: "검색 유사도", retrieved: "수집일", noSource: "현재 상품과 Rule에 맞는 색인된 공식 근거가 없습니다." },
   en: { eyebrow: "AI-101 ~ AI-105", title: "Ask the official financial documents", description: "Searches only official sources for this product and Rule. It never changes the Eligibility result.", rule: "Rule to ask about", question: "Question", placeholder: "For example: Does an E-9 visa meet this product's residency requirement?", ask: "Search official evidence", asking: "Searching evidence...", noProfile: "Create a temporary financial profile first.", profile: "Create profile", noRules: "There is no currently effective Rule to ask about.", error: "A grounded answer could not be created. Confirm that an administrator completed RAG indexing.", engine: "Eligibility Engine result", ruleResult: "Structured Rule result", sources: "Retrieved official evidence", similarity: "Retrieval similarity", retrieved: "Retrieved", noSource: "No indexed official evidence matches this product and Rule." },
   vi: { eyebrow: "AI-101 ~ AI-105", title: "Hỏi tài liệu tài chính chính thức", description: "Chỉ tìm kiếm nguồn chính thức của sản phẩm và Rule này. Không thay đổi kết quả Eligibility.", rule: "Rule cần hỏi", question: "Câu hỏi", placeholder: "Ví dụ: Visa E-9 có đáp ứng điều kiện cư trú của sản phẩm này không?", ask: "Tìm căn cứ chính thức", asking: "Đang tìm căn cứ...", noProfile: "Hãy tạo hồ sơ tài chính tạm thời trước.", profile: "Nhập hồ sơ", noRules: "Không có Rule hiện hành để đặt câu hỏi.", error: "Không thể tạo câu trả lời có căn cứ. Hãy kiểm tra quản trị viên đã lập chỉ mục RAG.", engine: "Kết quả Eligibility Engine", ruleResult: "Kết quả Rule có cấu trúc", sources: "Căn cứ chính thức đã tìm", similarity: "Độ tương đồng tìm kiếm", retrieved: "Ngày thu thập", noSource: "Không có căn cứ chính thức đã lập chỉ mục phù hợp với sản phẩm và Rule này." },
 } as const;
 
+const quickQuestions = {
+  ko: ["왜 이 조건은 은행 확인이 필요한가요?", "어떤 서류를 준비해야 하나요?", "이 금융용어를 쉽게 설명해 주세요."],
+  en: ["Why does this condition require bank confirmation?", "Which documents should I prepare?", "Explain this financial term in plain language."],
+  vi: ["Tại sao điều kiện này cần ngân hàng xác nhận?", "Tôi cần chuẩn bị giấy tờ nào?", "Hãy giải thích thuật ngữ tài chính này dễ hiểu."],
+} as const;
+
 export function RagQuestionPanel({ productId, rules }: { productId: number; rules: ProductRule[] }) {
   const { locale } = useLocale();
-  const text = copy[locale];
+  const baseText = copy[locale];
+  const text = { ...baseText,
+    eyebrow: locale === "ko" ? baseText.eyebrow : locale === "en" ? "AI Chat · P1 assistant" : "AI Chat · Trợ lý P1",
+    description: locale === "ko" ? baseText.description : locale === "en" ? "Searches only official sources for this product and Rule. It does not provide general investment or loan recommendations and never changes Eligibility." : "Chỉ tìm nguồn chính thức của sản phẩm và Rule này. Không tư vấn đầu tư hoặc khoản vay nói chung và không thay đổi Eligibility.",
+  };
   const [ruleKey, setRuleKey] = useState(rules[0]?.ruleKey ?? "");
   const [question, setQuestion] = useState("");
   const [missingProfile, setMissingProfile] = useState(false);
@@ -38,6 +48,7 @@ export function RagQuestionPanel({ productId, rules }: { productId: number; rule
   return <section className="mt-8 overflow-hidden rounded-3xl border border-violet-200 bg-gradient-to-br from-violet-50 to-white">
     <div className="p-6 sm:p-8"><p className="text-sm font-bold text-violet-700">{text.eyebrow}</p><h2 className="mt-2 text-2xl font-bold text-slate-950">{text.title}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{text.description}</p>
       {rules.length === 0 ? <p className="mt-6 rounded-xl bg-slate-100 p-4 text-sm text-slate-600">{text.noRules}</p> : <form className="mt-6 grid gap-4" onSubmit={submit}>
+        <div className="flex flex-wrap gap-2">{quickQuestions[locale].map((quick) => <button className="rounded-full border border-violet-200 bg-white px-3 py-2 text-left text-xs font-semibold text-violet-800 hover:bg-violet-100" key={quick} onClick={() => setQuestion(quick)} type="button">{quick}</button>)}</div>
         <label className="text-sm font-semibold text-slate-700">{text.rule}<select className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-4 py-3" value={ruleKey} onChange={(event) => setRuleKey(event.target.value)}>{rules.map((rule) => <option key={rule.id} value={rule.ruleKey}>{rule.ruleKey} · {rule.description}</option>)}</select></label>
         <label className="text-sm font-semibold text-slate-700">{text.question}<textarea className="mt-1 min-h-24 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-normal" maxLength={1000} minLength={2} placeholder={text.placeholder} required value={question} onChange={(event) => setQuestion(event.target.value)} /></label>
         <button className="w-fit rounded-xl bg-violet-700 px-5 py-3 font-bold text-white disabled:opacity-50" disabled={answer.isPending}>{answer.isPending ? text.asking : text.ask}</button>

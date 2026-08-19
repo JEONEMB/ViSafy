@@ -33,7 +33,7 @@ const resultStyle: Record<EligibilityStatus, string> = {
   INSUFFICIENT_INFORMATION: "border-slate-300 bg-slate-100 text-slate-900",
 };
 
-export default function ProductDetailPage() {
+function LegacyProductDetailPage() {
   const { locale } = useLocale();
   const text = copy[locale];
   const params = useParams<{ id: string }>();
@@ -121,6 +121,8 @@ export default function ProductDetailPage() {
     </main>
   );
 }
+
+export { ProductDetailDashboard as default } from "@/components/product-detail-dashboard";
 
 function PrecheckResult({ result, text }: { result: EligibilityResult; text: (typeof copy)[keyof typeof copy] }) {
   return <section className="mt-6 space-y-5" aria-live="polite">

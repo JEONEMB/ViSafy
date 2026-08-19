@@ -11,7 +11,7 @@ import { createProfile, getVisas } from "@/services/profile";
 
 const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2";
 
-export default function ProfilePage() {
+function LegacyProfilePage() {
   const { locale, setLocale, text } = useLocale();
   const router = useRouter();
   const profileText = text.profile;
@@ -143,3 +143,5 @@ export default function ProfilePage() {
     </main>
   );
 }
+
+export { ProfileWizard as default } from "@/components/profile-wizard";

@@ -9,6 +9,7 @@ type Props = {
   maxYear: number;
   hint: string;
   invalidMessage: string;
+  reason?: string;
 };
 
 const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2";
@@ -32,7 +33,7 @@ function isValidDate(value: string, minYear: number, maxYear: number) {
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
-export function LocalizedDateField({ label, name, minYear, maxYear, hint, invalidMessage }: Props) {
+export function LocalizedDateField({ label, name, minYear, maxYear, hint, invalidMessage, reason }: Props) {
   const [value, setValue] = useState("");
 
   function change(event: ChangeEvent<HTMLInputElement>) {
@@ -46,7 +47,7 @@ export function LocalizedDateField({ label, name, minYear, maxYear, hint, invali
 
   return (
     <label className="text-sm font-medium">
-      {label}
+      <span className="inline-flex items-center gap-1.5">{label}{reason ? <span aria-label={reason} className="inline-flex h-5 w-5 cursor-help items-center justify-center rounded-full bg-slate-100 text-[11px] font-bold text-slate-500" title={reason}>?</span> : null}</span>
       <input
         aria-describedby={`${name}-hint`}
         autoComplete="off"

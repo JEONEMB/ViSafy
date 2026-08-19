@@ -40,9 +40,37 @@ const countryOptions: Array<{
   },
 ];
 
+const heroCopy = {
+  ko: {
+    eyebrow: "공식 금융정보 기반 외국인 금융자격 사전진단",
+    title: <>한국 금융,<br />번역보다 중요한 것은<br /><span className="text-blue-700">‘내 조건으로 어디까지 가능한가’</span>입니다.</>,
+    description: "검수된 공식 자료와 내 체류·소득 조건을 비교해, 가능한 범위와 은행에 추가로 확인할 내용을 나누어 보여드립니다.",
+    cta: "내 조건 확인하기",
+    choose: "사용할 언어와 국적을 선택하세요",
+    footnote: "주민등록번호·여권번호·외국인등록번호 없이 시작할 수 있습니다.",
+  },
+  en: {
+    eyebrow: "Preliminary financial eligibility check for foreigners, based on official information",
+    title: <>Korean finance is not just about translation.<br /><span className="text-blue-700">It is about what is possible for your situation.</span></>,
+    description: "We compare reviewed official information with your stay and income details, separating public conditions from items that still require bank confirmation.",
+    cta: "Check my situation",
+    choose: "Choose your language and nationality",
+    footnote: "Start without entering a resident, passport, or alien registration number.",
+  },
+  vi: {
+    eyebrow: "Kiểm tra sơ bộ điều kiện tài chính cho người nước ngoài dựa trên thông tin chính thức",
+    title: <>Tài chính Hàn Quốc không chỉ là vấn đề dịch thuật.<br /><span className="text-blue-700">Điều quan trọng là điều gì phù hợp với điều kiện của bạn.</span></>,
+    description: "Chúng tôi so sánh thông tin chính thức đã kiểm duyệt với điều kiện cư trú và thu nhập, đồng thời tách rõ nội dung cần ngân hàng xác nhận.",
+    cta: "Kiểm tra điều kiện của tôi",
+    choose: "Chọn ngôn ngữ và quốc tịch",
+    footnote: "Có thể bắt đầu mà không cần nhập số hộ chiếu hoặc số đăng ký người nước ngoài.",
+  },
+} as const;
+
 export default function HomePage() {
   const router = useRouter();
-  const { setLocale } = useLocale();
+  const { locale, setLocale } = useLocale();
+  const copy = heroCopy[locale];
 
   const selectCountry = (country: (typeof countryOptions)[number]) => {
     setLocale(country.locale);
@@ -68,21 +96,23 @@ export default function HomePage() {
           </span>
         </header>
 
-        <section className="flex flex-1 flex-col justify-center py-16 sm:py-20">
+        <section className="flex flex-1 flex-col justify-center py-12 sm:py-16">
           <div className="mx-auto w-full max-w-5xl">
-            <div className="mx-auto max-w-2xl text-center">
+            <div className="mx-auto max-w-4xl text-center">
               <p className="mb-4 text-xs font-bold uppercase tracking-[0.14em] text-blue-600 sm:text-sm sm:tracking-[0.18em]">
-                Visa-aware financial guide
+                {copy.eyebrow}
               </p>
-              <h1 className="text-[2.5rem] font-bold leading-[1.08] tracking-[-0.045em] text-slate-950 sm:text-5xl lg:text-6xl">
-                Start in your language
+              <h1 className="text-[2.35rem] font-bold leading-[1.12] tracking-[-0.045em] text-slate-950 sm:text-5xl lg:text-[3.5rem]">
+                {copy.title}
               </h1>
-              <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-slate-500 sm:text-lg">
-                Choose a language to build your financial profile and receive guidance you can understand.
+              <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-500 sm:text-lg">
+                {copy.description}
               </p>
+              <p className="mt-7 inline-flex rounded-full bg-blue-700 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-700/20">{copy.cta} ↓</p>
             </div>
 
-            <div className="mt-12 grid gap-4 md:grid-cols-3 md:gap-5 lg:mt-14">
+            <p className="mt-10 text-center text-sm font-bold text-slate-700">{copy.choose}</p>
+            <div className="mt-5 grid gap-4 md:grid-cols-3 md:gap-5">
               {countryOptions.map((country) => (
                 <button
                   key={country.locale}
@@ -122,9 +152,7 @@ export default function HomePage() {
               ))}
             </div>
 
-            <p className="mt-8 text-center text-xs leading-5 text-slate-400">
-              You can change your language anytime. No identification number is required to get started.
-            </p>
+            <p className="mt-8 text-center text-xs leading-5 text-slate-400">{copy.footnote}</p>
           </div>
         </section>
       </div>
