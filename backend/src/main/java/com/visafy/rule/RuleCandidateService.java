@@ -17,12 +17,15 @@ public class RuleCandidateService {
     private final RuleCandidateRepository repository;
     private final SourceDocumentService sourceService;
     private final ProductRuleService productRuleService;
+    private final RuleChangeHistoryRepository historyRepository;
 
     public RuleCandidateService(RuleCandidateRepository repository, SourceDocumentService sourceService,
-                                ProductRuleService productRuleService) {
+                                ProductRuleService productRuleService,
+                                RuleChangeHistoryRepository historyRepository) {
         this.repository = repository;
         this.sourceService = sourceService;
         this.productRuleService = productRuleService;
+        this.historyRepository = historyRepository;
     }
 
     @Transactional
@@ -49,13 +52,21 @@ public class RuleCandidateService {
     @Transactional
     public RuleCandidate review(Long id, ReviewAction action, RuleOperator operator, String ruleValue,
                                 String sourceExcerpt) {
+        return review(id, action, operator, ruleValue, sourceExcerpt, "system");
+    }
+
+    @Transactional
+    public RuleCandidate review(Long id, ReviewAction action, RuleOperator operator, String ruleValue,
+                                String sourceExcerpt, String reviewer) {
         RuleCandidate candidate = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule candidate not found"));
+        RuleChangeHistory.RuleSnapshot before = RuleChangeHistory.snapshot(candidate);
         SourceDocument source = candidate.getSourceDocument();
         if ((source.getValidTo() != null && source.getValidTo().isBefore(LocalDate.now()))
                 || (candidate.getValidTo() != null && candidate.getValidTo().isBefore(LocalDate.now()))) {
             candidate.expire();
             productRuleService.synchronize(candidate);
+            saveHistory(candidate, action, reviewer, before);
             return candidate;
         }
         if ((action == ReviewAction.APPROVE || action == ReviewAction.APPROVE_WITH_CHANGES
@@ -65,19 +76,34 @@ public class RuleCandidateService {
         }
 
         switch (action) {
-            case APPROVE -> approveWithConflictCheck(candidate);
+            case APPROVE -> approveWithConflictCheck(candidate, reviewer);
             case APPROVE_WITH_CHANGES -> {
                 candidate.applyCorrection(operator, ruleValue, sourceExcerpt);
-                approveWithConflictCheck(candidate);
+                approveWithConflictCheck(candidate, reviewer);
             }
             case MARK_UNKNOWN -> candidate.markUnknown();
             case REJECT -> candidate.reject();
         }
         productRuleService.synchronize(candidate);
+        saveHistory(candidate, action, reviewer, before);
         return candidate;
     }
 
-    private void approveWithConflictCheck(RuleCandidate candidate) {
+    public List<RuleChangeHistory> history(Long candidateId) {
+        if (!repository.existsById(candidateId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule candidate not found");
+        }
+        return historyRepository.findByRuleCandidateIdOrderByReviewedAtDesc(candidateId);
+    }
+
+    private void saveHistory(RuleCandidate candidate, ReviewAction action, String reviewer,
+                             RuleChangeHistory.RuleSnapshot before) {
+        historyRepository.save(new RuleChangeHistory(candidate, action.name(),
+                reviewer == null || reviewer.isBlank() ? "system" : reviewer,
+                before, RuleChangeHistory.snapshot(candidate)));
+    }
+
+    private void approveWithConflictCheck(RuleCandidate candidate, String reviewer) {
         candidate.approve();
         List<RuleCandidate> approved = repository.findByProductCodeAndRuleKeyAndReviewStatusAndIdNot(
                 candidate.getProductCode(), candidate.getRuleKey(), ReviewStatus.APPROVED, candidate.getId());
@@ -87,8 +113,12 @@ public class RuleCandidateService {
         if (conflict) {
             candidate.requireReview();
             approved.forEach(existing -> {
+                RuleChangeHistory.RuleSnapshot existingBefore = RuleChangeHistory.snapshot(existing);
                 existing.requireReview();
                 productRuleService.synchronize(existing);
+                historyRepository.save(new RuleChangeHistory(existing, "SOURCE_CONFLICT",
+                        reviewer == null || reviewer.isBlank() ? "system" : reviewer,
+                        existingBefore, RuleChangeHistory.snapshot(existing)));
             });
         }
     }

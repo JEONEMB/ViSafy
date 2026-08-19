@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/api")
@@ -44,6 +45,21 @@ public class FinancialProductController {
     @GetMapping("/admin/products")
     public List<ProductResponse> findAdmin() {
         return service.findAdmin().stream().map(ProductResponse::from).toList();
+    }
+
+    @PutMapping("/admin/products/{id}")
+    public ProductResponse update(@PathVariable Long id, @Valid @RequestBody UpdateProductRequest request) {
+        service.update(id, request.institution(), request.productName(), request.productType(),
+                request.financialPurpose(), request.description(), request.targetSummary(), request.sourceDocumentId(),
+                request.active(), request.foreignerTarget(), request.informationBaseDate(), request.publicConditions(),
+                request.additionalConditions(), request.requiredDocuments(), request.applicationMethod());
+        return ProductResponse.from(service.getAdmin(id));
+    }
+
+    @PutMapping("/admin/products/{id}/deactivate")
+    public ProductResponse deactivate(@PathVariable Long id) {
+        service.deactivate(id);
+        return ProductResponse.from(service.getAdmin(id));
     }
 
     @GetMapping("/products")
@@ -81,6 +97,15 @@ public class FinancialProductController {
     ) {
     }
 
+    public record UpdateProductRequest(
+            @NotBlank String institution, @NotBlank String productName, @NotNull ProductType productType,
+            @NotNull FinancialPurpose financialPurpose, @NotBlank String description,
+            @NotBlank String targetSummary, @NotNull Long sourceDocumentId, boolean active,
+            boolean foreignerTarget, @NotNull LocalDate informationBaseDate,
+            @NotBlank String publicConditions, @NotBlank String additionalConditions,
+            @NotBlank String requiredDocuments, @NotBlank String applicationMethod
+    ) {}
+
     public record ProductRuleResponse(
             Long id, Long productId, String ruleKey, RuleOperator operator, String ruleValue, RuleLevel ruleLevel,
             boolean mandatory, Long sourceDocumentId, String sourceLocator, LocalDate validFrom, LocalDate validTo,
@@ -100,7 +125,7 @@ public class FinancialProductController {
             FinancialPurpose financialPurpose, String description, String targetSummary, boolean active,
             boolean foreignerTarget, LocalDate informationBaseDate, String publicConditions,
             String additionalConditions, String requiredDocuments, String applicationMethod,
-            DiagnosisStatus diagnosisStatus, Long sourceDocumentId, String sourceTitle, String sourceUrl,
+            DiagnosisStatus diagnosisStatus, Long sourceDocumentId, String sourceTitle, String sourceUrl, Instant updatedAt,
             List<ProductRuleResponse> rules
     ) {
         static ProductResponse from(ProductView view) {
@@ -112,7 +137,7 @@ public class FinancialProductController {
                     product.getAdditionalConditions(), product.getRequiredDocuments(),
                     product.getApplicationMethod(), view.diagnosisStatus(), product.getSourceDocument().getId(),
                     product.getSourceDocument().getTitle(), product.getSourceDocument().getSourceUrl(),
-                    view.rules().stream().map(ProductRuleResponse::from).toList());
+                    product.getUpdatedAt(), view.rules().stream().map(ProductRuleResponse::from).toList());
         }
     }
 }

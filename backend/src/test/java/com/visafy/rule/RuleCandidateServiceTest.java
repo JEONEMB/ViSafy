@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import org.mockito.ArgumentCaptor;
 
 import com.visafy.common.domain.ReviewStatus;
 import com.visafy.rule.RuleCandidateService.ReviewAction;
@@ -27,6 +30,8 @@ class RuleCandidateServiceTest {
     private SourceDocumentService sourceService;
     @Mock
     private ProductRuleService productRuleService;
+    @Mock
+    private RuleChangeHistoryRepository historyRepository;
 
     @Test
     void marksConflictingApprovedRulesForReview() {
@@ -42,11 +47,20 @@ class RuleCandidateServiceTest {
                 eq("DEMO"), eq("RESIDENCY_MONTHS"), eq(ReviewStatus.APPROVED), isNull()))
                 .thenReturn(List.of(existing));
 
-        RuleCandidateService service = new RuleCandidateService(repository, sourceService, productRuleService);
+        RuleCandidateService service = new RuleCandidateService(repository, sourceService, productRuleService,
+                historyRepository);
         service.review(2L, ReviewAction.APPROVE, null, null, null);
 
         assertThat(incoming.getReviewStatus()).isEqualTo(ReviewStatus.NEED_REVIEW);
         assertThat(existing.getReviewStatus()).isEqualTo(ReviewStatus.NEED_REVIEW);
+        ArgumentCaptor<RuleChangeHistory> history = ArgumentCaptor.forClass(RuleChangeHistory.class);
+        verify(historyRepository, times(2)).save(history.capture());
+        RuleChangeHistory incomingHistory = history.getAllValues().stream()
+                .filter(value -> value.getAction().equals("APPROVE")).findFirst().orElseThrow();
+        assertThat(incomingHistory.getBeforeStatus()).isEqualTo("PENDING");
+        assertThat(incomingHistory.getAfterStatus()).isEqualTo("NEED_REVIEW");
+        assertThat(history.getAllValues()).extracting(RuleChangeHistory::getAction)
+                .contains("SOURCE_CONFLICT");
     }
 
     private RuleCandidate candidate(SourceDocument source, String value) {

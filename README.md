@@ -288,6 +288,21 @@ docker compose up --build --detach --wait backend frontend
 
 관리자 인증을 끄는 설정은 로컬 디버깅 이외에는 사용하지 마세요. 저장소의 예시 비밀번호를 외부 배포 환경에서 그대로 사용해서는 안 됩니다.
 
+## 관리자 상품·Source·Rule 운영
+
+관리자 로그인 후 http://localhost:3000/admin/products 에서 상품을 등록하고 기존 상품의 전체 공개정보를 수정하거나 비활성화할 수 있습니다. 상품 코드는 생성 후 식별자로 유지되며, 비활성 상품은 일반 사용자 API와 추천에서 제외됩니다.
+
+http://localhost:3000/admin/sources 에서는 다음 작업을 수행합니다.
+
+- 공식 문서 URL과 Snapshot 등록
+- Source 기관·제목·공식 URL·언어·유효기간 수정
+- 최근 검증일, 수집일, 유효기간과 공식 Source 링크 확인
+- Source 상태를 `ACTIVE`, `NEED_REVIEW`, `EXPIRED`로 관리
+- AI Rule Candidate의 승인, 값 수정 후 승인, UNKNOWN 변경, 거절
+- Rule별 operator·value·level·status의 변경 전후 값, 검수자와 검수시각 조회
+
+Runtime의 기존 `APPROVED` Source는 관리자 수명주기에서 `ACTIVE`로 표시합니다. 유효 종료일이 지난 Source는 자동 `EXPIRED` 처리되며 다시 활성화할 수 없습니다. 모든 `/api/admin/**` API는 관리자 인증이 필요합니다. MVP에서는 Source Snapshot을 관리자가 등록하며 자동 실시간 Crawling은 수행하지 않습니다.
+
 ## Backend API와 DB 결과 이력
 
 - `GET/PUT /api/profiles/{id}`는 숫자 ID만으로 접근할 수 없으며 생성 응답의 UUID를 `X-Profile-Session-Id` 헤더로 함께 보내야 합니다.
@@ -328,6 +343,8 @@ GET  /api/visas
 GET  /api/admin/auth/check
 POST /api/admin/products
 GET  /api/admin/products
+PUT  /api/admin/products/{id}
+PUT  /api/admin/products/{id}/deactivate
 GET  /api/products
 GET  /api/products/{id}
 POST /api/eligibility/pre-check
@@ -346,6 +363,9 @@ POST /api/products/{id}/guidance
 GET  /api/admin/products/{id}/guidance
 POST /api/admin/products/{id}/documents
 POST /api/admin/products/{id}/steps
+PUT  /api/admin/sources/{id}
+PUT  /api/admin/sources/{id}/status
+GET  /api/admin/rules/{id}/history
 ```
 
 ## 브랜치 정책

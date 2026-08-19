@@ -63,6 +63,39 @@ public class FinancialProductService {
         return repository.findAllByOrderByCreatedAtDesc().stream().map(this::toView).toList();
     }
 
+    @Transactional
+    public FinancialProduct update(Long id, String institution, String productName, ProductType productType,
+                                   FinancialPurpose financialPurpose, String description, String targetSummary,
+                                   Long sourceDocumentId, boolean active, boolean foreignerTarget,
+                                   LocalDate informationBaseDate, String publicConditions,
+                                   String additionalConditions, String requiredDocuments, String applicationMethod) {
+        FinancialProduct product = getAdminEntity(id);
+        SourceDocument source = sourceService.get(sourceDocumentId);
+        if (source.getReviewStatus() != ReviewStatus.APPROVED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A product must reference an APPROVED official source");
+        }
+        product.update(institution.strip(), productName.strip(), productType, financialPurpose,
+                description.strip(), targetSummary.strip(), source, active, foreignerTarget, informationBaseDate,
+                publicConditions.strip(), additionalConditions.strip(), requiredDocuments.strip(),
+                applicationMethod.strip());
+        return product;
+    }
+
+    @Transactional
+    public FinancialProduct deactivate(Long id) {
+        FinancialProduct product = getAdminEntity(id);
+        product.deactivate();
+        return product;
+    }
+
+    public ProductView getAdmin(Long id) { return toView(getAdminEntity(id)); }
+
+    private FinancialProduct getAdminEntity(Long id) {
+        return repository.findOneById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+    }
+
     public ProductView getPublic(Long id) {
         FinancialProduct product = repository.findOneById(id)
                 .filter(FinancialProduct::isActive)

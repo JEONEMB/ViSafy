@@ -71,6 +71,40 @@ public class SourceDocumentService {
         return source;
     }
 
+    @Transactional
+    public SourceDocument update(Long id, String institution, SourceType sourceType, String title, String sourceUrl,
+                                 LocalDate validFrom, LocalDate validTo, String language) {
+        validateOfficialUrl(sourceUrl);
+        validateDates(validFrom, validTo);
+        SourceDocument source = get(id);
+        source.updateMetadata(institution.strip(), sourceType, title.strip(), sourceUrl.strip(),
+                validFrom, validTo, language);
+        return source;
+    }
+
+    @Transactional
+    public SourceDocument changeLifecycle(Long id, SourceLifecycleStatus status) {
+        SourceDocument source = get(id);
+        if (status == SourceLifecycleStatus.EXPIRED) {
+            source.markExpired();
+            return source;
+        }
+        if (source.getValidTo() != null && source.getValidTo().isBefore(LocalDate.now())) {
+            source.markExpired();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Expired sources cannot become active");
+        }
+        if (status == SourceLifecycleStatus.ACTIVE) source.review(ReviewStatus.APPROVED);
+        else if (status == SourceLifecycleStatus.NEED_REVIEW) source.review(ReviewStatus.NEED_REVIEW);
+        else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported source lifecycle status");
+        return source;
+    }
+
+    private void validateDates(LocalDate validFrom, LocalDate validTo) {
+        if (validFrom != null && validTo != null && validTo.isBefore(validFrom)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "validTo must not be before validFrom");
+        }
+    }
+
     private void validateOfficialUrl(String sourceUrl) {
         try {
             URI uri = URI.create(sourceUrl.strip());

@@ -16,7 +16,24 @@ export type SourceDocument = {
   validTo?: string;
   language: "ko" | "en" | "vi";
   reviewStatus: ReviewStatus;
+  lifecycleStatus: "ACTIVE" | "EXPIRED" | "NEED_REVIEW" | "PENDING" | "REJECTED";
   lastVerifiedAt: string;
+};
+
+export type RuleChangeHistory = {
+  id: number;
+  ruleCandidateId: number;
+  action: string;
+  reviewer: string;
+  beforeOperator: string;
+  beforeValue: string;
+  beforeLevel: string;
+  beforeStatus: string;
+  afterOperator: string;
+  afterValue: string;
+  afterLevel: string;
+  afterStatus: string;
+  reviewedAt: string;
 };
 
 export type RuleCandidate = {

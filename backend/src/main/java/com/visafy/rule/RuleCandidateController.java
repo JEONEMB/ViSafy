@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -45,20 +46,30 @@ public class RuleCandidateController {
     }
 
     @PutMapping("/rules/{id}/review")
-    public RuleCandidateResponse review(@PathVariable Long id, @Valid @RequestBody ReviewRuleRequest request) {
+    public RuleCandidateResponse review(@PathVariable Long id, @Valid @RequestBody ReviewRuleRequest request,
+                                        Principal principal) {
         return RuleCandidateResponse.from(service.review(id, request.action(), request.operator(),
-                request.ruleValue(), request.sourceExcerpt()));
+                request.ruleValue(), request.sourceExcerpt(), reviewer(principal)));
     }
 
     @PutMapping("/rules/{id}/approve")
-    public RuleCandidateResponse approve(@PathVariable Long id) {
-        return RuleCandidateResponse.from(service.review(id, ReviewAction.APPROVE, null, null, null));
+    public RuleCandidateResponse approve(@PathVariable Long id, Principal principal) {
+        return RuleCandidateResponse.from(service.review(id, ReviewAction.APPROVE, null, null, null,
+                reviewer(principal)));
     }
 
     @PutMapping("/rules/{id}/reject")
-    public RuleCandidateResponse reject(@PathVariable Long id) {
-        return RuleCandidateResponse.from(service.review(id, ReviewAction.REJECT, null, null, null));
+    public RuleCandidateResponse reject(@PathVariable Long id, Principal principal) {
+        return RuleCandidateResponse.from(service.review(id, ReviewAction.REJECT, null, null, null,
+                reviewer(principal)));
     }
+
+    @GetMapping("/rules/{id}/history")
+    public List<RuleHistoryResponse> history(@PathVariable Long id) {
+        return service.history(id).stream().map(RuleHistoryResponse::from).toList();
+    }
+
+    private String reviewer(Principal principal) { return principal == null ? "system" : principal.getName(); }
 
     public record CreateRuleCandidateRequest(
             @NotNull Long sourceDocumentId,
@@ -98,6 +109,19 @@ public class RuleCandidateController {
                     candidate.isMandatory(), candidate.getSourceExcerpt(), candidate.getSourceLocator(),
                     candidate.getValidFrom(), candidate.getValidTo(), candidate.getDescription(),
                     candidate.getConfidence(), candidate.getReviewStatus(), candidate.getLastVerifiedAt());
+        }
+    }
+
+    public record RuleHistoryResponse(
+            Long id, Long ruleCandidateId, String action, String reviewer,
+            String beforeOperator, String beforeValue, String beforeLevel, String beforeStatus,
+            String afterOperator, String afterValue, String afterLevel, String afterStatus, Instant reviewedAt
+    ) {
+        static RuleHistoryResponse from(RuleChangeHistory history) {
+            return new RuleHistoryResponse(history.getId(), history.getRuleCandidate().getId(),
+                    history.getAction(), history.getReviewer(), history.getBeforeOperator(), history.getBeforeValue(),
+                    history.getBeforeLevel(), history.getBeforeStatus(), history.getAfterOperator(),
+                    history.getAfterValue(), history.getAfterLevel(), history.getAfterStatus(), history.getReviewedAt());
         }
     }
 }

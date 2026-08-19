@@ -2,9 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { createRuleCandidate, createSource, getRuleCandidates, getSources, reindexRag, reviewRule, reviewSource } from "@/services/data-pipeline";
+import { changeSourceStatus, createRuleCandidate, createSource, getRuleCandidates, getSources, reindexRag, reviewRule, reviewSource, updateSource } from "@/services/data-pipeline";
+import { AdminSourceEditForm } from "@/components/admin-source-edit-form";
+import { AdminRuleHistoryPanel } from "@/components/admin-rule-history-panel";
 import { getAdminProducts } from "@/services/product";
 import type { ReviewStatus } from "@/types/data-pipeline";
+import type { SourceDocument } from "@/types/data-pipeline";
 
 const badge: Record<ReviewStatus, string> = {
   PENDING: "bg-amber-100 text-amber-800",
@@ -22,6 +25,8 @@ export default function SourceAdminPage() {
   const rules = useQuery({ queryKey: ["rule-candidates"], queryFn: getRuleCandidates });
   const products = useQuery({ queryKey: ["admin-products"], queryFn: getAdminProducts });
   const [message, setMessage] = useState("");
+  const [editingSource, setEditingSource] = useState<SourceDocument | null>(null);
+  const [historyRuleId, setHistoryRuleId] = useState<number | null>(null);
 
   const sourceMutation = useMutation({
     mutationFn: createSource,
@@ -35,7 +40,7 @@ export default function SourceAdminPage() {
   });
   const reviewMutation = useMutation({
     mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) => reviewRule(id, body),
-    onSuccess: (rule) => { void queryClient.invalidateQueries({ queryKey: ["rule-candidates"] }); setMessage(`검수 결과: ${rule.reviewStatus}`); },
+    onSuccess: (rule) => { void queryClient.invalidateQueries({ queryKey: ["rule-candidates"] }); void queryClient.invalidateQueries({ queryKey: ["rule-history", rule.id] }); setMessage(`검수 결과: ${rule.reviewStatus}`); },
     onError: (error: Error) => setMessage(error.message),
   });
   const sourceReviewMutation = useMutation({
@@ -46,6 +51,16 @@ export default function SourceAdminPage() {
   const ragMutation = useMutation({
     mutationFn: reindexRag,
     onSuccess: (result) => setMessage(`RAG 색인 완료: 문서 ${result.indexedDocuments}개 · Chunk ${result.indexedChunks}개 · 미연결 Source ${result.skippedUnlinkedSources}개`),
+    onError: (error: Error) => setMessage(error.message),
+  });
+  const sourceEditMutation = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) => updateSource(id, body),
+    onSuccess: () => { void queryClient.invalidateQueries({ queryKey: ["sources"] }); setEditingSource(null); setMessage("Source 정보 기준일과 유효기간을 수정했습니다."); },
+    onError: (error: Error) => setMessage(error.message),
+  });
+  const lifecycleMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: "ACTIVE" | "EXPIRED" | "NEED_REVIEW" }) => changeSourceStatus(id, status),
+    onSuccess: (source) => { void queryClient.invalidateQueries({ queryKey: ["sources"] }); setMessage(`Source 상태: ${source.lifecycleStatus}`); },
     onError: (error: Error) => setMessage(error.message),
   });
 
@@ -121,9 +136,9 @@ export default function SourceAdminPage() {
         </form>
       </section>
 
-      <section className="mt-12"><h2 className="text-2xl font-bold">Source Snapshot</h2><div className="mt-4 grid gap-4">{sources.data?.map((source) => <article className="rounded-xl border bg-white p-5" key={source.id}><div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-bold">{source.institution} · {source.title}</h3><a className="text-sm text-teal-700 underline" href={source.sourceUrl} rel="noreferrer" target="_blank">공식 원문 열기</a></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${badge[source.reviewStatus]}`}>{source.reviewStatus}</span></div><p className="mt-3 break-all text-xs text-slate-500">{source.language.toUpperCase()} · SHA-256 {source.contentHash} · 최근 검증 {new Date(source.lastVerifiedAt).toLocaleString()}</p><details className="mt-3"><summary className="cursor-pointer font-semibold">저장 Snapshot 보기</summary><pre className="mt-2 whitespace-pre-wrap rounded-lg bg-slate-50 p-4 text-sm">{source.snapshotText}</pre></details>{source.reviewStatus !== "EXPIRED" ? <div className="mt-4 flex gap-2"><button className="rounded bg-emerald-700 px-3 py-2 text-sm text-white" onClick={() => sourceReviewMutation.mutate({ id: source.id, status: "APPROVED" })}>공식 Source 승인</button><button className="rounded bg-amber-600 px-3 py-2 text-sm text-white" onClick={() => sourceReviewMutation.mutate({ id: source.id, status: "NEED_REVIEW" })}>재검토</button><button className="rounded bg-slate-700 px-3 py-2 text-sm text-white" onClick={() => sourceReviewMutation.mutate({ id: source.id, status: "REJECTED" })}>거절</button></div> : null}</article>)}</div></section>
+      <section className="mt-12"><h2 className="text-2xl font-bold">Source Snapshot · 최신성 관리</h2><div className="mt-4 grid gap-4">{sources.data?.map((source) => <article className="rounded-xl border bg-white p-5" key={source.id}><div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-bold">{source.institution} · {source.title}</h3><a className="text-sm text-teal-700 underline" href={source.sourceUrl} rel="noreferrer" target="_blank">공식 원문 열기</a></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${badge[source.reviewStatus]}`}>{source.lifecycleStatus}</span></div><p className="mt-3 break-all text-xs text-slate-500">{source.language.toUpperCase()} · SHA-256 {source.contentHash}</p><dl className="mt-3 grid gap-2 rounded-lg bg-slate-50 p-3 text-xs sm:grid-cols-3"><div><dt className="font-bold">최근 검증일</dt><dd>{new Date(source.lastVerifiedAt).toLocaleString()}</dd></div><div><dt className="font-bold">수집일</dt><dd>{new Date(source.retrievedAt).toLocaleString()}</dd></div><div><dt className="font-bold">유효기간</dt><dd>{source.validFrom ?? "제한 없음"} ~ {source.validTo ?? "제한 없음"}</dd></div></dl><details className="mt-3"><summary className="cursor-pointer font-semibold">저장 Snapshot 보기</summary><pre className="mt-2 whitespace-pre-wrap rounded-lg bg-slate-50 p-4 text-sm">{source.snapshotText}</pre></details><div className="mt-4 flex flex-wrap gap-2"><button className="rounded bg-blue-700 px-3 py-2 text-sm text-white" onClick={() => setEditingSource(source)}>정보 수정</button>{source.lifecycleStatus !== "EXPIRED" ? <><button className="rounded bg-emerald-700 px-3 py-2 text-sm text-white" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "ACTIVE" })}>ACTIVE</button><button className="rounded bg-amber-600 px-3 py-2 text-sm text-white" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "NEED_REVIEW" })}>NEED_REVIEW</button><button className="rounded bg-zinc-700 px-3 py-2 text-sm text-white" onClick={() => { if (window.confirm("이 Source를 만료 처리할까요?")) lifecycleMutation.mutate({ id: source.id, status: "EXPIRED" }); }}>EXPIRED</button><button className="rounded bg-slate-700 px-3 py-2 text-sm text-white" onClick={() => sourceReviewMutation.mutate({ id: source.id, status: "REJECTED" })}>거절</button></> : null}</div>{editingSource?.id === source.id ? <AdminSourceEditForm source={editingSource} pending={sourceEditMutation.isPending} onCancel={() => setEditingSource(null)} onSave={(body) => sourceEditMutation.mutate({ id: source.id, body })} /> : null}</article>)}</div></section>
 
-      <section className="mt-12"><h2 className="text-2xl font-bold">Human Verification</h2><div className="mt-4 grid gap-4">{rules.data?.map((rule) => <article className="rounded-xl border bg-white p-5" key={rule.id}><div className="flex flex-wrap justify-between gap-3"><div><h3 className="font-bold">{rule.productCode} · {rule.ruleKey}</h3><p className="text-sm text-slate-500">{rule.description} · 근거: {rule.sourceTitle}</p></div><span className={`h-fit rounded-full px-3 py-1 text-xs font-bold ${badge[rule.reviewStatus]}`}>{rule.reviewStatus}</span></div><div className="mt-4 rounded-lg bg-slate-50 p-4 font-mono text-sm">{rule.operator} {rule.ruleValue} · {rule.ruleLevel} · {rule.mandatory ? "MANDATORY" : "OPTIONAL"}</div><blockquote className="mt-3 border-l-4 border-teal-600 pl-3 text-sm">{rule.sourceExcerpt}</blockquote><p className="mt-2 text-xs text-slate-500">위치: {rule.sourceLocator} · 유효기간: {rule.validFrom ?? "제한 없음"} ~ {rule.validTo ?? "제한 없음"}</p><p className="mt-1 text-xs text-slate-500">AI 추출 신뢰도: {rule.confidence} (가입 확률 아님)</p>{rule.reviewStatus !== "EXPIRED" && rule.reviewStatus !== "REJECTED" ? <div className="mt-4 flex flex-wrap gap-2"><button className="rounded bg-emerald-700 px-3 py-2 text-sm text-white" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "APPROVE" } })}>승인</button><button className="rounded bg-blue-700 px-3 py-2 text-sm text-white" onClick={() => approveWithChanges(rule.id, rule.operator, rule.ruleValue, rule.sourceExcerpt)}>값 수정 후 승인</button><button className="rounded bg-amber-600 px-3 py-2 text-sm text-white" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "MARK_UNKNOWN" } })}>UNKNOWN</button><button className="rounded bg-slate-700 px-3 py-2 text-sm text-white" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "REJECT" } })}>거절</button></div> : null}</article>)}</div></section>
+      <section className="mt-12"><h2 className="text-2xl font-bold">Human Verification</h2><div className="mt-4 grid gap-4">{rules.data?.map((rule) => <article className="rounded-xl border bg-white p-5" key={rule.id}><div className="flex flex-wrap justify-between gap-3"><div><h3 className="font-bold">{rule.productCode} · {rule.ruleKey}</h3><p className="text-sm text-slate-500">{rule.description} · 근거: {rule.sourceTitle}</p></div><span className={`h-fit rounded-full px-3 py-1 text-xs font-bold ${badge[rule.reviewStatus]}`}>{rule.reviewStatus}</span></div><div className="mt-4 rounded-lg bg-slate-50 p-4 font-mono text-sm">{rule.operator} {rule.ruleValue} · {rule.ruleLevel} · {rule.mandatory ? "MANDATORY" : "OPTIONAL"}</div><blockquote className="mt-3 border-l-4 border-teal-600 pl-3 text-sm">{rule.sourceExcerpt}</blockquote><p className="mt-2 text-xs text-slate-500">위치: {rule.sourceLocator} · 유효기간: {rule.validFrom ?? "제한 없음"} ~ {rule.validTo ?? "제한 없음"}</p><p className="mt-1 text-xs text-slate-500">AI 추출 신뢰도: {rule.confidence} (가입 확률 아님) · 마지막 검수: {rule.lastVerifiedAt ? new Date(rule.lastVerifiedAt).toLocaleString() : "미검수"}</p>{rule.reviewStatus !== "EXPIRED" && rule.reviewStatus !== "REJECTED" ? <div className="mt-4 flex flex-wrap gap-2"><button className="rounded bg-emerald-700 px-3 py-2 text-sm text-white" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "APPROVE" } })}>승인</button><button className="rounded bg-blue-700 px-3 py-2 text-sm text-white" onClick={() => approveWithChanges(rule.id, rule.operator, rule.ruleValue, rule.sourceExcerpt)}>값 수정 후 승인</button><button className="rounded bg-amber-600 px-3 py-2 text-sm text-white" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "MARK_UNKNOWN" } })}>UNKNOWN</button><button className="rounded bg-slate-700 px-3 py-2 text-sm text-white" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "REJECT" } })}>거절</button></div> : null}<button className="mt-4 text-sm font-bold text-blue-700 underline" onClick={() => setHistoryRuleId(historyRuleId === rule.id ? null : rule.id)}>{historyRuleId === rule.id ? "변경 이력 닫기" : "변경 이력 보기"}</button>{historyRuleId === rule.id ? <AdminRuleHistoryPanel ruleId={rule.id} /> : null}</article>)}</div></section>
     </main>
   );
 }

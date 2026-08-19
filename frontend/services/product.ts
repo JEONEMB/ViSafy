@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "./api-client";
+import { apiGet, apiPost, apiPut } from "./api-client";
 import type { FinancialProduct, ProductFilters } from "@/types/product";
 
 export function getProducts(filters: ProductFilters = {}) {
@@ -14,3 +14,7 @@ export const getProduct = (id: number) => apiGet<FinancialProduct>(`/api/product
 export const getAdminProducts = () => apiGet<FinancialProduct[]>("/api/admin/products");
 export const createProduct = (body: Record<string, unknown>) =>
   apiPost<FinancialProduct, Record<string, unknown>>("/api/admin/products", body);
+export const updateProduct = (id: number, body: Record<string, unknown>) =>
+  apiPut<FinancialProduct, Record<string, unknown>>(`/api/admin/products/${id}`, body);
+export const deactivateProduct = (id: number) =>
+  apiPut<FinancialProduct, Record<string, never>>(`/api/admin/products/${id}/deactivate`, {});

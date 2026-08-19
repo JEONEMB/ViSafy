@@ -4,7 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 import { getSources } from "@/services/data-pipeline";
 import { createApplicationStep, createDocumentRequirement } from "@/services/guidance";
-import { createProduct, getAdminProducts } from "@/services/product";
+import { createProduct, deactivateProduct, getAdminProducts, updateProduct } from "@/services/product";
+import { AdminProductEditForm } from "@/components/admin-product-edit-form";
+import type { FinancialProduct } from "@/types/product";
 
 const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2";
 const statusClass = {
@@ -18,6 +20,7 @@ export default function ProductAdminPage() {
   const sources = useQuery({ queryKey: ["sources"], queryFn: getSources });
   const products = useQuery({ queryKey: ["admin-products"], queryFn: getAdminProducts });
   const [message, setMessage] = useState("");
+  const [editing, setEditing] = useState<FinancialProduct | null>(null);
   const mutation = useMutation({
     mutationFn: createProduct,
     onSuccess: (product) => {
@@ -34,6 +37,16 @@ export default function ProductAdminPage() {
   const stepMutation = useMutation({
     mutationFn: ({ productId, body }: { productId: number; body: Record<string, unknown> }) => createApplicationStep(productId, body),
     onSuccess: (step) => setMessage(`STEP ${step.stepOrder} 신청절차를 등록했습니다.`),
+    onError: (error: Error) => setMessage(error.message),
+  });
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) => updateProduct(id, body),
+    onSuccess: (product) => { void queryClient.invalidateQueries({ queryKey: ["admin-products"] }); setEditing(null); setMessage(`${product.productName} 상품을 수정했습니다.`); },
+    onError: (error: Error) => setMessage(error.message),
+  });
+  const deactivateMutation = useMutation({
+    mutationFn: deactivateProduct,
+    onSuccess: (product) => { void queryClient.invalidateQueries({ queryKey: ["admin-products"] }); setMessage(`${product.productName} 상품을 비활성화했습니다.`); },
     onError: (error: Error) => setMessage(error.message),
   });
 
@@ -146,7 +159,9 @@ export default function ProductAdminPage() {
           {products.data?.map((product) => (
             <article className="rounded-xl border bg-white p-5" key={product.id}>
               <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-sm text-slate-500">{product.institution} · {product.productCode}</p><h3 className="text-lg font-bold">{product.productName}</h3></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClass[product.diagnosisStatus]}`}>{product.diagnosisStatus}</span></div>
-              <p className="mt-3 text-sm text-slate-600">승인 PRODUCT_RULE {product.rules.length}개 · 정보 기준일 {product.informationBaseDate} · {product.active ? "공개" : "비공개"}</p>
+              <p className="mt-3 text-sm text-slate-600">승인 PRODUCT_RULE {product.rules.length}개 · 정보 기준일 {product.informationBaseDate} · 최종 수정 {new Date(product.updatedAt).toLocaleString()} · {product.active ? "공개" : "비공개"}</p>
+              <div className="mt-4 flex flex-wrap gap-2"><button className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-bold text-white" onClick={() => setEditing(product)}>수정</button>{product.active ? <button className="rounded-lg bg-slate-700 px-3 py-2 text-sm font-bold text-white disabled:opacity-50" disabled={deactivateMutation.isPending} onClick={() => { if (window.confirm(`${product.productName}을 비활성화할까요?`)) deactivateMutation.mutate(product.id); }}>비활성화</button> : null}</div>
+              {editing?.id === product.id ? <AdminProductEditForm product={editing} sources={approvedSources} pending={updateMutation.isPending} onCancel={() => setEditing(null)} onSave={(body) => updateMutation.mutate({ id: product.id, body })} /> : null}
             </article>
           ))}
           {products.data?.length === 0 ? <p className="rounded-xl border border-dashed p-8 text-center text-slate-500">등록된 상품이 없습니다.</p> : null}

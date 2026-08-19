@@ -102,6 +102,26 @@ public class SourceDocument {
         updatedAt = lastVerifiedAt;
     }
 
+    public void updateMetadata(String institution, SourceType sourceType, String title, String sourceUrl,
+                               LocalDate validFrom, LocalDate validTo, String language) {
+        this.institution = institution; this.sourceType = sourceType; this.title = title; this.sourceUrl = sourceUrl;
+        this.validFrom = validFrom; this.validTo = validTo; this.language = language;
+        this.lastVerifiedAt = Instant.now(); this.updatedAt = this.lastVerifiedAt;
+        if (validTo != null && validTo.isBefore(LocalDate.now())) this.reviewStatus = ReviewStatus.EXPIRED;
+    }
+
+    public void markExpired() { this.reviewStatus = ReviewStatus.EXPIRED; this.lastVerifiedAt = Instant.now(); this.updatedAt = this.lastVerifiedAt; }
+
+    public SourceLifecycleStatus getLifecycleStatus() {
+        if (reviewStatus == ReviewStatus.EXPIRED || (validTo != null && validTo.isBefore(LocalDate.now()))) return SourceLifecycleStatus.EXPIRED;
+        return switch (reviewStatus) {
+            case APPROVED -> SourceLifecycleStatus.ACTIVE;
+            case NEED_REVIEW -> SourceLifecycleStatus.NEED_REVIEW;
+            case REJECTED -> SourceLifecycleStatus.REJECTED;
+            default -> SourceLifecycleStatus.PENDING;
+        };
+    }
+
     public boolean isEffective(LocalDate date) {
         return reviewStatus == ReviewStatus.APPROVED
                 && (validFrom == null || !validFrom.isAfter(date))

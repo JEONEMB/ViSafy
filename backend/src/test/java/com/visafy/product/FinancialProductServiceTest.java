@@ -40,6 +40,18 @@ class FinancialProductServiceTest {
                 .isEqualTo(DiagnosisStatus.READY);
     }
 
+    @Test
+    void productCanBeUpdatedAndDeactivatedWithoutChangingCode() {
+        FinancialProduct product = product();
+        product.update("새 은행", "새 상품", ProductType.LOAN, FinancialPurpose.LOAN,
+                "새 설명", "새 대상", source, true, true, LocalDate.of(2026, 8, 19),
+                "새 공개조건", "새 추가조건", "새 서류", "새 신청방법");
+        product.deactivate();
+        assertThat(product.getProductCode()).isEqualTo("DEMO");
+        assertThat(product.getProductName()).isEqualTo("새 상품");
+        assertThat(product.isActive()).isFalse();
+    }
+
     private ProductRule rule(String key, RuleLevel level) {
         return rule(key, level, true);
     }

@@ -40,6 +40,7 @@ export type FinancialProduct = {
   sourceDocumentId: number;
   sourceTitle: string;
   sourceUrl: string;
+  updatedAt: string;
   rules: ProductRule[];
 };
 

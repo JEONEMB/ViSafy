@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,5 +42,19 @@ class SourceDocumentServiceTest {
                 "https://example.com/post", "snapshot", null, null, "ko"))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("official-domain allowlist");
+    }
+
+    @Test
+    void managesActiveReviewAndExpiredLifecycle() {
+        SourceDocument source = new SourceDocument("은행", SourceType.PRODUCT_PAGE, "상품",
+                "https://www.kbstar.com/product", "snapshot", "a".repeat(64),
+                null, LocalDate.now().plusDays(30), "ko");
+        when(repository.findById(1L)).thenReturn(Optional.of(source));
+        service.changeLifecycle(1L, SourceLifecycleStatus.ACTIVE);
+        assertThat(source.getLifecycleStatus()).isEqualTo(SourceLifecycleStatus.ACTIVE);
+        service.changeLifecycle(1L, SourceLifecycleStatus.NEED_REVIEW);
+        assertThat(source.getLifecycleStatus()).isEqualTo(SourceLifecycleStatus.NEED_REVIEW);
+        service.changeLifecycle(1L, SourceLifecycleStatus.EXPIRED);
+        assertThat(source.getLifecycleStatus()).isEqualTo(SourceLifecycleStatus.EXPIRED);
     }
 }

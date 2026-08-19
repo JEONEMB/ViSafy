@@ -46,8 +46,25 @@ public class SourceDocumentController {
         return SourceResponse.from(service.review(id, request.reviewStatus()));
     }
 
+    @PutMapping("/{id}")
+    public SourceResponse update(@PathVariable Long id, @Valid @RequestBody UpdateSourceRequest request) {
+        return SourceResponse.from(service.update(id, request.institution(), request.sourceType(), request.title(),
+                request.sourceUrl(), request.validFrom(), request.validTo(), request.language()));
+    }
+
+    @PutMapping("/{id}/status")
+    public SourceResponse changeStatus(@PathVariable Long id, @Valid @RequestBody SourceStatusRequest request) {
+        return SourceResponse.from(service.changeLifecycle(id, request.status()));
+    }
+
     public record ReviewSourceRequest(@NotNull ReviewStatus reviewStatus) {
     }
+    public record SourceStatusRequest(@NotNull SourceLifecycleStatus status) {}
+    public record UpdateSourceRequest(
+            @NotBlank String institution, @NotNull SourceType sourceType, @NotBlank String title,
+            @NotBlank @URL(protocol = "https") String sourceUrl, LocalDate validFrom, LocalDate validTo,
+            @NotBlank @Pattern(regexp = "ko|en|vi") String language
+    ) {}
 
     public record CreateSourceRequest(
             @NotBlank String institution,
@@ -64,13 +81,14 @@ public class SourceDocumentController {
     public record SourceResponse(
             Long id, String institution, SourceType sourceType, String title, String sourceUrl,
             String snapshotText, String snapshotPath, String contentHash, Instant retrievedAt, LocalDate validFrom,
-            LocalDate validTo, String language, ReviewStatus reviewStatus, Instant lastVerifiedAt
+            LocalDate validTo, String language, ReviewStatus reviewStatus,
+            SourceLifecycleStatus lifecycleStatus, Instant lastVerifiedAt
     ) {
         static SourceResponse from(SourceDocument source) {
             return new SourceResponse(source.getId(), source.getInstitution(), source.getSourceType(),
                     source.getTitle(), source.getSourceUrl(), source.getSnapshotText(), source.getSnapshotPath(), source.getContentHash(),
                     source.getRetrievedAt(), source.getValidFrom(), source.getValidTo(), source.getLanguage(),
-                    source.getReviewStatus(), source.getLastVerifiedAt());
+                    source.getReviewStatus(), source.getLifecycleStatus(), source.getLastVerifiedAt());
         }
     }
 }
