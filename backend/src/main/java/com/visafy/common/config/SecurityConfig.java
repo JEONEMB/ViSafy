@@ -12,7 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     private final boolean adminSecurityEnabled;
 
-    public SecurityConfig(@Value("${app.security.admin-enabled:false}") boolean adminSecurityEnabled) {
+    public SecurityConfig(@Value("${app.security.admin-enabled:true}") boolean adminSecurityEnabled) {
         this.adminSecurityEnabled = adminSecurityEnabled;
     }
 

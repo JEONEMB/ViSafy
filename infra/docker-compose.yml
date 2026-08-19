@@ -48,7 +48,7 @@ services:
       DB_PASSWORD: ${MYSQL_PASSWORD:-visafy}
       AI_SERVICE_URL: http://ai-service:8000
       ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:-local-development-only-secret}
-      ADMIN_SECURITY_ENABLED: ${ADMIN_SECURITY_ENABLED:-false}
+      ADMIN_SECURITY_ENABLED: ${ADMIN_SECURITY_ENABLED:-true}
       SPRING_SECURITY_USER_NAME: ${ADMIN_USERNAME:-admin}
       SPRING_SECURITY_USER_PASSWORD: ${ADMIN_PASSWORD:-change-me-before-enabling-admin-security}
       SOURCE_ALLOWED_DOMAINS: ${SOURCE_ALLOWED_DOMAINS:-kbstar.com,shinhan.com,wooribank.com,hanabank.com,ibk.co.kr,nhbank.com,kdb.co.kr,sc.co.kr,citibank.co.kr,kakaobank.com,kbanknow.com,tossbank.com,fss.or.kr,fsc.go.kr,finlife.fss.or.kr}

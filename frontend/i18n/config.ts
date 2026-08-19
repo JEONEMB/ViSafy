@@ -8,7 +8,7 @@ export const localeOptions: Array<{ locale: Locale; flag: string; country: strin
 
 export const messages = {
   ko: {
-    nav: { products: "금융상품", profile: "프로필", productAdmin: "상품 관리", admin: "Source · Rule 검수", health: "Health" },
+    nav: { products: "금융상품", profile: "프로필", productAdmin: "상품 관리", admin: "Source · Rule 검수", adminLogin: "관리자", logout: "로그아웃", health: "Health" },
     landing: {
       eyebrow: "Visa-aware Financial Agent",
       title: "내 조건에 맞는 금융상품을, 근거와 함께",
@@ -31,7 +31,8 @@ export const messages = {
       employmentDuration: "근속기간 (개월)", financialPurpose: "금융 목적",
       hasBankAccount: "한국 은행계좌 보유", housingType: "주거 형태", housingExample: "예: 월세",
       desiredAmount: "희망 금액 (원)", preferredBank: "선호 은행",
-      submit: "프로필 저장", submitting: "저장 중...", saved: "프로필이 저장되었습니다.",
+      submit: "저장 후 금융상품 보기", submitting: "저장 중...", saved: "프로필이 저장되었습니다.",
+      dateParts: { year: "연도", month: "월", day: "일" },
       saveError: "프로필을 저장하지 못했습니다. 입력값을 확인해 주세요.",
       employment: { regular: "정규직", contract: "계약직", partTime: "시간제", selfEmployed: "자영업", student: "학생" },
       purpose: { account: "입출금 계좌", savings: "예·적금", loan: "대출", card: "카드" },
@@ -39,7 +40,7 @@ export const messages = {
     },
   },
   en: {
-    nav: { products: "Products", profile: "Profile", productAdmin: "Product admin", admin: "Source · Rule review", health: "Health" },
+    nav: { products: "Products", profile: "Profile", productAdmin: "Product admin", admin: "Source · Rule review", adminLogin: "Admin", logout: "Sign out", health: "Health" },
     landing: {
       eyebrow: "Visa-aware Financial Agent",
       title: "Find financial products for your situation, with sources",
@@ -61,7 +62,8 @@ export const messages = {
       employmentDuration: "Employment duration (months)", financialPurpose: "Financial purpose",
       hasBankAccount: "I have a Korean bank account", housingType: "Housing type", housingExample: "e.g. Monthly rent",
       desiredAmount: "Desired amount (KRW)", preferredBank: "Preferred bank",
-      submit: "Save profile", submitting: "Saving...", saved: "Your profile has been saved.",
+      submit: "Save and browse products", submitting: "Saving...", saved: "Your profile has been saved.",
+      dateParts: { year: "Year", month: "Month", day: "Day" },
       saveError: "Could not save the profile. Please check your entries.",
       employment: { regular: "Permanent employee", contract: "Contract employee", partTime: "Part-time", selfEmployed: "Self-employed", student: "Student" },
       purpose: { account: "Checking account", savings: "Savings or deposit", loan: "Loan", card: "Card" },
@@ -69,7 +71,7 @@ export const messages = {
     },
   },
   vi: {
-    nav: { products: "Sản phẩm", profile: "Hồ sơ", productAdmin: "Quản lý sản phẩm", admin: "Kiểm duyệt nguồn · quy tắc", health: "Trạng thái" },
+    nav: { products: "Sản phẩm", profile: "Hồ sơ", productAdmin: "Quản lý sản phẩm", admin: "Kiểm duyệt nguồn · quy tắc", adminLogin: "Quản trị", logout: "Đăng xuất", health: "Trạng thái" },
     landing: {
       eyebrow: "Trợ lý tài chính theo loại visa",
       title: "Tìm sản phẩm tài chính phù hợp với điều kiện của bạn, kèm căn cứ",
@@ -91,7 +93,8 @@ export const messages = {
       employmentDuration: "Thời gian làm việc (tháng)", financialPurpose: "Mục đích tài chính",
       hasBankAccount: "Có tài khoản ngân hàng tại Hàn Quốc", housingType: "Hình thức nhà ở", housingExample: "Ví dụ: Thuê nhà theo tháng",
       desiredAmount: "Số tiền mong muốn (KRW)", preferredBank: "Ngân hàng ưu tiên",
-      submit: "Lưu hồ sơ", submitting: "Đang lưu...", saved: "Hồ sơ đã được lưu.",
+      submit: "Lưu và xem sản phẩm", submitting: "Đang lưu...", saved: "Hồ sơ đã được lưu.",
+      dateParts: { year: "Năm", month: "Tháng", day: "Ngày" },
       saveError: "Không thể lưu hồ sơ. Vui lòng kiểm tra thông tin đã nhập.",
       employment: { regular: "Nhân viên chính thức", contract: "Nhân viên hợp đồng", partTime: "Bán thời gian", selfEmployed: "Tự kinh doanh", student: "Sinh viên" },
       purpose: { account: "Tài khoản thanh toán", savings: "Tiết kiệm hoặc tiền gửi", loan: "Khoản vay", card: "Thẻ" },

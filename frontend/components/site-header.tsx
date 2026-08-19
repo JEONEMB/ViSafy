@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale } from "@/components/providers/locale-provider";
+import { useAdminAuth } from "@/components/providers/admin-auth-provider";
 
 export function SiteHeader() {
   const pathname = usePathname();
   const { text } = useLocale();
+  const { authenticated, logout } = useAdminAuth();
   if (pathname === "/") return null;
   return (
     <header className="border-b border-slate-200 bg-white">
@@ -14,8 +16,9 @@ export function SiteHeader() {
         <Link className="mr-auto text-lg text-teal-700" href="/">ViSafy</Link>
         <Link href="/products">{text.nav.products}</Link>
         <Link href="/profile">{text.nav.profile}</Link>
-        <Link href="/admin/products">{text.nav.productAdmin}</Link>
-        <Link href="/admin/sources">{text.nav.admin}</Link>
+        {authenticated ? <Link href="/admin/products">{text.nav.productAdmin}</Link> : null}
+        {authenticated ? <Link href="/admin/sources">{text.nav.admin}</Link> : null}
+        {authenticated ? <button type="button" onClick={logout}>{text.nav.logout}</button> : <Link href="/admin/login">{text.nav.adminLogin}</Link>}
         <Link className="hidden lg:inline" href="/health">{text.nav.health}</Link>
       </nav>
     </header>

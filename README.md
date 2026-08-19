@@ -44,6 +44,7 @@ docker compose up --build
 - 금융상품 조회: http://localhost:3000/products
 - 금융상품 관리: http://localhost:3000/admin/products
 - Source · Rule 검수: http://localhost:3000/admin/sources
+- 관리자 로그인: http://localhost:3000/admin/login
 - 시스템 상태: http://localhost:3000/health
 - Backend OpenAPI: http://localhost:8080/swagger-ui.html
 
@@ -81,19 +82,21 @@ docker compose down
 1. 상단 메뉴에서 **프로필**을 선택합니다.
 2. 한국어, English 또는 Tiếng Việt 중 사용할 언어가 맞는지 확인합니다.
 3. 메인에서 선택한 국가가 국적으로 자동 저장됩니다. 생년월일, 지원 비자, 체류기간, 직업, 소득과 금융 목적을 입력합니다.
-4. **프로필 저장**을 누릅니다.
-5. 발급된 Profile ID와 Session ID를 확인합니다.
+4. 날짜는 선택한 언어에 맞는 `연도·월·일`, `Month·Day·Year`, `Ngày·Tháng·Năm` 순서와 표기로 입력합니다.
+5. **저장 후 금융상품 보기**를 누릅니다.
+6. 프로필이 저장되면 금융상품 목록으로 자동 이동합니다.
 
 프로필은 24시간 후 만료됩니다. 주민등록번호, 여권번호, 외국인등록번호, 계좌번호는 입력하거나 저장하지 않습니다.
 
 ### 4. 공식 Source 등록
 
-1. 상단 메뉴에서 **Source · Rule 검수**를 선택합니다.
-2. 은행 또는 공공기관의 공식 페이지에서 원문을 확인합니다.
-3. 기관, Source 유형, 제목, HTTPS URL, 수집 당시 원문 텍스트와 유효기간을 입력합니다.
-4. **Source 저장**을 누릅니다.
-5. 저장된 Snapshot, SHA-256 hash, 최근 검증일을 확인합니다.
-6. 원문 링크와 Snapshot이 일치할 때만 **공식 Source 승인**을 누릅니다.
+1. http://localhost:3000/admin/login 에서 서비스 관리자 계정으로 로그인합니다.
+2. 상단 메뉴에서 **Source · Rule 검수**를 선택합니다.
+3. 은행 또는 공공기관의 공식 페이지에서 원문을 확인합니다.
+4. 기관, Source 유형, 제목, HTTPS URL, 수집 당시 원문 텍스트와 유효기간을 입력합니다.
+5. **Source 저장**을 누릅니다.
+6. 저장된 Snapshot, SHA-256 hash, 최근 검증일을 확인합니다.
+7. 원문 링크와 Snapshot이 일치할 때만 **공식 Source 승인**을 누릅니다.
 
 블로그, 커뮤니티, 광고성 제3자 페이지는 등록할 수 없습니다. 허용된 공식 도메인은 `.env`의 `SOURCE_ALLOWED_DOMAINS`에서 관리합니다. 새 기관을 추가할 때는 실제 공식 도메인임을 확인한 뒤 목록에 추가하고 컨테이너를 다시 시작하세요.
 
@@ -130,7 +133,24 @@ docker compose down
 
 - DATA-003의 LLM 자동 추출은 아직 연결하지 않았습니다. 현재는 관리자 화면에서 후보 구조를 직접 입력합니다.
 - Runtime Eligibility Engine은 다음 개발 단계입니다. 따라서 지금 승인한 Rule로 사용자 가입 가능 여부를 판정하지 않습니다.
-- 로컬 관리자 화면은 사용 편의를 위해 기본적으로 인증이 꺼져 있습니다. 외부 배포 전에 `ADMIN_SECURITY_ENABLED=true`와 안전한 관리자 자격증명을 설정하고 Frontend 인증 연동을 완료해야 합니다.
+- `/api/admin/**`, 상품 관리, Source·Rule 검수 화면은 기본적으로 관리자 인증이 필요합니다. 로그인 정보는 브라우저 탭의 `sessionStorage`에만 유지되며 탭을 닫으면 삭제됩니다.
+- 현재 MVP 관리자 인증은 HTTP Basic 방식입니다. 반드시 HTTPS 환경에서 사용하고, 실제 외부 배포 전에는 JWT의 HttpOnly 쿠키 또는 조직 SSO로 교체해야 합니다.
+
+## 관리자 계정 설정
+
+`.env`에 다음 값을 설정하고 Backend 컨테이너를 다시 시작합니다.
+
+```text
+ADMIN_SECURITY_ENABLED=true
+ADMIN_USERNAME=원하는_관리자_아이디
+ADMIN_PASSWORD=충분히_긴_임의의_비밀번호
+```
+
+```powershell
+docker compose up --build --detach --wait backend frontend
+```
+
+관리자 인증을 끄는 설정은 로컬 디버깅 이외에는 사용하지 마세요. 저장소의 예시 비밀번호를 외부 배포 환경에서 그대로 사용해서는 안 됩니다.
 
 ## 주요 API
 
@@ -147,6 +167,7 @@ POST /api/profiles
 GET  /api/profiles/{id}
 PUT  /api/profiles/{id}
 GET  /api/visas
+GET  /api/admin/auth/check
 POST /api/admin/products
 GET  /api/admin/products
 GET  /api/products

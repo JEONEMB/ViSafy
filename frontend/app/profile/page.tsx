@@ -1,26 +1,27 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
+import { LocalizedDateField } from "@/components/localized-date-field";
 import { localeOptions } from "@/i18n/config";
 import { createProfile, getVisas } from "@/services/profile";
-import type { TempProfile } from "@/types/profile";
 
 const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2";
 
 export default function ProfilePage() {
   const { locale, setLocale, text } = useLocale();
+  const router = useRouter();
   const profileText = text.profile;
-  const [saved, setSaved] = useState<TempProfile | null>(null);
   const [hasError, setHasError] = useState(false);
   const visas = useQuery({ queryKey: ["visas"], queryFn: getVisas });
   const mutation = useMutation({
     mutationFn: createProfile,
     onSuccess: (profile) => {
-      setSaved(profile);
       setHasError(false);
       localStorage.setItem("visafyProfileId", String(profile.id));
+      router.push("/products");
     },
     onError: () => setHasError(true),
   });
@@ -71,18 +72,10 @@ export default function ProfilePage() {
 
       <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">{profileText.privacy}</div>
       {hasError ? <div className="mt-4 rounded-lg bg-rose-100 p-4 text-rose-800">{profileText.saveError}</div> : null}
-      {saved ? (
-        <div className="mt-4 rounded-xl bg-emerald-100 p-5 text-emerald-900">
-          <p className="font-bold">{profileText.saved}</p>
-          <p className="mt-2 text-sm">Profile ID: {saved.id} · Session: {saved.sessionId}</p>
-          <p className="text-sm">Expires: {new Date(saved.expiresAt).toLocaleString(locale)}</p>
-        </div>
-      ) : null}
-
       <form className="mt-8 space-y-8 rounded-xl border bg-white p-6 shadow-sm" onSubmit={submit}>
         <fieldset className="grid gap-4 sm:grid-cols-2">
           <legend className="mb-4 text-xl font-bold">{profileText.required}</legend>
-          <label className="text-sm font-medium">{profileText.birthDate}<input className={inputClass} name="birthDate" type="date" required /></label>
+          <LocalizedDateField label={profileText.birthDate} locale={locale} name="birthDate" yearLabel={profileText.dateParts.year} monthLabel={profileText.dateParts.month} dayLabel={profileText.dateParts.day} minYear={new Date().getFullYear() - 100} maxYear={new Date().getFullYear()} />
           <label className="text-sm font-medium">{profileText.visaType}
             <select className={inputClass} name="visaType" required defaultValue="">
               <option value="" disabled>{profileText.chooseVisa}</option>
@@ -93,8 +86,8 @@ export default function ProfilePage() {
               ))}
             </select>
           </label>
-          <label className="text-sm font-medium">{profileText.visaExpiry}<input className={inputClass} name="visaExpiry" type="date" required /></label>
-          <label className="text-sm font-medium">{profileText.residencyStartDate}<input className={inputClass} name="residencyStartDate" type="date" required /></label>
+          <LocalizedDateField label={profileText.visaExpiry} locale={locale} name="visaExpiry" yearLabel={profileText.dateParts.year} monthLabel={profileText.dateParts.month} dayLabel={profileText.dateParts.day} minYear={new Date().getFullYear()} maxYear={new Date().getFullYear() + 20} />
+          <LocalizedDateField label={profileText.residencyStartDate} locale={locale} name="residencyStartDate" yearLabel={profileText.dateParts.year} monthLabel={profileText.dateParts.month} dayLabel={profileText.dateParts.day} minYear={new Date().getFullYear() - 60} maxYear={new Date().getFullYear()} />
           <label className="text-sm font-medium">{profileText.occupation}<input className={inputClass} name="occupation" placeholder={profileText.occupationExample} required /></label>
           <label className="text-sm font-medium">{profileText.employmentType}
             <select className={inputClass} name="employmentType">
