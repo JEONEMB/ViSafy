@@ -50,7 +50,8 @@ class RuleCandidateServiceTest {
     }
 
     private RuleCandidate candidate(SourceDocument source, String value) {
-        return new RuleCandidate(source, "DEMO", "RESIDENCY_MONTHS", "GTE", value,
-                RuleLevel.HARD, "official excerpt", new BigDecimal("0.90"));
+        return new RuleCandidate(source, "DEMO", "RESIDENCY_MONTHS", RuleOperator.GTE, value,
+                RuleLevel.HARD, true, "official excerpt", "p. 3", null, null,
+                "Minimum residency period", new BigDecimal("0.90"));
     }
 }

@@ -26,15 +26,20 @@ public class RuleCandidateService {
     }
 
     @Transactional
-    public RuleCandidate create(Long sourceDocumentId, String productCode, String ruleKey, String operator,
-                                String ruleValue, RuleLevel ruleLevel, String sourceExcerpt,
-                                BigDecimal confidence) {
+    public RuleCandidate create(Long sourceDocumentId, String productCode, String ruleKey, RuleOperator operator,
+                                String ruleValue, RuleLevel ruleLevel, boolean mandatory, String sourceExcerpt,
+                                String sourceLocator, LocalDate validFrom, LocalDate validTo,
+                                String description, BigDecimal confidence) {
         SourceDocument source = sourceService.get(sourceDocumentId);
         if (source.getReviewStatus() == ReviewStatus.EXPIRED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Expired sources cannot create candidates");
         }
-        return repository.save(new RuleCandidate(source, productCode.strip(), ruleKey.strip(), operator.strip(),
-                ruleValue.strip(), ruleLevel, sourceExcerpt.strip(), confidence));
+        if (validFrom != null && validTo != null && validTo.isBefore(validFrom)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "validTo must not be before validFrom");
+        }
+        return repository.save(new RuleCandidate(source, productCode.strip(), ruleKey.strip().toUpperCase(), operator,
+                ruleValue.strip(), ruleLevel, mandatory, sourceExcerpt.strip(), sourceLocator.strip(), validFrom,
+                validTo, description.strip(), confidence));
     }
 
     public List<RuleCandidate> findAll() {
@@ -42,12 +47,13 @@ public class RuleCandidateService {
     }
 
     @Transactional
-    public RuleCandidate review(Long id, ReviewAction action, String operator, String ruleValue,
+    public RuleCandidate review(Long id, ReviewAction action, RuleOperator operator, String ruleValue,
                                 String sourceExcerpt) {
         RuleCandidate candidate = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rule candidate not found"));
         SourceDocument source = candidate.getSourceDocument();
-        if (source.getValidTo() != null && source.getValidTo().isBefore(LocalDate.now())) {
+        if ((source.getValidTo() != null && source.getValidTo().isBefore(LocalDate.now()))
+                || (candidate.getValidTo() != null && candidate.getValidTo().isBefore(LocalDate.now()))) {
             candidate.expire();
             productRuleService.synchronize(candidate);
             return candidate;

@@ -21,6 +21,7 @@ export default function ProfilePage() {
     onSuccess: (profile) => {
       setHasError(false);
       localStorage.setItem("visafyProfileId", String(profile.id));
+      localStorage.setItem("visafyProfileSessionId", profile.sessionId);
       router.push("/products");
     },
     onError: () => setHasError(true),

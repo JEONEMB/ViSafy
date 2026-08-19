@@ -71,8 +71,8 @@ public class FinancialProductService {
     }
 
     private ProductView toView(FinancialProduct product) {
-        List<ProductRule> rules = ruleRepository.findByProductCodeAndActiveTrueOrderByRuleKeyAsc(
-                product.getProductCode());
+        List<ProductRule> rules = ruleRepository.findByProductIdAndActiveTrueOrderByRuleKeyAsc(product.getId())
+                .stream().filter(rule -> rule.isEffective(LocalDate.now())).toList();
         return new ProductView(product, rules, diagnose(rules));
     }
 
@@ -80,7 +80,8 @@ public class FinancialProductService {
         if (rules.isEmpty()) return DiagnosisStatus.NOT_READY;
         boolean hasVisaHardRule = rules.stream().anyMatch(rule ->
                 "VISA_TYPE".equalsIgnoreCase(rule.getRuleKey()) && rule.getRuleLevel() == RuleLevel.HARD);
-        boolean hasUncertainRule = rules.stream().anyMatch(rule -> rule.getRuleLevel() != RuleLevel.HARD);
+        boolean hasUncertainRule = rules.stream().anyMatch(rule ->
+                rule.isMandatory() && rule.getRuleLevel() != RuleLevel.HARD);
         return hasVisaHardRule && !hasUncertainRule ? DiagnosisStatus.READY : DiagnosisStatus.PARTIAL;
     }
 

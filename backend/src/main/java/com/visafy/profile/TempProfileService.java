@@ -29,10 +29,21 @@ public class TempProfileService {
     public TempProfile get(Long id) {
         TempProfile profile = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+        validateNotExpired(profile);
+        return profile;
+    }
+
+    public TempProfile getBySessionId(String sessionId) {
+        TempProfile profile = repository.findBySessionId(sessionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+        validateNotExpired(profile);
+        return profile;
+    }
+
+    private void validateNotExpired(TempProfile profile) {
         if (profile.getExpiresAt().isBefore(java.time.Instant.now())) {
             throw new ResponseStatusException(HttpStatus.GONE, "Temporary profile has expired");
         }
-        return profile;
     }
 
     @Transactional

@@ -1,0 +1,11 @@
+package com.visafy.eligibility;
+
+public enum InsufficientReasonCode {
+    MISSING_PROFILE_INPUT,
+    SOURCE_CONFLICT,
+    SOURCE_NOT_EFFECTIVE,
+    RULE_REVIEW_INCOMPLETE,
+    INSUFFICIENT_RULES,
+    UNSUPPORTED_RULE_KEY,
+    INVALID_RULE_VALUE
+}

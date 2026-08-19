@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FinancialProductRepository extends JpaRepository<FinancialProduct, Long> {
     boolean existsByProductCode(String productCode);
+    Optional<FinancialProduct> findByProductCode(String productCode);
 
     @EntityGraph(attributePaths = "sourceDocument")
     List<FinancialProduct> findAllByOrderByCreatedAtDesc();

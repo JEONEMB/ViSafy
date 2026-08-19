@@ -4,12 +4,20 @@ export type DiagnosisStatus = "READY" | "PARTIAL" | "NOT_READY";
 
 export type ProductRule = {
   id: number;
+  productId: number;
   ruleKey: string;
-  operator: string;
+  operator: "EQ" | "NE" | "GT" | "GTE" | "LT" | "LTE" | "IN" | "NOT_IN" | "EXISTS";
   ruleValue: string;
   ruleLevel: "HARD" | "EXTERNAL_CHECK" | "UNKNOWN";
+  mandatory: boolean;
+  sourceDocumentId: number;
+  sourceLocator: string;
+  validFrom?: string | null;
+  validTo?: string | null;
+  reviewStatus: "APPROVED";
+  verifiedAt: string;
+  description: string;
   sourceExcerpt: string;
-  lastVerifiedAt: string;
 };
 
 export type FinancialProduct = {

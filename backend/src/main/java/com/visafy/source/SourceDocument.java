@@ -94,6 +94,12 @@ public class SourceDocument {
         updatedAt = lastVerifiedAt;
     }
 
+    public boolean isEffective(LocalDate date) {
+        return reviewStatus == ReviewStatus.APPROVED
+                && (validFrom == null || !validFrom.isAfter(date))
+                && (validTo == null || !validTo.isBefore(date));
+    }
+
     public Long getId() { return id; }
     public String getInstitution() { return institution; }
     public SourceType getSourceType() { return sourceType; }

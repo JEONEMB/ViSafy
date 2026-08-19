@@ -10,4 +10,6 @@ public interface RuleCandidateRepository extends JpaRepository<RuleCandidate, Lo
     List<RuleCandidate> findAllByOrderByCreatedAtDesc();
     List<RuleCandidate> findByProductCodeAndRuleKeyAndReviewStatusAndIdNot(
             String productCode, String ruleKey, ReviewStatus reviewStatus, Long id);
+    @EntityGraph(attributePaths = "sourceDocument")
+    List<RuleCandidate> findByProductCodeOrderByCreatedAtDesc(String productCode);
 }

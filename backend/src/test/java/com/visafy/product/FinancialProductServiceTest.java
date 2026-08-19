@@ -9,6 +9,7 @@ import com.visafy.source.SourceDocument;
 import com.visafy.source.SourceType;
 import java.math.BigDecimal;
 import java.util.List;
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
 class FinancialProductServiceTest {
@@ -32,11 +33,29 @@ class FinancialProductServiceTest {
                 .isEqualTo(DiagnosisStatus.PARTIAL);
     }
 
+    @Test
+    void optionalExternalRuleDoesNotDowngradeReadyProduct() {
+        assertThat(FinancialProductService.diagnose(List.of(
+                rule("VISA_TYPE", RuleLevel.HARD), rule("OPTIONAL_CHECK", RuleLevel.EXTERNAL_CHECK, false))))
+                .isEqualTo(DiagnosisStatus.READY);
+    }
+
     private ProductRule rule(String key, RuleLevel level) {
-        RuleCandidate candidate = new RuleCandidate(source, "DEMO", key, "IN", "[]", level,
-                "official excerpt", new BigDecimal("0.9000"));
+        return rule(key, level, true);
+    }
+
+    private ProductRule rule(String key, RuleLevel level, boolean mandatory) {
+        RuleCandidate candidate = new RuleCandidate(source, "DEMO", key, com.visafy.rule.RuleOperator.IN,
+                "[]", level, mandatory, "official excerpt", "p. 3", null, null,
+                "Eligibility condition", new BigDecimal("0.9000"));
         candidate.approve();
-        return new ProductRule(candidate);
+        return new ProductRule(product(), candidate);
+    }
+
+    private FinancialProduct product() {
+        return new FinancialProduct("DEMO", "은행", "상품", ProductType.CHECKING_ACCOUNT,
+                FinancialPurpose.ACCOUNT, "설명", "대상", source, true, true, LocalDate.now(),
+                "공개조건", "추가조건", "필요서류", "신청방법");
     }
 
     private static SourceDocument approvedSource() {

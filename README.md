@@ -103,7 +103,7 @@ docker compose down
 ### 5. Rule Candidate 등록 및 검수
 
 1. 등록된 Source를 근거로 후보를 작성합니다.
-2. 상품 코드, Rule Key, operator, value, Rule level, 원문 근거 문장과 AI 추출 신뢰도를 입력합니다.
+2. 상품 코드, Rule Key, operator, value, Rule level, 필수 여부, 설명, 원문 근거 문장, 근거 위치, 유효기간과 AI 추출 신뢰도를 입력합니다.
 3. **PENDING 후보 저장**을 누릅니다.
 4. Source가 먼저 `APPROVED`인지 확인합니다.
 5. 후보를 검토하고 **승인**, **값 수정 후 승인**, **UNKNOWN**, **거절** 중 하나를 선택합니다.
@@ -124,15 +124,41 @@ docker compose down
 진단 준비 상태는 다음 MVP 기준으로 계산합니다.
 
 - `NOT_READY`: 승인된 PRODUCT_RULE이 없음
-- `PARTIAL`: 승인 Rule은 있지만 핵심 `VISA_TYPE` HARD Rule이 없거나 `EXTERNAL_CHECK`/`UNKNOWN` Rule이 포함됨
-- `READY`: `VISA_TYPE` HARD Rule이 있고 불확실 Rule이 없음
+- `PARTIAL`: 승인 Rule은 있지만 핵심 `VISA_TYPE` HARD Rule이 없거나 필수 `EXTERNAL_CHECK`/`UNKNOWN` Rule이 포함됨
+- `READY`: `VISA_TYPE` HARD Rule이 있고 필수 불확실 Rule이 없음
 
 `READY`는 시스템이 검수된 조건으로 사전 진단할 준비가 됐다는 뜻이며 실제 가입 승인이나 가입 가능 확률을 의미하지 않습니다.
 
-### 7. 현재 제한사항
+#### Rule 모델
+
+- `HARD`: 공식자료에 명시되어 사용자 입력과 직접 비교할 수 있는 조건
+- `EXTERNAL_CHECK`: 보증보험, 은행 내부 신용평가처럼 외부 심사가 필요한 조건
+- `UNKNOWN`: 조건의 존재는 확인했지만 공개된 세부 기준이 없는 조건
+- Operator: `EQ`, `NE`, `GT`, `GTE`, `LT`, `LTE`, `IN`, `NOT_IN`, `EXISTS`
+
+Runtime `PRODUCT_RULE`은 `product_id`, `rule_key`, `operator`, `rule_value`, `rule_level`, `mandatory`, `source_document_id`, `source_locator`, `valid_from`, `valid_to`, `review_status`, `verified_at`, `description`을 보관합니다. 승인된 후보만 동기화되며, 조회 시 `APPROVED` 상태이면서 현재 유효기간 안에 있는 Rule만 사용합니다. `source_excerpt`, 후보 연결값과 활성 상태는 추적·운영을 위한 내부 필드로 추가 보존합니다.
+
+### 7. 사전자격 진단
+
+1. 임시 금융 프로필을 저장합니다. 브라우저에는 예측하기 어려운 UUID 세션 값이 저장되며 프로필과 함께 24시간 후 만료됩니다.
+2. http://localhost:3000/products 에서 상품을 선택합니다.
+3. 상품 상세의 **내 프로필로 사전자격 확인**을 누릅니다.
+4. 충족 조건, 미충족 조건, 은행 확인 조건, 공개되지 않은 조건과 정보부족 사유를 확인합니다.
+
+최종 상태는 다음 순서로 결정합니다.
+
+- `PUBLIC_CONDITIONS_NOT_MET`: 명시적인 HARD Rule FAIL이 하나 이상 있음
+- `INSUFFICIENT_INFORMATION`: FAIL은 없지만 필수입력, 검수, Source 또는 필수 Rule이 부족함
+- `NEED_BANK_CONFIRMATION`: FAIL과 정보부족은 없지만 EXTERNAL_CHECK 또는 필수 UNKNOWN이 있음
+- `PUBLIC_CONDITIONS_MET`: 적용 가능한 HARD Rule이 모두 통과하고 중요한 불확실 조건이 없음
+
+지원 Rule Key는 `AGE`, `VISA_TYPE`, `VISA_REMAINING_MONTH`, `RESIDENCY_MONTH`, `DOMESTIC_INCOME_MONTH`, `EMPLOYMENT_DURATION_MONTHS`, `MONTHLY_INCOME`, `NATIONALITY`, `OCCUPATION`, `EMPLOYMENT_TYPE`, `FINANCIAL_PURPOSE`, `HAS_BANK_ACCOUNT`, `HOUSING_TYPE`, `DESIRED_AMOUNT`, `PREFERRED_BANK`입니다. `IN`과 `NOT_IN` 값은 반드시 `["F-2","F-5"]`처럼 JSON 배열로 입력합니다. 숫자 비교 값은 `19`, 문자열 동등 비교 값은 `F-5`, 존재 여부는 `EXISTS`를 사용합니다.
+
+진단 결과는 DB에 저장하지 않습니다. 모든 결과는 공개조건을 기반으로 한 사전 확인이며 최종 가입승인이 아닙니다.
+
+### 8. 현재 제한사항
 
 - DATA-003의 LLM 자동 추출은 아직 연결하지 않았습니다. 현재는 관리자 화면에서 후보 구조를 직접 입력합니다.
-- Runtime Eligibility Engine은 다음 개발 단계입니다. 따라서 지금 승인한 Rule로 사용자 가입 가능 여부를 판정하지 않습니다.
 - `/api/admin/**`, 상품 관리, Source·Rule 검수 화면은 기본적으로 관리자 인증이 필요합니다. 로그인 정보는 브라우저 탭의 `sessionStorage`에만 유지되며 탭을 닫으면 삭제됩니다.
 - 현재 MVP 관리자 인증은 HTTP Basic 방식입니다. 반드시 HTTPS 환경에서 사용하고, 실제 외부 배포 전에는 JWT의 HttpOnly 쿠키 또는 조직 SSO로 교체해야 합니다.
 
@@ -172,6 +198,7 @@ POST /api/admin/products
 GET  /api/admin/products
 GET  /api/products
 GET  /api/products/{id}
+POST /api/eligibility/pre-check
 ```
 
 ## 브랜치 정책

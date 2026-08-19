@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Entity
 public class RuleCandidate {
@@ -29,15 +30,24 @@ public class RuleCandidate {
     private String productCode;
     @Column(nullable = false, length = 120)
     private String ruleKey;
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
-    private String operator;
+    private RuleOperator operator;
     @Column(nullable = false, columnDefinition = "TEXT")
     private String ruleValue;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
     private RuleLevel ruleLevel;
+    @Column(nullable = false)
+    private boolean mandatory;
     @Column(nullable = false, columnDefinition = "TEXT")
     private String sourceExcerpt;
+    @Column(nullable = false, length = 500)
+    private String sourceLocator;
+    private LocalDate validFrom;
+    private LocalDate validTo;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String description;
     @Column(nullable = false, precision = 5, scale = 4)
     private BigDecimal confidence;
     @Enumerated(EnumType.STRING)
@@ -52,8 +62,10 @@ public class RuleCandidate {
     protected RuleCandidate() {
     }
 
-    public RuleCandidate(SourceDocument sourceDocument, String productCode, String ruleKey, String operator,
-                         String ruleValue, RuleLevel ruleLevel, String sourceExcerpt, BigDecimal confidence) {
+    public RuleCandidate(SourceDocument sourceDocument, String productCode, String ruleKey, RuleOperator operator,
+                         String ruleValue, RuleLevel ruleLevel, boolean mandatory, String sourceExcerpt,
+                         String sourceLocator, LocalDate validFrom, LocalDate validTo, String description,
+                         BigDecimal confidence) {
         Instant now = Instant.now();
         this.sourceDocument = sourceDocument;
         this.productCode = productCode;
@@ -61,15 +73,20 @@ public class RuleCandidate {
         this.operator = operator;
         this.ruleValue = ruleValue;
         this.ruleLevel = ruleLevel;
+        this.mandatory = mandatory;
         this.sourceExcerpt = sourceExcerpt;
+        this.sourceLocator = sourceLocator;
+        this.validFrom = validFrom;
+        this.validTo = validTo;
+        this.description = description;
         this.confidence = confidence;
         this.reviewStatus = ReviewStatus.PENDING;
         this.createdAt = now;
         this.updatedAt = now;
     }
 
-    public void applyCorrection(String operator, String ruleValue, String sourceExcerpt) {
-        if (operator != null && !operator.isBlank()) this.operator = operator.strip();
+    public void applyCorrection(RuleOperator operator, String ruleValue, String sourceExcerpt) {
+        if (operator != null) this.operator = operator;
         if (ruleValue != null && !ruleValue.isBlank()) this.ruleValue = ruleValue.strip();
         if (sourceExcerpt != null && !sourceExcerpt.isBlank()) this.sourceExcerpt = sourceExcerpt.strip();
         this.updatedAt = Instant.now();
@@ -85,10 +102,15 @@ public class RuleCandidate {
     public SourceDocument getSourceDocument() { return sourceDocument; }
     public String getProductCode() { return productCode; }
     public String getRuleKey() { return ruleKey; }
-    public String getOperator() { return operator; }
+    public RuleOperator getOperator() { return operator; }
     public String getRuleValue() { return ruleValue; }
     public RuleLevel getRuleLevel() { return ruleLevel; }
+    public boolean isMandatory() { return mandatory; }
     public String getSourceExcerpt() { return sourceExcerpt; }
+    public String getSourceLocator() { return sourceLocator; }
+    public LocalDate getValidFrom() { return validFrom; }
+    public LocalDate getValidTo() { return validTo; }
+    public String getDescription() { return description; }
     public BigDecimal getConfidence() { return confidence; }
     public ReviewStatus getReviewStatus() { return reviewStatus; }
     public Instant getLastVerifiedAt() { return lastVerifiedAt; }

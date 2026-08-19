@@ -7,6 +7,9 @@ import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import com.visafy.common.domain.ReviewStatus;
+import com.visafy.rule.RuleLevel;
+import com.visafy.rule.RuleOperator;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -79,13 +82,16 @@ public class FinancialProductController {
     }
 
     public record ProductRuleResponse(
-            Long id, String ruleKey, String operator, String ruleValue, String ruleLevel,
-            String sourceExcerpt, Instant lastVerifiedAt
+            Long id, Long productId, String ruleKey, RuleOperator operator, String ruleValue, RuleLevel ruleLevel,
+            boolean mandatory, Long sourceDocumentId, String sourceLocator, LocalDate validFrom, LocalDate validTo,
+            ReviewStatus reviewStatus, Instant verifiedAt, String description, String sourceExcerpt
     ) {
         static ProductRuleResponse from(ProductRule rule) {
-            return new ProductRuleResponse(rule.getId(), rule.getRuleKey(), rule.getOperator(),
-                    rule.getRuleValue(), rule.getRuleLevel().name(), rule.getSourceExcerpt(),
-                    rule.getLastVerifiedAt());
+            return new ProductRuleResponse(rule.getId(), rule.getProduct().getId(), rule.getRuleKey(),
+                    rule.getOperator(), rule.getRuleValue(), rule.getRuleLevel(), rule.isMandatory(),
+                    rule.getSourceDocument().getId(), rule.getSourceLocator(), rule.getValidFrom(),
+                    rule.getValidTo(), rule.getReviewStatus(), rule.getVerifiedAt(), rule.getDescription(),
+                    rule.getSourceExcerpt());
         }
     }
 
