@@ -197,6 +197,45 @@ RAG 색인과 답변은 `APPROVED` 상태이며 현재 유효한 공식 Source�
 - `/api/admin/**`, 상품 관리, Source·Rule 검수 화면은 기본적으로 관리자 인증이 필요합니다. 로그인 정보는 브라우저 탭의 `sessionStorage`에만 유지되며 탭을 닫으면 삭제됩니다.
 - 현재 MVP 관리자 인증은 HTTP Basic 방식입니다. 반드시 HTTPS 환경에서 사용하고, 실제 외부 배포 전에는 JWT의 HttpOnly 쿠키 또는 조직 SSO로 교체해야 합니다.
 
+#### MVP 이후 RAG 보완 백로그
+
+현재 RAG는 관리자가 등록한 공식 Source Snapshot을 대상으로 안전한 검색과 근거 설명을 제공하는 MVP입니다. 아래 항목은 MVP 화면과 핵심 사용자 흐름이 안정된 뒤, 최종 제출 전 우선순위에 따라 보완합니다.
+
+**P0 · 제출 전 필수 점검**
+
+- [ ] `RAG_INTERNAL_TOKEN`, 관리자 비밀번호 등 저장소 기본값을 충분히 긴 운영용 비밀값으로 교체하고 배포 환경의 Secret으로 관리
+- [ ] 등록된 Source URL, Snapshot, 상품 연결, 언어, 유효기간 및 검수 상태를 실제 공식 문서 기준으로 재검증
+- [ ] Source 만료·Rule 충돌·색인 누락 시 사용자에게 `확인 필요`가 표시되는 통합 시나리오 재검증
+- [ ] RAG 답변이 Eligibility Engine 결과를 변경하거나 가입을 보장하지 않는지 한국어·영어·베트남어 회귀 테스트
+- [ ] 운영 배포에서 `/internal/rag/**`가 외부 네트워크에 직접 노출되지 않는지 확인
+
+**P1 · 문서 수집과 전처리 자동화**
+
+- [ ] 공식 금융상품 웹페이지 수집기와 도메인별 HTML 본문 추출기 구현
+- [ ] PDF 상품설명서·약관 Text Extraction 구현 및 페이지 번호를 `source_locator`에 보존
+- [ ] 스캔 PDF·이미지를 위한 OCR 도입과 추출 품질 검수 절차 마련
+- [ ] HWP/HWPX 문서 지원 필요성을 조사하고 제출 대상 문서에 맞는 추출기 선택
+- [ ] `content_hash` 변경 감지, 정기 수집 스케줄러, 증분 재색인 및 삭제 문서 반영
+- [ ] robots.txt, 이용약관, 요청 속도 제한 및 수집 실패 재시도 정책 문서화
+
+**P1 · 검색 품질 고도화**
+
+- [ ] 현재 384차원 로컬 해시 임베딩을 한국어·영어·베트남어 금융문서용 다국어 Embedding 모델과 비교 평가
+- [ ] 상품 ID 필터에 Rule Key, 문서 언어, 유효기간 필터를 추가 적용할지 평가
+- [ ] Chunk 크기·Overlap·Top-K를 실제 질의 세트로 튜닝
+- [ ] 정답 Source 포함 여부, 다른 상품 혼입 여부, 검색 순위 등을 측정하는 Retrieval 평가 데이터셋 구축
+- [ ] 대량 문서 환경에서 ChromaDB 백업·복구·동시성·성능을 검증하고 필요하면 운영 Vector DB 검토
+
+**P2 · LLM 답변 및 운영 기능**
+
+- [ ] LLM 기반 자연어 답변을 연결할 경우 `LLM_API_KEY`, `LLM_MODEL`을 Secret으로 설정하고 현재 추출형 답변을 안전한 Fallback으로 유지
+- [ ] LLM 입력에는 검색된 공식 문서, 구조화 Rule 결과, Eligibility 상태만 전달하고 숫자·비자코드·금액 보존 테스트 추가
+- [ ] Prompt Injection, 근거 없는 조건 생성, Source 인용 오류를 검증하는 Guardrail/Evaluation 세트 구축
+- [ ] 관리자 화면에 색인 실행 이력, 성공·실패 문서, Chunk 수, 마지막 색인 시각 및 재시도 기능 추가
+- [ ] 색인·검색·답변의 지연시간, 오류율과 감사 로그를 개인정보 없이 관측할 수 있도록 구성
+
+외부 LLM이나 유료 Embedding 서비스를 연결하기 전까지 `LLM_API_KEY`와 `LLM_MODEL`은 비워 두어도 됩니다. 현재 MVP 실행에 필요한 별도 외부 API Key는 없으며, `RAG_INTERNAL_TOKEN`은 외부 API Key가 아니라 Backend와 AI Service 사이의 내부 인증용 비밀값입니다.
+
 ## 관리자 계정 설정
 
 `.env`에 다음 값을 설정하고 Backend 컨테이너를 다시 시작합니다.
