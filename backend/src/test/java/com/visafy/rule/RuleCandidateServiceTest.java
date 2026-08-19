@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.visafy.common.domain.ReviewStatus;
 import com.visafy.rule.RuleCandidateService.ReviewAction;
+import com.visafy.product.ProductRuleService;
 import com.visafy.source.SourceDocument;
 import com.visafy.source.SourceDocumentService;
 import com.visafy.source.SourceType;
@@ -24,6 +25,8 @@ class RuleCandidateServiceTest {
     private RuleCandidateRepository repository;
     @Mock
     private SourceDocumentService sourceService;
+    @Mock
+    private ProductRuleService productRuleService;
 
     @Test
     void marksConflictingApprovedRulesForReview() {
@@ -39,7 +42,7 @@ class RuleCandidateServiceTest {
                 eq("DEMO"), eq("RESIDENCY_MONTHS"), eq(ReviewStatus.APPROVED), isNull()))
                 .thenReturn(List.of(existing));
 
-        RuleCandidateService service = new RuleCandidateService(repository, sourceService);
+        RuleCandidateService service = new RuleCandidateService(repository, sourceService, productRuleService);
         service.review(2L, ReviewAction.APPROVE, null, null, null);
 
         assertThat(incoming.getReviewStatus()).isEqualTo(ReviewStatus.NEED_REVIEW);

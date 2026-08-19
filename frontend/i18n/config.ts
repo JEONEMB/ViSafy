@@ -8,7 +8,7 @@ export const localeOptions: Array<{ locale: Locale; flag: string; country: strin
 
 export const messages = {
   ko: {
-    nav: { profile: "프로필", admin: "Source · Rule 검수", health: "Health" },
+    nav: { products: "금융상품", profile: "프로필", productAdmin: "상품 관리", admin: "Source · Rule 검수", health: "Health" },
     landing: {
       eyebrow: "Visa-aware Financial Agent",
       title: "내 조건에 맞는 금융상품을, 근거와 함께",
@@ -39,7 +39,7 @@ export const messages = {
     },
   },
   en: {
-    nav: { profile: "Profile", admin: "Source · Rule review", health: "Health" },
+    nav: { products: "Products", profile: "Profile", productAdmin: "Product admin", admin: "Source · Rule review", health: "Health" },
     landing: {
       eyebrow: "Visa-aware Financial Agent",
       title: "Find financial products for your situation, with sources",
@@ -69,7 +69,7 @@ export const messages = {
     },
   },
   vi: {
-    nav: { profile: "Hồ sơ", admin: "Kiểm duyệt nguồn · quy tắc", health: "Trạng thái" },
+    nav: { products: "Sản phẩm", profile: "Hồ sơ", productAdmin: "Quản lý sản phẩm", admin: "Kiểm duyệt nguồn · quy tắc", health: "Trạng thái" },
     landing: {
       eyebrow: "Trợ lý tài chính theo loại visa",
       title: "Tìm sản phẩm tài chính phù hợp với điều kiện của bạn, kèm căn cứ",
@@ -99,4 +99,3 @@ export const messages = {
     },
   },
 } as const;
-

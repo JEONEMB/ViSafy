@@ -1,0 +1,90 @@
+package com.visafy.product;
+
+import com.visafy.common.domain.ReviewStatus;
+import com.visafy.rule.RuleLevel;
+import com.visafy.source.SourceDocument;
+import com.visafy.source.SourceDocumentService;
+import jakarta.transaction.Transactional;
+import java.time.LocalDate;
+import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+@Service
+public class FinancialProductService {
+    private final FinancialProductRepository repository;
+    private final ProductRuleRepository ruleRepository;
+    private final SourceDocumentService sourceService;
+
+    public FinancialProductService(FinancialProductRepository repository, ProductRuleRepository ruleRepository,
+                                   SourceDocumentService sourceService) {
+        this.repository = repository;
+        this.ruleRepository = ruleRepository;
+        this.sourceService = sourceService;
+    }
+
+    @Transactional
+    public FinancialProduct create(String productCode, String institution, String productName,
+                                   ProductType productType, FinancialPurpose financialPurpose,
+                                   String description, String targetSummary, Long sourceDocumentId,
+                                   boolean active, boolean foreignerTarget, LocalDate informationBaseDate,
+                                   String publicConditions, String additionalConditions,
+                                   String requiredDocuments, String applicationMethod) {
+        String normalizedCode = productCode.strip();
+        if (repository.existsByProductCode(normalizedCode)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Product code already exists");
+        }
+        SourceDocument source = sourceService.get(sourceDocumentId);
+        if (source.getReviewStatus() != ReviewStatus.APPROVED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A product must reference an APPROVED official source");
+        }
+        return repository.save(new FinancialProduct(normalizedCode, institution.strip(), productName.strip(),
+                productType, financialPurpose, description.strip(), targetSummary.strip(), source, active,
+                foreignerTarget, informationBaseDate, publicConditions.strip(), additionalConditions.strip(),
+                requiredDocuments.strip(), applicationMethod.strip()));
+    }
+
+    public List<ProductView> findPublic(FinancialPurpose purpose, ProductType type, String institution,
+                                        Boolean foreignerTarget, DiagnosisStatus diagnosisStatus) {
+        return repository.findByActiveTrueOrderByCreatedAtDesc().stream()
+                .map(this::toView)
+                .filter(view -> purpose == null || view.product().getFinancialPurpose() == purpose)
+                .filter(view -> type == null || view.product().getProductType() == type)
+                .filter(view -> institution == null || institution.isBlank()
+                        || view.product().getInstitution().toLowerCase().contains(institution.strip().toLowerCase()))
+                .filter(view -> foreignerTarget == null || view.product().isForeignerTarget() == foreignerTarget)
+                .filter(view -> diagnosisStatus == null || view.diagnosisStatus() == diagnosisStatus)
+                .toList();
+    }
+
+    public List<ProductView> findAdmin() {
+        return repository.findAllByOrderByCreatedAtDesc().stream().map(this::toView).toList();
+    }
+
+    public ProductView getPublic(Long id) {
+        FinancialProduct product = repository.findOneById(id)
+                .filter(FinancialProduct::isActive)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        return toView(product);
+    }
+
+    private ProductView toView(FinancialProduct product) {
+        List<ProductRule> rules = ruleRepository.findByProductCodeAndActiveTrueOrderByRuleKeyAsc(
+                product.getProductCode());
+        return new ProductView(product, rules, diagnose(rules));
+    }
+
+    static DiagnosisStatus diagnose(List<ProductRule> rules) {
+        if (rules.isEmpty()) return DiagnosisStatus.NOT_READY;
+        boolean hasVisaHardRule = rules.stream().anyMatch(rule ->
+                "VISA_TYPE".equalsIgnoreCase(rule.getRuleKey()) && rule.getRuleLevel() == RuleLevel.HARD);
+        boolean hasUncertainRule = rules.stream().anyMatch(rule -> rule.getRuleLevel() != RuleLevel.HARD);
+        return hasVisaHardRule && !hasUncertainRule ? DiagnosisStatus.READY : DiagnosisStatus.PARTIAL;
+    }
+
+    public record ProductView(FinancialProduct product, List<ProductRule> rules,
+                              DiagnosisStatus diagnosisStatus) {
+    }
+}

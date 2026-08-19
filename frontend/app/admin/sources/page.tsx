@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { createRuleCandidate, createSource, getRuleCandidates, getSources, reviewRule, reviewSource } from "@/services/data-pipeline";
+import { getAdminProducts } from "@/services/product";
 import type { ReviewStatus } from "@/types/data-pipeline";
 
 const badge: Record<ReviewStatus, string> = {
@@ -19,6 +20,7 @@ export default function SourceAdminPage() {
   const queryClient = useQueryClient();
   const sources = useQuery({ queryKey: ["sources"], queryFn: getSources });
   const rules = useQuery({ queryKey: ["rule-candidates"], queryFn: getRuleCandidates });
+  const products = useQuery({ queryKey: ["admin-products"], queryFn: getAdminProducts });
   const [message, setMessage] = useState("");
 
   const sourceMutation = useMutation({
@@ -93,7 +95,7 @@ export default function SourceAdminPage() {
         <form className="space-y-4 rounded-xl border bg-white p-6 shadow-sm" onSubmit={submitRule}>
           <h2 className="text-xl font-bold">2. Rule Candidate 등록</h2>
           <select className={inputClass} name="sourceDocumentId" required defaultValue=""><option value="" disabled>근거 Source 선택</option>{sources.data?.map((source) => <option key={source.id} value={source.id}>{source.institution} · {source.title}</option>)}</select>
-          <input className={inputClass} name="productCode" placeholder="상품 코드/이름 (예: KB-LOAN-01)" required />
+          <select className={inputClass} name="productCode" required defaultValue=""><option value="" disabled>등록 상품 선택</option>{products.data?.map((product) => <option key={product.id} value={product.productCode}>{product.institution} · {product.productName} ({product.productCode})</option>)}</select>
           <input className={inputClass} name="ruleKey" placeholder="Rule Key (예: VISA_TYPE)" required />
           <div className="grid grid-cols-2 gap-3"><select className={inputClass} name="operator"><option>IN</option><option>EQ</option><option>GTE</option><option>LTE</option></select><select className={inputClass} name="ruleLevel"><option>HARD</option><option>EXTERNAL_CHECK</option><option>UNKNOWN</option></select></div>
           <input className={inputClass} name="ruleValue" defaultValue='["F-2","F-5"]' required />

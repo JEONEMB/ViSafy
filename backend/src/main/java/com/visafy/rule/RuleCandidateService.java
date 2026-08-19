@@ -3,6 +3,7 @@ package com.visafy.rule;
 import com.visafy.common.domain.ReviewStatus;
 import com.visafy.source.SourceDocument;
 import com.visafy.source.SourceDocumentService;
+import com.visafy.product.ProductRuleService;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,10 +16,13 @@ import org.springframework.web.server.ResponseStatusException;
 public class RuleCandidateService {
     private final RuleCandidateRepository repository;
     private final SourceDocumentService sourceService;
+    private final ProductRuleService productRuleService;
 
-    public RuleCandidateService(RuleCandidateRepository repository, SourceDocumentService sourceService) {
+    public RuleCandidateService(RuleCandidateRepository repository, SourceDocumentService sourceService,
+                                ProductRuleService productRuleService) {
         this.repository = repository;
         this.sourceService = sourceService;
+        this.productRuleService = productRuleService;
     }
 
     @Transactional
@@ -45,6 +49,7 @@ public class RuleCandidateService {
         SourceDocument source = candidate.getSourceDocument();
         if (source.getValidTo() != null && source.getValidTo().isBefore(LocalDate.now())) {
             candidate.expire();
+            productRuleService.synchronize(candidate);
             return candidate;
         }
         if ((action == ReviewAction.APPROVE || action == ReviewAction.APPROVE_WITH_CHANGES
@@ -62,6 +67,7 @@ public class RuleCandidateService {
             case MARK_UNKNOWN -> candidate.markUnknown();
             case REJECT -> candidate.reject();
         }
+        productRuleService.synchronize(candidate);
         return candidate;
     }
 
@@ -74,7 +80,10 @@ public class RuleCandidateService {
                         || !existing.getOperator().equals(candidate.getOperator()));
         if (conflict) {
             candidate.requireReview();
-            approved.forEach(RuleCandidate::requireReview);
+            approved.forEach(existing -> {
+                existing.requireReview();
+                productRuleService.synchronize(existing);
+            });
         }
     }
 

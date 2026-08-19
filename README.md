@@ -14,6 +14,10 @@
 - FR-101 한국어·영어·베트남어 언어 선택과 브라우저 저장
 - FR-102 24시간 임시 금융 프로필
 - FR-103 지원 비자 선택(D-2, D-4, E-7, E-9, F-2, F-5, F-6)
+- FR-201 승인된 공식 Source 기반 금융상품 등록
+- FR-202 금융 목적·유형·은행·외국인 대상·진단 상태별 상품 조회
+- FR-203 상품 요약·조건·서류·신청방법·공식 출처 상세 조회
+- 승인된 Rule Candidate의 `PRODUCT_RULE` 동기화와 진단 준비 상태 관리
 
 ## 프로젝트 구성
 
@@ -37,6 +41,8 @@ docker compose up --build
 
 - 메인: http://localhost:3000
 - 임시 프로필: http://localhost:3000/profile
+- 금융상품 조회: http://localhost:3000/products
+- 금융상품 관리: http://localhost:3000/admin/products
 - Source · Rule 검수: http://localhost:3000/admin/sources
 - 시스템 상태: http://localhost:3000/health
 - Backend OpenAPI: http://localhost:8080/swagger-ui.html
@@ -74,7 +80,7 @@ docker compose down
 
 1. 상단 메뉴에서 **프로필**을 선택합니다.
 2. 한국어, English 또는 Tiếng Việt 중 사용할 언어가 맞는지 확인합니다.
-3. 국적, 생년월일, 지원 비자, 체류기간, 직업, 소득과 금융 목적을 입력합니다.
+3. 메인에서 선택한 국가가 국적으로 자동 저장됩니다. 생년월일, 지원 비자, 체류기간, 직업, 소득과 금융 목적을 입력합니다.
 4. **프로필 저장**을 누릅니다.
 5. 발급된 Profile ID와 Session ID를 확인합니다.
 
@@ -103,7 +109,24 @@ docker compose down
 
 같은 상품과 Rule Key에 서로 다른 공식 조건이 승인되면 시스템은 자동으로 하나를 선택하지 않고 관련 Rule을 모두 `NEED_REVIEW`로 변경합니다. 관리자가 문서 최신성과 우선순위를 확인해야 합니다.
 
-### 6. 현재 제한사항
+### 6. 금융상품 등록 및 조회
+
+1. 공식 Source를 등록하고 `APPROVED` 상태로 검수합니다.
+2. http://localhost:3000/admin/products 에서 상품 코드, 은행, 상품 유형, 금융 목적, 설명, 공식 Source, 공개조건, 추가 확인 조건, 필요서류와 신청방법을 등록합니다.
+3. http://localhost:3000/admin/sources 에서 등록 상품을 선택해 Rule Candidate를 작성하고 승인합니다.
+4. 승인된 후보만 `PRODUCT_RULE`로 동기화됩니다. 후보가 충돌·거절·만료 상태가 되면 해당 Runtime Rule은 비활성화됩니다.
+5. http://localhost:3000/products 에서 금융 목적, 상품 유형, 은행, 외국인 대상 여부, 진단 가능 여부로 상품을 조회합니다.
+6. 상품 카드를 선택해 상품 요약, 조건, 필요서류, 신청방법, 공식 출처와 정보 기준일을 확인합니다.
+
+진단 준비 상태는 다음 MVP 기준으로 계산합니다.
+
+- `NOT_READY`: 승인된 PRODUCT_RULE이 없음
+- `PARTIAL`: 승인 Rule은 있지만 핵심 `VISA_TYPE` HARD Rule이 없거나 `EXTERNAL_CHECK`/`UNKNOWN` Rule이 포함됨
+- `READY`: `VISA_TYPE` HARD Rule이 있고 불확실 Rule이 없음
+
+`READY`는 시스템이 검수된 조건으로 사전 진단할 준비가 됐다는 뜻이며 실제 가입 승인이나 가입 가능 확률을 의미하지 않습니다.
+
+### 7. 현재 제한사항
 
 - DATA-003의 LLM 자동 추출은 아직 연결하지 않았습니다. 현재는 관리자 화면에서 후보 구조를 직접 입력합니다.
 - Runtime Eligibility Engine은 다음 개발 단계입니다. 따라서 지금 승인한 Rule로 사용자 가입 가능 여부를 판정하지 않습니다.
@@ -124,6 +147,10 @@ POST /api/profiles
 GET  /api/profiles/{id}
 PUT  /api/profiles/{id}
 GET  /api/visas
+POST /api/admin/products
+GET  /api/admin/products
+GET  /api/products
+GET  /api/products/{id}
 ```
 
 ## 브랜치 정책
