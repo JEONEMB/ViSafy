@@ -44,6 +44,9 @@ public class SourceDocument {
     private LocalDate validFrom;
     private LocalDate validTo;
 
+    @Column(nullable = false, length = 10)
+    private String language;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
     private ReviewStatus reviewStatus;
@@ -61,7 +64,8 @@ public class SourceDocument {
     }
 
     public SourceDocument(String institution, SourceType sourceType, String title, String sourceUrl,
-                          String snapshotText, String contentHash, LocalDate validFrom, LocalDate validTo) {
+                          String snapshotText, String contentHash, LocalDate validFrom, LocalDate validTo,
+                          String language) {
         Instant now = Instant.now();
         this.institution = institution;
         this.sourceType = sourceType;
@@ -72,6 +76,7 @@ public class SourceDocument {
         this.retrievedAt = now;
         this.validFrom = validFrom;
         this.validTo = validTo;
+        this.language = language;
         this.reviewStatus = ReviewStatus.PENDING;
         this.lastVerifiedAt = now;
         this.createdAt = now;
@@ -110,6 +115,7 @@ public class SourceDocument {
     public Instant getRetrievedAt() { return retrievedAt; }
     public LocalDate getValidFrom() { return validFrom; }
     public LocalDate getValidTo() { return validTo; }
+    public String getLanguage() { return language; }
     public ReviewStatus getReviewStatus() { return reviewStatus; }
     public Instant getLastVerifiedAt() { return lastVerifiedAt; }
 }

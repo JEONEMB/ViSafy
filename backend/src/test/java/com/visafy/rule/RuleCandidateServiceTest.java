@@ -31,7 +31,7 @@ class RuleCandidateServiceTest {
     @Test
     void marksConflictingApprovedRulesForReview() {
         SourceDocument source = new SourceDocument("금융감독원", SourceType.PUBLIC_GUIDE, "공식 가이드",
-                "https://www.fss.or.kr/", "snapshot", "a".repeat(64), null, null);
+                "https://www.fss.or.kr/", "snapshot", "a".repeat(64), null, null, "ko");
         source.review(ReviewStatus.APPROVED);
         RuleCandidate existing = candidate(source, "6");
         existing.approve();

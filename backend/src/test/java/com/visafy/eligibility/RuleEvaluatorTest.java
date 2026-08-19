@@ -99,7 +99,7 @@ class RuleEvaluatorTest {
 
     private static SourceDocument approvedSource() {
         SourceDocument source = new SourceDocument("Bank", SourceType.PRODUCT_PAGE, "Official product",
-                "https://www.kbstar.com/", "snapshot", "a".repeat(64), null, null);
+                "https://www.kbstar.com/", "snapshot", "a".repeat(64), null, null, "ko");
         source.review(ReviewStatus.APPROVED);
         return source;
     }

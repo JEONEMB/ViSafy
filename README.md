@@ -168,7 +168,30 @@ Runtime `PRODUCT_RULE`은 `product_id`, `rule_key`, `operator`, `rule_value`, `r
 
 추천 결과 역시 저장하지 않고 요청할 때 현재 승인 Rule과 임시 프로필로 다시 계산합니다. 희망 금액 등 상품에 대응 필드가 아직 없는 선호조건은 정렬에 사용하지 않으며, 현재 MVP의 선호조건 일치는 `preferredBank`와 기관명 비교를 의미합니다.
 
-### 9. 현재 제한사항
+### 9. 공식 금융문서 RAG
+
+RAG 색인과 답변은 `APPROVED` 상태이며 현재 유효한 공식 Source만 사용합니다. 블로그·커뮤니티·광고성 제3자 URL은 AI Service의 도메인 허용 목록에서 거부됩니다.
+
+1. http://localhost:3000/admin/sources 에서 Source Snapshot과 문서 언어를 등록하고 승인합니다.
+2. 승인 Source를 금융상품 또는 PRODUCT_RULE에 연결합니다.
+3. 관리자 화면의 **RAG 전체 재색인**을 누릅니다.
+4. 임시 프로필을 저장한 뒤 상품 상세 화면의 **공식 금융문서에 질문하기**에서 Rule과 질문을 선택합니다.
+5. Eligibility 결과, 구조화된 Rule 결과, 공식 근거 문단과 Source 링크를 각각 확인합니다.
+
+전처리 순서는 `Snapshot → NFKC 정규화 및 Cleaning → 문단 기반 Chunking → Metadata → Embedding → ChromaDB`입니다. Metadata에는 `document_id`, `institution`, `document_name`, `source_type`, `source_url`, `retrieved_at`, `valid_from`, `valid_to`, `product_id`, `language`, `content_hash`, `rule_keys`를 저장합니다. 검색에는 질문과 Rule Key를 함께 사용하고 ChromaDB의 `product_id` 필터를 항상 적용하므로 다른 상품의 조건이 섞이지 않습니다.
+
+현재 MVP는 외부 API Key와 모델 다운로드 없이 재현 가능한 384차원 로컬 해시 임베딩을 사용합니다. 답변도 LLM의 자유 생성을 사용하지 않고 검색 문단과 Eligibility Engine의 확정 결과를 조합하는 추출형 방식입니다. 따라서 실행 환경과 관계없이 다음 가드레일을 지킵니다.
+
+- 공식 Source에 없는 조건을 생성하지 않음
+- Eligibility Engine 결과를 변경하지 않음
+- 공개되지 않은 조건은 은행 확인이 필요하다고 표시
+- 가입이나 승인을 보장하지 않음
+- 구조화 Rule 결과와 Source 근거를 분리
+- 검색 문서 안의 문장을 명령이 아니라 근거 데이터로만 처리
+
+관리자 재색인 API는 `POST /api/admin/rag/reindex`, 사용자 근거 질문 API는 `POST /api/rag/answer`입니다. Backend와 AI Service 사이의 `/internal/rag/**` API는 `RAG_INTERNAL_TOKEN`으로 보호되며 외부에 직접 공개하지 않습니다. 공식 도메인을 추가할 때는 `.env`의 `SOURCE_ALLOWED_DOMAINS`에 쉼표로 구분해 등록한 후 AI Service를 재시작하세요.
+
+### 10. 현재 제한사항
 
 - DATA-003의 LLM 자동 추출은 아직 연결하지 않았습니다. 현재는 관리자 화면에서 후보 구조를 직접 입력합니다.
 - `/api/admin/**`, 상품 관리, Source·Rule 검수 화면은 기본적으로 관리자 인증이 필요합니다. 로그인 정보는 브라우저 탭의 `sessionStorage`에만 유지되며 탭을 닫으면 삭제됩니다.
@@ -212,6 +235,8 @@ GET  /api/products
 GET  /api/products/{id}
 POST /api/eligibility/pre-check
 POST /api/recommendations
+POST /api/admin/rag/reindex
+POST /api/rag/answer
 ```
 
 ## 브랜치 정책

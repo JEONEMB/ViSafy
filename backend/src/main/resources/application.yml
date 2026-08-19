@@ -21,6 +21,7 @@ spring:
 
 ai-service:
   url: ${AI_SERVICE_URL:http://localhost:8000}
+  rag-internal-token: ${RAG_INTERNAL_TOKEN:local-rag-development-token}
 
 app:
   admin-jwt-secret: ${ADMIN_JWT_SECRET:local-development-only-secret}

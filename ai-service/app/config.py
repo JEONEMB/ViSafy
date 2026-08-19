@@ -11,11 +11,17 @@ class Settings(BaseSettings):
     llm_model: str = ""
     vector_db_path: str = "./chroma-data"
     allowed_source_domains: str = ""
+    rag_internal_token: str = "local-rag-development-token"
+    rag_collection_name: str = "official_financial_documents"
+    rag_chunk_size: int = 900
+    rag_chunk_overlap: int = 150
     cors_allowed_origins: str = "http://localhost:3000,http://localhost:8080"
 
     @property
     def source_domain_allowlist(self) -> list[str]:
-        return [item.strip() for item in self.allowed_source_domains.split(",") if item.strip()]
+        return [
+            item.strip().lower() for item in self.allowed_source_domains.split(",") if item.strip()
+        ]
 
     @property
     def cors_origin_list(self) -> list[str]:

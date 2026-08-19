@@ -14,6 +14,7 @@ export type SourceDocument = {
   retrievedAt: string;
   validFrom?: string;
   validTo?: string;
+  language: "ko" | "en" | "vi";
   reviewStatus: ReviewStatus;
   lastVerifiedAt: string;
 };

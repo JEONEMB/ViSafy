@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { precheckEligibility } from "@/services/eligibility";
 import { getProduct } from "@/services/product";
+import { RagQuestionPanel } from "@/components/rag-question-panel";
 import type { EligibilityResult, EligibilityRuleDetail, EligibilityStatus } from "@/types/eligibility";
 
 const copy = {
@@ -102,6 +103,7 @@ export default function ProductDetailPage() {
         </article>)}</div>
         {item.rules.length === 0 ? <p className="mt-3 text-sm text-slate-500">{text.noRules}</p> : null}
       </section>
+      <RagQuestionPanel productId={item.id} rules={item.rules} />
       <p className="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">{text.warning}</p>
     </main>
   );

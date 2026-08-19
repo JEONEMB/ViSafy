@@ -60,7 +60,7 @@ class FinancialProductServiceTest {
 
     private static SourceDocument approvedSource() {
         SourceDocument source = new SourceDocument("은행", SourceType.PRODUCT_PAGE, "공식 상품",
-                "https://www.kbstar.com/", "snapshot", "b".repeat(64), null, null);
+                "https://www.kbstar.com/", "snapshot", "b".repeat(64), null, null, "ko");
         source.review(ReviewStatus.APPROVED);
         return source;
     }

@@ -9,4 +9,6 @@ public interface ProductRuleRepository extends JpaRepository<ProductRule, Long> 
     Optional<ProductRule> findByRuleCandidateId(Long ruleCandidateId);
     @EntityGraph(attributePaths = {"product", "sourceDocument"})
     List<ProductRule> findByProductIdAndActiveTrueOrderByRuleKeyAsc(Long productId);
+    @EntityGraph(attributePaths = {"product", "sourceDocument"})
+    List<ProductRule> findAllByActiveTrue();
 }

@@ -29,7 +29,7 @@ public class SourceDocumentService {
 
     @Transactional
     public SourceDocument create(String institution, SourceType sourceType, String title, String sourceUrl,
-                                 String snapshotText, LocalDate validFrom, LocalDate validTo) {
+                                 String snapshotText, LocalDate validFrom, LocalDate validTo, String language) {
         validateOfficialUrl(sourceUrl);
         if (validFrom != null && validTo != null && validTo.isBefore(validFrom)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "validTo must not be before validFrom");
@@ -41,7 +41,7 @@ public class SourceDocumentService {
         }
         return repository.save(new SourceDocument(
                 institution.strip(), sourceType, title.strip(), sourceUrl.strip(), normalizedSnapshot,
-                hash, validFrom, validTo));
+                hash, validFrom, validTo, language));
     }
 
     @Transactional

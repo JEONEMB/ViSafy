@@ -98,7 +98,7 @@ class RecommendationServiceTest {
 
     private static FinancialProduct product(String name, String institution, FinancialPurpose purpose, String hashSeed) {
         SourceDocument source = new SourceDocument(institution, SourceType.PRODUCT_PAGE, name,
-                "https://www.kbstar.com/", "snapshot", hashSeed.repeat(64), null, null);
+                "https://www.kbstar.com/", "snapshot", hashSeed.repeat(64), null, null, "ko");
         source.review(ReviewStatus.APPROVED);
         return new FinancialProduct(name.toUpperCase().replace(' ', '_'), institution, name,
                 ProductType.CHECKING_ACCOUNT, purpose, "description", "target", source, true, true,

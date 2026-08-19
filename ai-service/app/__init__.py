@@ -1,2 +1,1 @@
 """ViSafy AI service."""
-

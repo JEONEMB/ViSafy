@@ -4,6 +4,7 @@ import com.visafy.common.domain.ReviewStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -31,7 +32,8 @@ public class SourceDocumentController {
     @ResponseStatus(HttpStatus.CREATED)
     public SourceResponse create(@Valid @RequestBody CreateSourceRequest request) {
         return SourceResponse.from(service.create(request.institution(), request.sourceType(), request.title(),
-                request.sourceUrl(), request.snapshotText(), request.validFrom(), request.validTo()));
+                request.sourceUrl(), request.snapshotText(), request.validFrom(), request.validTo(),
+                request.language()));
     }
 
     @GetMapping
@@ -54,20 +56,21 @@ public class SourceDocumentController {
             @NotBlank @URL(protocol = "https") String sourceUrl,
             @NotBlank String snapshotText,
             LocalDate validFrom,
-            LocalDate validTo
+            LocalDate validTo,
+            @NotBlank @Pattern(regexp = "ko|en|vi") String language
     ) {
     }
 
     public record SourceResponse(
             Long id, String institution, SourceType sourceType, String title, String sourceUrl,
             String snapshotText, String contentHash, Instant retrievedAt, LocalDate validFrom,
-            LocalDate validTo, ReviewStatus reviewStatus, Instant lastVerifiedAt
+            LocalDate validTo, String language, ReviewStatus reviewStatus, Instant lastVerifiedAt
     ) {
         static SourceResponse from(SourceDocument source) {
             return new SourceResponse(source.getId(), source.getInstitution(), source.getSourceType(),
                     source.getTitle(), source.getSourceUrl(), source.getSnapshotText(), source.getContentHash(),
-                    source.getRetrievedAt(), source.getValidFrom(), source.getValidTo(), source.getReviewStatus(),
-                    source.getLastVerifiedAt());
+                    source.getRetrievedAt(), source.getValidFrom(), source.getValidTo(), source.getLanguage(),
+                    source.getReviewStatus(), source.getLastVerifiedAt());
         }
     }
 }

@@ -27,7 +27,8 @@ services:
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_MODEL: ${LLM_MODEL:-}
       VECTOR_DB_PATH: /data/chroma
-      ALLOWED_SOURCE_DOMAINS: ${ALLOWED_SOURCE_DOMAINS:-}
+      ALLOWED_SOURCE_DOMAINS: ${SOURCE_ALLOWED_DOMAINS:-kbstar.com,shinhan.com,wooribank.com,hanabank.com,ibk.co.kr,nhbank.com,kdb.co.kr,sc.co.kr,citibank.co.kr,kakaobank.com,kbanknow.com,tossbank.com,fss.or.kr,fsc.go.kr,finlife.fss.or.kr}
+      RAG_INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN:-local-rag-development-token}
       CORS_ALLOWED_ORIGINS: http://localhost:3000,http://backend:8080
     ports:
       - "8000:8000"
@@ -47,6 +48,7 @@ services:
       DB_USERNAME: ${MYSQL_USER:-visafy}
       DB_PASSWORD: ${MYSQL_PASSWORD:-visafy}
       AI_SERVICE_URL: http://ai-service:8000
+      RAG_INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN:-local-rag-development-token}
       ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:-local-development-only-secret}
       ADMIN_SECURITY_ENABLED: ${ADMIN_SECURITY_ENABLED:-true}
       SPRING_SECURITY_USER_NAME: ${ADMIN_USERNAME:-admin}

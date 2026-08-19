@@ -29,7 +29,7 @@ class SourceDocumentServiceTest {
         when(repository.save(any(SourceDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
         SourceDocument source = service.create("금융감독원", SourceType.PUBLIC_GUIDE, "공식 가이드",
                 "https://www.fss.or.kr/guide", "  official snapshot  ",
-                LocalDate.of(2026, 1, 1), LocalDate.of(2027, 1, 1));
+                LocalDate.of(2026, 1, 1), LocalDate.of(2027, 1, 1), "ko");
 
         assertThat(source.getSnapshotText()).isEqualTo("official snapshot");
         assertThat(source.getContentHash()).hasSize(64);
@@ -38,7 +38,7 @@ class SourceDocumentServiceTest {
     @Test
     void rejectsThirdPartyDomains() {
         assertThatThrownBy(() -> service.create("블로그", SourceType.FAQ, "비공식 글",
-                "https://example.com/post", "snapshot", null, null))
+                "https://example.com/post", "snapshot", null, null, "ko"))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("official-domain allowlist");
     }
