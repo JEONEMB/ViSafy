@@ -202,8 +202,21 @@ RAG 색인과 답변은 `APPROVED` 상태이며 현재 유효한 공식 Source�
 
 문의문에 사용되는 비자코드, 비자 잔여 개월, 국내 체류 개월은 Backend가 날짜로 계산한 값만 사용합니다. AI 설명이 일시적으로 실패해도 Eligibility Engine 결과는 그대로 유지되며 최종 가입이나 승인을 보장하지 않습니다. 현재 설명과 문의문은 외부 LLM 없이 검증 가능한 다국어 템플릿으로 생성합니다.
 
-### 11. 현재 제한사항
+### 11. 필요서류 체크리스트와 신청절차
 
+1. http://localhost:3000/admin/products 의 **구조화 필요서류 등록**에서 상품과 승인 Source를 선택합니다.
+2. 서류를 `OFFICIAL_REQUIRED`, `CONDITIONAL`, `BANK_CONFIRMATION` 중 하나로 분류하고 공식 근거 위치를 입력합니다.
+3. 조건부 서류는 필요할 때 `EMPLOYMENT_TYPE`, `MONTHLY_INCOME` 같은 PRODUCT_RULE Key를 연결합니다.
+4. 같은 화면의 **공식 신청절차 등록**에서 STEP 순서, 제목, 설명, 신청 채널과 공식 Source를 입력합니다.
+5. 상품 상세에서 전체 체크리스트를 확인하고, 사전자격 진단 후 현재 프로필에 적용되는 조건부 서류만 남은 개인화 체크리스트를 확인합니다.
+
+공식 필수서류와 은행 확인 서류는 개인화 과정에서 분류가 변경되지 않습니다. 조건부 서류만 연결 Rule이 현재 프로필에 적용되는지에 따라 필터링되며, 시스템이나 AI가 조건부·은행 확인 서류를 공식 필수서류로 승격하지 않습니다. Source와 항목 자체의 유효기간이 모두 현재 유효하고 Source가 `APPROVED`인 경우에만 사용자에게 표시됩니다.
+
+신청절차는 저장된 순서대로 표시합니다. 별도 URL 입력 필드는 제공하지 않으며 모든 사용자 링크는 연결된 `SOURCE_DOCUMENT.source_url`에서만 반환합니다. 구조화된 서류나 절차가 없으면 임의 내용을 생성하지 않고 공식 Source 확인 안내를 표시합니다.
+
+### 12. 현재 제한사항
+
+- 구조화 필요서류와 신청절차는 MVP에서 등록·조회 중심으로 지원합니다. 수정·비활성화 관리 UI와 변경 이력은 후속 보완 항목입니다.
 - DATA-003의 LLM 자동 추출은 아직 연결하지 않았습니다. 현재는 관리자 화면에서 후보 구조를 직접 입력합니다.
 - `/api/admin/**`, 상품 관리, Source·Rule 검수 화면은 기본적으로 관리자 인증이 필요합니다. 로그인 정보는 브라우저 탭의 `sessionStorage`에만 유지되며 탭을 닫으면 삭제됩니다.
 - 현재 MVP 관리자 인증은 HTTP Basic 방식입니다. 반드시 HTTPS 환경에서 사용하고, 실제 외부 배포 전에는 JWT의 HttpOnly 쿠키 또는 조직 SSO로 교체해야 합니다.
@@ -288,6 +301,11 @@ POST /api/recommendations
 POST /api/admin/rag/reindex
 POST /api/rag/answer
 POST /api/ai/explanation
+GET  /api/products/{id}/guidance
+POST /api/products/{id}/guidance
+GET  /api/admin/products/{id}/guidance
+POST /api/admin/products/{id}/documents
+POST /api/admin/products/{id}/steps
 ```
 
 ## 브랜치 정책

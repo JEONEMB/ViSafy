@@ -1,0 +1,40 @@
+CREATE TABLE product_document_requirement (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    product_id BIGINT NOT NULL,
+    source_document_id BIGINT NOT NULL,
+    document_name VARCHAR(255) NOT NULL,
+    description TEXT NULL,
+    requirement_type VARCHAR(40) NOT NULL,
+    condition_rule_key VARCHAR(120) NULL,
+    source_locator VARCHAR(500) NOT NULL,
+    valid_from DATE NULL,
+    valid_to DATE NULL,
+    active BOOLEAN NOT NULL,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_product_document_product FOREIGN KEY (product_id) REFERENCES financial_product (id),
+    CONSTRAINT fk_product_document_source FOREIGN KEY (source_document_id) REFERENCES source_document (id),
+    INDEX idx_product_document_runtime (product_id, active, requirement_type, valid_from, valid_to)
+);
+
+CREATE TABLE product_application_step (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    product_id BIGINT NOT NULL,
+    source_document_id BIGINT NOT NULL,
+    step_order INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    channel VARCHAR(120) NULL,
+    source_locator VARCHAR(500) NOT NULL,
+    valid_from DATE NULL,
+    valid_to DATE NULL,
+    active BOOLEAN NOT NULL,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_product_step_product FOREIGN KEY (product_id) REFERENCES financial_product (id),
+    CONSTRAINT fk_product_step_source FOREIGN KEY (source_document_id) REFERENCES source_document (id),
+    UNIQUE KEY uk_product_step_order (product_id, step_order),
+    INDEX idx_product_step_runtime (product_id, active, valid_from, valid_to)
+);

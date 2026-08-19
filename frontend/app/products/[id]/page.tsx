@@ -6,8 +6,10 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { AiExplanationPanel } from "@/components/ai-explanation-panel";
+import { ProductGuidancePanel } from "@/components/product-guidance-panel";
 import { precheckEligibility } from "@/services/eligibility";
 import { getAiExplanation } from "@/services/ai-explanation";
+import { getPersonalizedGuidance, getProductGuidance } from "@/services/guidance";
 import { getProduct } from "@/services/product";
 import { RagQuestionPanel } from "@/components/rag-question-panel";
 import type { EligibilityResult, EligibilityRuleDetail, EligibilityStatus } from "@/types/eligibility";
@@ -37,12 +39,14 @@ export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
   const product = useQuery({ queryKey: ["product", id], queryFn: () => getProduct(id), enabled: Number.isFinite(id) });
+  const guidance = useQuery({ queryKey: ["product-guidance", id, locale], queryFn: () => getProductGuidance(id, locale), enabled: Number.isFinite(id) });
   const [missingProfile, setMissingProfile] = useState(false);
   const precheck = useMutation({
     mutationFn: precheckEligibility,
     onError: (error: Error) => setMissingProfile(/profile|expired/i.test(error.message)),
   });
   const explanation = useMutation({ mutationFn: getAiExplanation });
+  const personalizedGuidance = useMutation({ mutationFn: ({ productId, profileSessionId }: { productId: number; profileSessionId: string }) => getPersonalizedGuidance(productId, profileSessionId) });
 
   function runPrecheck() {
     const profileSessionId = localStorage.getItem("visafyProfileSessionId");
@@ -52,8 +56,12 @@ export default function ProductDetailPage() {
     }
     setMissingProfile(false);
     explanation.reset();
+    personalizedGuidance.reset();
     const request = { profileSessionId, productId: id };
-    precheck.mutate(request, { onSuccess: () => explanation.mutate(request) });
+    precheck.mutate(request, { onSuccess: () => {
+      explanation.mutate(request);
+      personalizedGuidance.mutate(request);
+    } });
   }
 
   if (product.isLoading) return <main className="mx-auto max-w-4xl px-6 py-12">Loading...</main>;
@@ -73,8 +81,6 @@ export default function ProductDetailPage() {
         <Info title={text.summary} body={item.targetSummary} />
         <Info title={text.public} body={item.publicConditions} />
         <Info title={text.additional} body={item.additionalConditions} />
-        <Info title={text.documents} body={item.requiredDocuments} />
-        <Info title={text.apply} body={item.applicationMethod} />
         <section className="rounded-2xl border bg-white p-6"><h2 className="font-bold">{text.source}</h2><a className="mt-3 block text-sm font-semibold text-blue-700 underline" href={item.sourceUrl} target="_blank" rel="noreferrer">{item.sourceTitle}</a><p className="mt-3 text-sm text-slate-500">{text.base}: {item.informationBaseDate}</p></section>
       </div>
 
@@ -91,6 +97,7 @@ export default function ProductDetailPage() {
       {precheck.isError && !missingProfile ? <p className="mt-5 rounded-2xl bg-rose-50 p-5 text-sm font-medium text-rose-800">{text.precheckError}</p> : null}
       {precheck.data ? <PrecheckResult result={precheck.data} text={text} /> : null}
       {precheck.data ? <AiExplanationPanel data={explanation.data} loading={explanation.isPending} error={explanation.isError} /> : null}
+      <ProductGuidancePanel guidance={personalizedGuidance.data ?? guidance.data} sourceUrl={item.sourceUrl} loading={guidance.isLoading} />
 
       <section className="mt-8 rounded-2xl border bg-white p-6">
         <h2 className="text-xl font-bold">{text.rules}</h2>
