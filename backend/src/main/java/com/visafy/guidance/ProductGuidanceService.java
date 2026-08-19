@@ -171,13 +171,14 @@ public class ProductGuidanceService {
 
     public record DocumentView(
             Long id, String documentName, String description, DocumentRequirementType requirementType,
-            String conditionRuleKey, String sourceTitle, String sourceUrl, String sourceLocator
+            String conditionRuleKey, String sourceTitle, String sourceUrl, String sourceLocator,
+            java.time.Instant verifiedAt
     ) {
         static DocumentView from(ProductDocumentRequirement document) {
             return new DocumentView(document.getId(), document.getDocumentName(), document.getDescription(),
                     document.getRequirementType(), document.getConditionRuleKey(),
                     document.getSourceDocument().getTitle(), document.getSourceDocument().getSourceUrl(),
-                    document.getSourceLocator());
+                    document.getSourceLocator(), document.getVerifiedAt());
         }
     }
 

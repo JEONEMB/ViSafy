@@ -40,6 +40,8 @@ public class ProductDocumentRequirement {
     private LocalDate validTo;
     @Column(nullable = false)
     private boolean active;
+    @Column(nullable = false)
+    private Instant verifiedAt;
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
     @Column(nullable = false)
@@ -62,6 +64,7 @@ public class ProductDocumentRequirement {
         this.validFrom = validFrom;
         this.validTo = validTo;
         this.active = active;
+        this.verifiedAt = sourceDocument.getLastVerifiedAt();
         this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
     }
@@ -84,4 +87,5 @@ public class ProductDocumentRequirement {
     public LocalDate getValidFrom() { return validFrom; }
     public LocalDate getValidTo() { return validTo; }
     public boolean isActive() { return active; }
+    public Instant getVerifiedAt() { return verifiedAt; }
 }

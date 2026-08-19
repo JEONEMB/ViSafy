@@ -40,6 +40,14 @@ public class TempProfileService {
         return profile;
     }
 
+    public TempProfile getOwned(Long id, String sessionId) {
+        TempProfile profile = getBySessionId(sessionId.strip());
+        if (!profile.getId().equals(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found");
+        }
+        return profile;
+    }
+
     private void validateNotExpired(TempProfile profile) {
         if (profile.getExpiresAt().isBefore(java.time.Instant.now())) {
             throw new ResponseStatusException(HttpStatus.GONE, "Temporary profile has expired");
@@ -50,6 +58,14 @@ public class TempProfileService {
     public TempProfile update(Long id, ProfileData data) {
         validate(data);
         TempProfile profile = get(id);
+        profile.update(data);
+        return profile;
+    }
+
+    @Transactional
+    public TempProfile updateOwned(Long id, String sessionId, ProfileData data) {
+        validate(data);
+        TempProfile profile = getOwned(id, sessionId);
         profile.update(data);
         return profile;
     }

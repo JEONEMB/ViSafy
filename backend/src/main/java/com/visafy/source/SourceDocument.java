@@ -35,6 +35,9 @@ public class SourceDocument {
     @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String snapshotText;
 
+    @Column(length = 1000)
+    private String snapshotPath;
+
     @Column(nullable = false, length = 64, unique = true)
     private String contentHash;
 
@@ -111,6 +114,7 @@ public class SourceDocument {
     public String getTitle() { return title; }
     public String getSourceUrl() { return sourceUrl; }
     public String getSnapshotText() { return snapshotText; }
+    public String getSnapshotPath() { return snapshotPath; }
     public String getContentHash() { return contentHash; }
     public Instant getRetrievedAt() { return retrievedAt; }
     public LocalDate getValidFrom() { return validFrom; }

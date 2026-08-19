@@ -50,6 +50,16 @@ public class RuleCandidateController {
                 request.ruleValue(), request.sourceExcerpt()));
     }
 
+    @PutMapping("/rules/{id}/approve")
+    public RuleCandidateResponse approve(@PathVariable Long id) {
+        return RuleCandidateResponse.from(service.review(id, ReviewAction.APPROVE, null, null, null));
+    }
+
+    @PutMapping("/rules/{id}/reject")
+    public RuleCandidateResponse reject(@PathVariable Long id) {
+        return RuleCandidateResponse.from(service.review(id, ReviewAction.REJECT, null, null, null));
+    }
+
     public record CreateRuleCandidateRequest(
             @NotNull Long sourceDocumentId,
             @NotBlank String productCode,

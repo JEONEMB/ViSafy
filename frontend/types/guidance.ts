@@ -9,6 +9,7 @@ export type ProductDocumentRequirement = {
   sourceTitle: string;
   sourceUrl: string;
   sourceLocator: string;
+  verifiedAt?: string;
 };
 
 export type ProductApplicationStep = {

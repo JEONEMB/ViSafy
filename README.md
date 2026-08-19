@@ -288,6 +288,26 @@ docker compose up --build --detach --wait backend frontend
 
 관리자 인증을 끄는 설정은 로컬 디버깅 이외에는 사용하지 마세요. 저장소의 예시 비밀번호를 외부 배포 환경에서 그대로 사용해서는 안 됩니다.
 
+## Backend API와 DB 결과 이력
+
+- `GET/PUT /api/profiles/{id}`는 숫자 ID만으로 접근할 수 없으며 생성 응답의 UUID를 `X-Profile-Session-Id` 헤더로 함께 보내야 합니다.
+- `POST /api/prechecks`는 `profileId` 대신 `profileSessionId`와 `productId`를 받습니다. 결과는 UUID `id`와 함께 반환되고 프로필 만료시각까지만 조회할 수 있습니다.
+- `GET /api/prechecks/{id}`도 `X-Profile-Session-Id` 헤더가 필요합니다. 다른 세션에는 존재 여부를 노출하지 않고 `404`를 반환합니다.
+- `POST /api/recommendations`의 기존 응답 본문은 유지합니다. 조회용 UUID는 `X-Recommendation-Id`와 `Location` 응답 헤더에서 확인합니다.
+- `GET /api/recommendations/{id}`는 동일한 Profile Session 헤더가 있을 때만 저장된 추천 Snapshot을 반환합니다.
+- `/api/ai/explain`은 기존 `/api/ai/explanation`의 정식 별칭이며, `/api/ai/inquiry-message`는 문의문만 구조화해 반환합니다.
+- `/api/ai/chat`은 P1 공식 문서 질문 전용입니다. 현재 상품·Rule에 대한 RAG Guardrail을 통과한 답변만 `CONSULTATION`에 프로필 만료시각까지 저장합니다.
+
+DB 초안과 현재 구현의 대응 관계는 다음과 같습니다.
+
+- `TEMP_PROFILE.employment_duration`은 단위를 명확히 한 `employment_duration_months`로 저장합니다.
+- `FINANCIAL_PRODUCT.official_url`은 중복 저장하지 않고 연결된 승인 `SOURCE_DOCUMENT.source_url`에서 반환합니다.
+- `diagnosis_readiness`는 `APPROVED`이고 현재 유효한 Rule 상태로 계산하므로 상품 테이블에 고정값으로 저장하지 않습니다.
+- `SOURCE_DOCUMENT.snapshot_text`에 MVP Snapshot 원문을 보존하고, 외부 Object Storage 도입을 위한 nullable `snapshot_path`도 제공합니다. Source와 상품은 상품·Rule 연결을 통해 다대일/다대다 사용을 허용합니다.
+- 초안의 `REQUIRED_DOCUMENT`는 기존 `product_document_requirement`로 구현합니다. `OFFICIAL_REQUIRED=REQUIRED`, `CONDITIONAL=CONDITIONAL`, `BANK_CONFIRMATION=NEED_CONFIRMATION`이며 `verified_at`을 보존합니다.
+- `PRECHECK_RESULT`에는 세션 원문 대신 SHA-256 해시, profile/product, 상태, 정보 기준일과 만료시각을 저장합니다. 조건별 결과는 `PRECHECK_RULE_RESULT`에 `PASS`, `FAIL`, `EXTERNAL_CHECK`, `UNKNOWN`, `NOT_APPLICABLE`로 정규화합니다.
+- 추천 Snapshot만 JSON으로 24시간 이내 보관하며, 프로필 원문은 복제하지 않습니다.
+
 ## 주요 API
 
 ```text
@@ -299,6 +319,8 @@ PUT  /api/admin/sources/{id}/review
 POST /api/admin/rule-candidates
 GET  /api/admin/rule-candidates
 PUT  /api/admin/rules/{id}/review
+PUT  /api/admin/rules/{id}/approve
+PUT  /api/admin/rules/{id}/reject
 POST /api/profiles
 GET  /api/profiles/{id}
 PUT  /api/profiles/{id}
@@ -309,10 +331,16 @@ GET  /api/admin/products
 GET  /api/products
 GET  /api/products/{id}
 POST /api/eligibility/pre-check
+POST /api/prechecks
+GET  /api/prechecks/{id}
 POST /api/recommendations
+GET  /api/recommendations/{id}
 POST /api/admin/rag/reindex
 POST /api/rag/answer
 POST /api/ai/explanation
+POST /api/ai/explain
+POST /api/ai/inquiry-message
+POST /api/ai/chat
 GET  /api/products/{id}/guidance
 POST /api/products/{id}/guidance
 GET  /api/admin/products/{id}/guidance

@@ -63,12 +63,12 @@ public class SourceDocumentController {
 
     public record SourceResponse(
             Long id, String institution, SourceType sourceType, String title, String sourceUrl,
-            String snapshotText, String contentHash, Instant retrievedAt, LocalDate validFrom,
+            String snapshotText, String snapshotPath, String contentHash, Instant retrievedAt, LocalDate validFrom,
             LocalDate validTo, String language, ReviewStatus reviewStatus, Instant lastVerifiedAt
     ) {
         static SourceResponse from(SourceDocument source) {
             return new SourceResponse(source.getId(), source.getInstitution(), source.getSourceType(),
-                    source.getTitle(), source.getSourceUrl(), source.getSnapshotText(), source.getContentHash(),
+                    source.getTitle(), source.getSourceUrl(), source.getSnapshotText(), source.getSnapshotPath(), source.getContentHash(),
                     source.getRetrievedAt(), source.getValidFrom(), source.getValidTo(), source.getLanguage(),
                     source.getReviewStatus(), source.getLastVerifiedAt());
         }

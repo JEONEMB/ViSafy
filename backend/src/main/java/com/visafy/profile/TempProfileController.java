@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @RestController
 @RequestMapping("/api/profiles")
@@ -36,13 +37,16 @@ public class TempProfileController {
     }
 
     @GetMapping("/{id}")
-    public ProfileResponse get(@PathVariable Long id) {
-        return ProfileResponse.from(service.get(id));
+    public ProfileResponse get(@PathVariable Long id,
+                               @RequestHeader("X-Profile-Session-Id") String sessionId) {
+        return ProfileResponse.from(service.getOwned(id, sessionId));
     }
 
     @PutMapping("/{id}")
-    public ProfileResponse update(@PathVariable Long id, @Valid @RequestBody ProfileRequest request) {
-        return ProfileResponse.from(service.update(id, request.toData()));
+    public ProfileResponse update(@PathVariable Long id,
+                                  @RequestHeader("X-Profile-Session-Id") String sessionId,
+                                  @Valid @RequestBody ProfileRequest request) {
+        return ProfileResponse.from(service.updateOwned(id, sessionId, request.toData()));
     }
 
     public record ProfileRequest(
