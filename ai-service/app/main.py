@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.explanation import router as explanation_router
 from app.api.health import router as health_router
 from app.api.rag import router as rag_router
 from app.config import settings
@@ -20,6 +21,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     application.include_router(health_router)
+    application.include_router(explanation_router)
     application.include_router(rag_router)
     return application
 

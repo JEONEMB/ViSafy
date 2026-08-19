@@ -191,7 +191,18 @@ RAG 색인과 답변은 `APPROVED` 상태이며 현재 유효한 공식 Source�
 
 관리자 재색인 API는 `POST /api/admin/rag/reindex`, 사용자 근거 질문 API는 `POST /api/rag/answer`입니다. Backend와 AI Service 사이의 `/internal/rag/**` API는 `RAG_INTERNAL_TOKEN`으로 보호되며 외부에 직접 공개하지 않습니다. 공식 도메인을 추가할 때는 `.env`의 `SOURCE_ALLOWED_DOMAINS`에 쉼표로 구분해 등록한 후 AI Service를 재시작하세요.
 
-### 10. 현재 제한사항
+### 10. AI 설명·쉬운 용어·은행 문의문
+
+상품 상세에서 사전자격 진단을 실행하면 `POST /api/ai/explanation`이 현재 임시 프로필과 상품으로 Eligibility Engine을 다시 실행합니다. Frontend가 상태나 숫자를 임의로 전달하지 않으며, Backend가 확정한 구조화 값만 AI Service에 전달합니다.
+
+- AI-201: `PUBLIC_CONDITIONS_MET`, `NEED_BANK_CONFIRMATION`, `PUBLIC_CONDITIONS_NOT_MET`, `INSUFFICIENT_INFORMATION` 상태를 가입 보장 표현 없이 자연어로 설명
+- AI-202: 프로필 언어에 따라 한국어·영어·베트남어로 설명하고 비자코드·기간·조건 수는 구조화 필드로 별도 반환
+- AI-203: `체류자격 (Status of Stay)`, `소득증빙 (Proof of Income)`, `보증보험증권`과 은행 내부 신용평가를 쉬운 말로 설명
+- AI-204: EXTERNAL_CHECK 또는 UNKNOWN이 있을 때 한국어 은행 문의문과 선택 언어 번역을 함께 생성하며 화면에서 복사 가능
+
+문의문에 사용되는 비자코드, 비자 잔여 개월, 국내 체류 개월은 Backend가 날짜로 계산한 값만 사용합니다. AI 설명이 일시적으로 실패해도 Eligibility Engine 결과는 그대로 유지되며 최종 가입이나 승인을 보장하지 않습니다. 현재 설명과 문의문은 외부 LLM 없이 검증 가능한 다국어 템플릿으로 생성합니다.
+
+### 11. 현재 제한사항
 
 - DATA-003의 LLM 자동 추출은 아직 연결하지 않았습니다. 현재는 관리자 화면에서 후보 구조를 직접 입력합니다.
 - `/api/admin/**`, 상품 관리, Source·Rule 검수 화면은 기본적으로 관리자 인증이 필요합니다. 로그인 정보는 브라우저 탭의 `sessionStorage`에만 유지되며 탭을 닫으면 삭제됩니다.
@@ -276,6 +287,7 @@ POST /api/eligibility/pre-check
 POST /api/recommendations
 POST /api/admin/rag/reindex
 POST /api/rag/answer
+POST /api/ai/explanation
 ```
 
 ## 브랜치 정책

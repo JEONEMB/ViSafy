@@ -5,7 +5,9 @@ import { useParams } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
+import { AiExplanationPanel } from "@/components/ai-explanation-panel";
 import { precheckEligibility } from "@/services/eligibility";
+import { getAiExplanation } from "@/services/ai-explanation";
 import { getProduct } from "@/services/product";
 import { RagQuestionPanel } from "@/components/rag-question-panel";
 import type { EligibilityResult, EligibilityRuleDetail, EligibilityStatus } from "@/types/eligibility";
@@ -40,6 +42,7 @@ export default function ProductDetailPage() {
     mutationFn: precheckEligibility,
     onError: (error: Error) => setMissingProfile(/profile|expired/i.test(error.message)),
   });
+  const explanation = useMutation({ mutationFn: getAiExplanation });
 
   function runPrecheck() {
     const profileSessionId = localStorage.getItem("visafyProfileSessionId");
@@ -48,7 +51,9 @@ export default function ProductDetailPage() {
       return;
     }
     setMissingProfile(false);
-    precheck.mutate({ profileSessionId, productId: id });
+    explanation.reset();
+    const request = { profileSessionId, productId: id };
+    precheck.mutate(request, { onSuccess: () => explanation.mutate(request) });
   }
 
   if (product.isLoading) return <main className="mx-auto max-w-4xl px-6 py-12">Loading...</main>;
@@ -85,6 +90,7 @@ export default function ProductDetailPage() {
       {missingProfile ? <section className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-950"><p className="font-medium">{text.noProfile}</p><Link className="rounded-lg bg-amber-900 px-4 py-2 text-sm font-bold text-white" href="/profile">{text.createProfile} →</Link></section> : null}
       {precheck.isError && !missingProfile ? <p className="mt-5 rounded-2xl bg-rose-50 p-5 text-sm font-medium text-rose-800">{text.precheckError}</p> : null}
       {precheck.data ? <PrecheckResult result={precheck.data} text={text} /> : null}
+      {precheck.data ? <AiExplanationPanel data={explanation.data} loading={explanation.isPending} error={explanation.isError} /> : null}
 
       <section className="mt-8 rounded-2xl border bg-white p-6">
         <h2 className="text-xl font-bold">{text.rules}</h2>
