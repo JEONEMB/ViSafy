@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { LocalizedDateField } from "@/components/localized-date-field";
 import { localeOptions } from "@/i18n/config";
@@ -32,7 +32,8 @@ export function ProfileWizard() {
   useEffect(() => setNationality(localStorage.getItem("visafyNationality") ?? fallbackNationality), [fallbackNationality]);
   const mutation = useMutation({ mutationFn: createProfile, onSuccess: (profile) => { setHasError(false); localStorage.setItem("visafyProfileId", String(profile.id)); localStorage.setItem("visafyProfileSessionId", profile.sessionId); router.push("/products"); }, onError: () => { setHasError(true); setStep(3); } });
 
-  function next() {
+  function next(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
     const controls = formRef.current?.querySelector<HTMLElement>(`[data-step="${step}"]`)?.querySelectorAll<HTMLInputElement | HTMLSelectElement>("input, select");
     for (const control of Array.from(controls ?? [])) { if (!control.checkValidity()) { control.reportValidity(); return; } }
     setStep((current) => Math.min(3, current + 1));

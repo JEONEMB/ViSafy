@@ -56,6 +56,35 @@ def test_retrieval_never_mixes_other_product_metadata(tmp_path) -> None:
     assert {result.document_id for result in results} == {1}
 
 
+def test105_expected_document_is_in_top_k_for_product_scoped_query(tmp_path) -> None:
+    settings = Settings(
+        vector_db_path=str(tmp_path),
+        rag_collection_name="test_top_k_documents",
+        allowed_source_domains="kbstar.com",
+        rag_chunk_size=250,
+        rag_chunk_overlap=40,
+    )
+    store = OfficialDocumentStore(settings)
+    store.sync(
+        [
+            document(101, 10, "E-9 visa remaining period three months official eligibility condition."),
+            document(102, 10, "Branch opening hours and customer service contact information."),
+            document(201, 20, "E-9 visa remaining period three months for another product."),
+        ]
+    )
+
+    results = store.retrieve(
+        10,
+        "VISA_REMAINING_MONTH",
+        "E-9 visa remaining period three months official eligibility condition",
+        2,
+    )
+
+    assert 101 in [result.document_id for result in results]
+    assert all(result.product_id == 10 for result in results)
+    assert 201 not in [result.document_id for result in results]
+
+
 def test_unapproved_domain_is_rejected_before_collection_reset(tmp_path) -> None:
     settings = Settings(
         vector_db_path=str(tmp_path),

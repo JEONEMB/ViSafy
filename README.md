@@ -226,7 +226,37 @@ RAG 색인과 답변은 `APPROVED` 상태이며 현재 유효한 공식 Source�
 
 AI Chat은 P1 보조기능입니다. 현재 상품과 선택 Rule에 연결된 공식 RAG 문서만 질문할 수 있으며 Eligibility 결과를 변경하지 않습니다. 일반적인 투자·대출 추천 Chat으로 사용하지 않습니다.
 
-### 13. 현재 제한사항
+### 13. TEST-101~111 자동화 검증
+
+| ID | 자동화 내용 | 위치 |
+| --- | --- | --- |
+| TEST-101 | D-2 허용 PASS, F-5 전용 FAIL | `RuleEvaluatorTest` |
+| TEST-102 | 기준일에서 완전히 경과한 달만 계산하여 2개월 30일 FAIL, 정확히 3개월 PASS | `RuleEvaluatorTest` |
+| TEST-103 | Context와 Rule 결과에 없는 Visa·소득·기간을 답변에 생성하지 않음 | `test_specification_22.py` |
+| TEST-104 | 한국어·영어·베트남어에서 상태·Visa·개월·금액·Source 이름 보존 | `test_specification_22.py` |
+| TEST-105 | 기대 문서의 Top-K 포함과 다른 상품 Source 배제 | `test_document_store.py` |
+| TEST-106 | 언어 선택부터 프로필·금융목적·진단·근거·서류·절차·문의문까지 Chromium E2E | `user-journey.spec.ts` |
+| TEST-107 | E-9의 비공개 세부조건을 FAIL이 아닌 `NEED_BANK_CONFIRMATION`으로 처리 | `EligibilityServiceTest` |
+| TEST-108 | 상품페이지 6개월/FAQ 12개월 충돌 시 자동 선택 없이 `SOURCE_CONFLICT` | `EligibilityServiceTest` |
+| TEST-109 | 승인 VISA Source가 없으면 `SOURCE_MISSING` UNKNOWN과 `INSUFFICIENT_INFORMATION` 반환 | `EligibilityServiceTest` |
+| TEST-110 | `3개월` 등 숫자 토큰이 번역 언어에 따라 변경되지 않음 | `test_specification_22.py` |
+| TEST-111 | 만료 Rule을 PASS에서 제외하고 `INSUFFICIENT_INFORMATION` 처리 | `EligibilityServiceTest` |
+
+Backend와 AI 테스트는 각각 다음 명령으로 실행합니다.
+
+```powershell
+docker run --rm -v "${PWD}\backend:/app" -w /app maven:3.9-eclipse-temurin-21 mvn test
+docker run --rm -e PYTHONPATH=/app -v "${PWD}\ai-service\app:/app/app:ro" -v "${PWD}\ai-service\tests:/tests:ro" visafy-ai-service sh -c "pip install --quiet pytest && pytest -p no:cacheprovider /tests"
+```
+
+브라우저 E2E는 실행 중인 `frontend`를 대상으로 공식 Playwright 이미지에서 실행할 수 있습니다.
+
+```powershell
+docker compose up --build --detach --wait
+docker run --rm --ipc=host -e E2E_BASE_URL=http://host.docker.internal:3000 -v "${PWD}\frontend:/source:ro" mcr.microsoft.com/playwright:v1.62.1-noble bash -lc "cp -R /source /work && cd /work && npm install --no-audit --no-fund && npm run test:e2e"
+```
+
+### 14. 현재 제한사항
 
 - 구조화 필요서류와 신청절차는 MVP에서 등록·조회 중심으로 지원합니다. 수정·비활성화 관리 UI와 변경 이력은 후속 보완 항목입니다.
 - DATA-003의 LLM 자동 추출은 아직 연결하지 않았습니다. 현재는 관리자 화면에서 후보 구조를 직접 입력합니다.

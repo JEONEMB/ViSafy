@@ -87,6 +87,9 @@ public class EligibilityService {
         if (!hasRequiredVisaRule) {
             addInsufficient(insufficient, null, "VISA_TYPE", InsufficientReasonCode.INSUFFICIENT_RULES,
                     true, null, product.getSourceDocument().getSourceUrl(), messages);
+            unknown.add(new RuleDetail(null, "VISA_TYPE", "SOURCE_MISSING",
+                    messages.sourceMissing("VISA_TYPE"), profile.getVisaType(), null,
+                    true, true, null, null, null));
         }
 
         for (ProductRule rule : rules) {

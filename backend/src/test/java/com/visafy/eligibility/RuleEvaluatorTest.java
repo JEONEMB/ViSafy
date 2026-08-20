@@ -82,6 +82,33 @@ class RuleEvaluatorTest {
                 .kind()).isEqualTo(RuleEvaluator.EvaluationKind.MISSING);
     }
 
+    @Test
+    void test101VisaRulePassesForAllowedD2AndFailsForF5Only() {
+        TempProfile d2Profile = profile(TODAY, "D-2", TODAY.plusYears(1));
+
+        assertThat(evaluator.evaluate(
+                rule("VISA_TYPE", RuleOperator.IN, "[\"D-2\"]", true), d2Profile, TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.PASS);
+        assertThat(evaluator.evaluate(
+                rule("VISA_TYPE", RuleOperator.IN, "[\"F-5\"]", true), d2Profile, TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.FAIL);
+    }
+
+    @Test
+    void test102VisaRemainingMonthUsesCompletelyElapsedCalendarMonths() {
+        // 기준일 2026-08-19에서 2026-11-18은 2개월 30일이므로 완전히 경과한 달은 2개월이다.
+        TempProfile twoMonthsThirtyDays = profile(TODAY, "D-2", TODAY.plusMonths(3).minusDays(1));
+        // 같은 일자인 2026-11-19에 도달해야 완전히 경과한 3개월로 계산한다.
+        TempProfile exactlyThreeMonths = profile(TODAY, "D-2", TODAY.plusMonths(3));
+        ProductRule minimumThreeMonths = rule(
+                "VISA_REMAINING_MONTH", RuleOperator.GTE, "3", true);
+
+        assertThat(evaluator.evaluate(minimumThreeMonths, twoMonthsThirtyDays, TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.FAIL);
+        assertThat(evaluator.evaluate(minimumThreeMonths, exactlyThreeMonths, TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.PASS);
+    }
+
     private ProductRule rule(String key, RuleOperator operator, String value, boolean mandatory) {
         RuleCandidate candidate = new RuleCandidate(source, "DEMO", key, operator, value, RuleLevel.HARD,
                 mandatory, "official excerpt", "p. 3", null, null, "condition", new BigDecimal("0.9000"));
@@ -90,8 +117,12 @@ class RuleEvaluatorTest {
     }
 
     private static TempProfile profile(LocalDate today) {
+        return profile(today, "F-5", today.plusMonths(3).minusDays(1));
+    }
+
+    private static TempProfile profile(LocalDate today, String visaType, LocalDate visaExpiry) {
         TempProfile profile = new TempProfile("session");
-        profile.update(new ProfileData("VN", today.minusYears(30), "F-5", today.plusMonths(3).minusDays(1),
+        profile.update(new ProfileData("VN", today.minusYears(30), visaType, visaExpiry,
                 today.minusMonths(15).plusDays(1), "Developer", "REGULAR", new BigDecimal("3000000"),
                 24, "ACCOUNT", "ko", null, null, null, null));
         return profile;

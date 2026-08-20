@@ -87,6 +87,17 @@ final class EligibilityMessages {
         };
     }
 
+    String sourceMissing(String key) {
+        return switch (language) {
+            case "en" -> "No approved official Source is registered for %s, so this condition remains UNKNOWN."
+                    .formatted(label(key));
+            case "vi" -> "Chưa đăng ký Source chính thức đã duyệt cho %s, vì vậy điều kiện này vẫn là UNKNOWN."
+                    .formatted(label(key));
+            default -> "%s 조건에 승인된 공식 Source가 등록되지 않아 UNKNOWN으로 유지합니다."
+                    .formatted(label(key));
+        };
+    }
+
     String disclaimer() {
         return switch (language) {
             case "en" -> "This is a preliminary check based only on public conditions, not final approval. The bank makes the final decision.";
