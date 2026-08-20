@@ -9,12 +9,15 @@ import com.visafy.rag.RagAiClient.SyncResponse;
 import com.visafy.source.SourceDocument;
 import com.visafy.source.SourceDocumentService;
 import java.time.LocalDate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
+import com.visafy.rule.RuleLevel;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,6 +26,8 @@ public class RagIndexService {
     private final FinancialProductRepository productRepository;
     private final ProductRuleRepository ruleRepository;
     private final RagAiClient aiClient;
+    private volatile Instant lastIndexedAt;
+    private volatile ReindexResult lastReindexResult;
 
     public RagIndexService(SourceDocumentService sourceService, FinancialProductRepository productRepository,
                            ProductRuleRepository ruleRepository, RagAiClient aiClient) {
@@ -63,8 +68,51 @@ public class RagIndexService {
                     source.getSnapshotText(), List.copyOf(ruleKeys))));
         }
         SyncResponse response = aiClient.sync(documents);
-        return new ReindexResult(response.indexedDocuments(), response.indexedChunks(), skippedUnlinked);
+        ReindexResult result = new ReindexResult(response.indexedDocuments(), response.indexedChunks(), skippedUnlinked);
+        lastIndexedAt = Instant.now();
+        lastReindexResult = result;
+        return result;
+    }
+
+    public QualityMetrics quality() {
+        LocalDate today = LocalDate.now();
+        List<SourceDocument> effectiveSources = sourceService.findAll().stream()
+                .filter(source -> source.isEffective(today)).toList();
+        List<FinancialProduct> products = productRepository.findByActiveTrueOrderByCreatedAtDesc();
+        List<ProductRule> rules = ruleRepository.findAllByActiveTrue().stream()
+                .filter(rule -> rule.getProduct().isActive() && rule.isEffective(today)).toList();
+
+        Set<Long> associatedSourceIds = new HashSet<>();
+        products.forEach(product -> associatedSourceIds.add(product.getSourceDocument().getId()));
+        rules.forEach(rule -> associatedSourceIds.add(rule.getSourceDocument().getId()));
+
+        long diagnosableProducts = products.stream().filter(product -> rules.stream()
+                .anyMatch(rule -> rule.getProduct().getId().equals(product.getId())
+                        && rule.getRuleLevel() == RuleLevel.HARD)).count();
+        long evidenceCompleteRules = rules.stream().filter(rule -> rule.getSourceExcerpt() != null
+                && !rule.getSourceExcerpt().isBlank() && rule.getSourceLocator() != null
+                && !rule.getSourceLocator().isBlank() && rule.getSourceDocument().getSourceUrl() != null).count();
+        double coverage = rules.isEmpty() ? 0.0 : Math.round(evidenceCompleteRules * 1000.0 / rules.size()) / 10.0;
+        long indexedEligibleSources = effectiveSources.stream()
+                .filter(source -> associatedSourceIds.contains(source.getId())).count();
+        long orphanedSources = effectiveSources.size() - indexedEligibleSources;
+
+        return new QualityMetrics(effectiveSources.size(), indexedEligibleSources, orphanedSources,
+                products.size(), diagnosableProducts, rules.size(), evidenceCompleteRules, coverage,
+                lastIndexedAt, lastReindexResult);
     }
 
     public record ReindexResult(int indexedDocuments, int indexedChunks, int skippedUnlinkedSources) {}
+    public record QualityMetrics(
+            long approvedEffectiveSources,
+            long indexedEligibleSources,
+            long orphanedApprovedSources,
+            long activeProducts,
+            long diagnosableProducts,
+            long activeEffectiveRules,
+            long evidenceCompleteRules,
+            double evidenceCoveragePercent,
+            Instant lastIndexedAt,
+            ReindexResult lastReindexResult
+    ) {}
 }

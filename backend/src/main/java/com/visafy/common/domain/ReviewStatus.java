@@ -5,5 +5,7 @@ public enum ReviewStatus {
     APPROVED,
     REJECTED,
     NEED_REVIEW,
-    EXPIRED
+    EXPIRED,
+    SUPERSEDED,
+    UNKNOWN
 }

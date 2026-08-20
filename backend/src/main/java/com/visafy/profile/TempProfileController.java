@@ -64,12 +64,16 @@ public class TempProfileController {
             Boolean hasBankAccount,
             String housingType,
             @DecimalMin("0.0") BigDecimal desiredAmount,
-            String preferredBank
+            String preferredBank,
+            ResidentStatus residentStatus,
+            Boolean hasExistingProductAccount,
+            @DecimalMin("0.0") BigDecimal desiredMonthlyAmount
     ) {
         ProfileData toData() {
             return new ProfileData(nationality.strip(), birthDate, visaType, visaExpiry, residencyStartDate,
                     occupation.strip(), employmentType.strip(), monthlyIncome, employmentDurationMonths,
-                    financialPurpose.strip(), language, hasBankAccount, housingType, desiredAmount, preferredBank);
+                    financialPurpose.strip(), language, hasBankAccount, housingType, desiredAmount, preferredBank,
+                    residentStatus, hasExistingProductAccount, desiredMonthlyAmount);
         }
     }
 
@@ -78,6 +82,7 @@ public class TempProfileController {
             LocalDate visaExpiry, LocalDate residencyStartDate, String occupation, String employmentType,
             BigDecimal monthlyIncome, Integer employmentDurationMonths, String financialPurpose, String language,
             Boolean hasBankAccount, String housingType, BigDecimal desiredAmount, String preferredBank,
+            ResidentStatus residentStatus, Boolean hasExistingProductAccount, BigDecimal desiredMonthlyAmount,
             Instant expiresAt
     ) {
         static ProfileResponse from(TempProfile profile) {
@@ -86,7 +91,8 @@ public class TempProfileController {
                     profile.getResidencyStartDate(), profile.getOccupation(), profile.getEmploymentType(),
                     profile.getMonthlyIncome(), profile.getEmploymentDurationMonths(), profile.getFinancialPurpose(),
                     profile.getLanguage(), profile.getHasBankAccount(), profile.getHousingType(),
-                    profile.getDesiredAmount(), profile.getPreferredBank(), profile.getExpiresAt());
+                    profile.getDesiredAmount(), profile.getPreferredBank(), profile.getResidentStatus(),
+                    profile.getHasExistingProductAccount(), profile.getDesiredMonthlyAmount(), profile.getExpiresAt());
         }
     }
 }

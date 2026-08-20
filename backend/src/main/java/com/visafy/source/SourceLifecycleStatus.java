@@ -5,5 +5,7 @@ public enum SourceLifecycleStatus {
     EXPIRED,
     NEED_REVIEW,
     PENDING,
-    REJECTED
+    REJECTED,
+    SUPERSEDED,
+    UNKNOWN
 }

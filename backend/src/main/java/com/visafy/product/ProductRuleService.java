@@ -19,7 +19,8 @@ public class ProductRuleService {
 
     @Transactional
     public void synchronize(RuleCandidate candidate) {
-        boolean approved = candidate.getReviewStatus() == ReviewStatus.APPROVED;
+        boolean approved = candidate.getReviewStatus() == ReviewStatus.APPROVED
+                && candidate.getRuleNature().affectsEligibility();
         var existing = repository.findByRuleCandidateId(candidate.getId());
         if (!approved) {
             existing.ifPresent(rule -> rule.synchronize(rule.getProduct(), candidate, false));

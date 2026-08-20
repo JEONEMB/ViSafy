@@ -26,7 +26,7 @@ ai-service:
 app:
   admin-jwt-secret: ${ADMIN_JWT_SECRET:local-development-only-secret}
   source:
-    allowed-domains: ${SOURCE_ALLOWED_DOMAINS:kbstar.com,shinhan.com,wooribank.com,hanabank.com,ibk.co.kr,nhbank.com,kdb.co.kr,sc.co.kr,citibank.co.kr,kakaobank.com,kbanknow.com,tossbank.com,fss.or.kr,fsc.go.kr,finlife.fss.or.kr}
+    allowed-domains: ${SOURCE_ALLOWED_DOMAINS:kbstar.com,kebhana.com,hanabank.com,shinhan.com,kbsec.com,wooribank.com,ibk.co.kr,nhbank.com,kdb.co.kr,sc.co.kr,citibank.co.kr,kakaobank.com,kbanknow.com,tossbank.com,fss.or.kr,fsc.go.kr,finlife.fss.or.kr}
   security:
     admin-enabled: ${ADMIN_SECURITY_ENABLED:true}
   cors:

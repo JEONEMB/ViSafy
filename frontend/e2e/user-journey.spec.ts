@@ -8,6 +8,7 @@ const rule = {
   operator: "IN",
   ruleValue: '["E-9"]',
   ruleLevel: "HARD",
+  ruleNature: "HARD_ELIGIBILITY",
   mandatory: true,
   sourceDocumentId: 12,
   sourceLocator: "Product guide p.3",
@@ -40,6 +41,8 @@ const product = {
   sourceUrl,
   updatedAt: "2026-08-20T00:00:00Z",
   rules: [rule],
+  requiredFields: ["visaType", "hasExistingProductAccount", "desiredMonthlyAmount"],
+  diagnosisReasonCode: "APPROVED_HARD_RULES_AVAILABLE",
 };
 const passedRule = {
   ruleId: 101,
@@ -75,6 +78,7 @@ const eligibility = {
   externalChecks: [externalRule],
   unknownRules: [],
   insufficientReasons: [],
+  requiredFields: ["visaType", "hasExistingProductAccount", "desiredMonthlyAmount"],
   disclaimer: "This is a preliminary check and not final approval.",
 };
 const guidance = {
@@ -92,7 +96,8 @@ async function json(route: Route, body: unknown, status = 200) {
   await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 }
 
-async function mockApi(page: Page, submittedProfile: { financialPurpose?: string }) {
+async function mockApi(page: Page, submittedProfile: { financialPurpose?: string; nationality?: string; language?: string; additionalUpdated?: boolean; hasExistingProductAccount?: boolean; desiredMonthlyAmount?: number }) {
+  let storedProfile: Record<string, unknown> | null = null;
   await page.route("http://localhost:8080/api/**", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -100,8 +105,21 @@ async function mockApi(page: Page, submittedProfile: { financialPurpose?: string
 
     if (path === "/api/visas") return json(route, [{ visaCode: "E-9", visaName: "Non-professional employment", visaCategory: "WORK", description: "E-9", active: true }]);
     if (path === "/api/profiles" && request.method() === "POST") {
-      submittedProfile.financialPurpose = request.postDataJSON().financialPurpose;
-      return json(route, { id: 1, sessionId: "e2e-profile-session", nationality: "US", visaType: "E-9", language: "en", expiresAt: "2026-08-21T00:00:00Z" }, 201);
+      const body = request.postDataJSON();
+      submittedProfile.financialPurpose = body.financialPurpose;
+      submittedProfile.nationality = body.nationality;
+      submittedProfile.language = body.language;
+      storedProfile = { ...body, id: 1, sessionId: "e2e-profile-session", expiresAt: "2026-08-21T00:00:00Z" };
+      return json(route, storedProfile, 201);
+    }
+    if (path === "/api/profiles/1" && request.method() === "GET") return json(route, storedProfile);
+    if (path === "/api/profiles/1" && request.method() === "PUT") {
+      const body = request.postDataJSON();
+      submittedProfile.additionalUpdated = true;
+      submittedProfile.hasExistingProductAccount = body.hasExistingProductAccount;
+      submittedProfile.desiredMonthlyAmount = body.desiredMonthlyAmount;
+      storedProfile = { ...body, id: 1, sessionId: "e2e-profile-session", expiresAt: "2026-08-21T00:00:00Z" };
+      return json(route, storedProfile);
     }
     if (path === "/api/recommendations") return json(route, { recommended: [], additionalInformationNeeded: [], excludedCount: 0 });
     if (path === "/api/products" && request.method() === "GET") return json(route, [product]);
@@ -137,10 +155,17 @@ test("TEST-106 foreign user completes the eligibility journey", async ({ page })
   await start.click();
   await expect(page).toHaveURL(/\/profile$/);
 
+  const nationality = page.locator('select[name="nationality"]');
+  await nationality.selectOption("VN");
+  await page.getByRole("button", { name: /Tiếng Việt/ }).click();
+  await expect(nationality).toHaveValue("VN");
+  await page.getByRole("button", { name: /English/ }).click();
+  await expect(nationality).toHaveValue("VN");
   await page.locator('input[name="birthDate"]').fill("1995-01-31");
   await page.getByRole("button", { name: /Next step/ }).click();
   await expect(page.locator('section[data-step="1"]')).toBeVisible();
   await page.locator('select[name="visaType"]').selectOption("E-9");
+  await page.locator('select[name="residentStatus"]').selectOption("RESIDENT");
   await page.locator('input[name="visaExpiry"]').fill("2027-12-31");
   await page.locator('input[name="residencyStartDate"]').fill("2024-01-01");
   await page.getByRole("button", { name: /Next step/ }).click();
@@ -160,10 +185,19 @@ test("TEST-106 foreign user completes the eligibility journey", async ({ page })
 
   await expect(page).toHaveURL(/\/products$/);
   expect(submittedProfile.financialPurpose).toBe("LOAN");
+  expect(submittedProfile.nationality).toBe("VN");
+  expect(submittedProfile.language).toBe("en");
   await page.getByRole("link", { name: /View details/ }).click();
   await expect(page).toHaveURL(/\/products\/10$/);
   await page.getByRole("button", { name: "Check eligibility with my profile", exact: true }).click();
+  await expect(page.getByText("More information is needed for this product")).toBeVisible();
+  await page.getByLabel("Do you already hold this product account?").selectOption("false");
+  await page.getByLabel("Desired monthly amount (KRW)").fill("200000");
+  await page.getByRole("button", { name: "Save and run pre-check" }).click();
   await expect(page.getByText("Bank confirmation needed")).toBeVisible();
+  expect(submittedProfile.additionalUpdated).toBe(true);
+  expect(submittedProfile.hasExistingProductAccount).toBe(false);
+  expect(submittedProfile.desiredMonthlyAmount).toBe(200000);
   await expect(page.getByText("Ask the bank with this message")).toBeVisible();
   await expect(page.getByText(/Please confirm whether I may apply with E-9 status/)).toBeVisible();
 
@@ -174,4 +208,21 @@ test("TEST-106 foreign user completes the eligibility journey", async ({ page })
   await expect(page.getByText("Passport", { exact: true })).toBeVisible();
   await page.getByRole("tab", { name: "Application steps" }).click();
   await expect(page.getByText("Check documents")).toBeVisible();
+});
+
+test("Season 2 mobile profile has no forced horizontal page overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockApi(page, {});
+  await page.goto("/");
+  await page.getByRole("button", { name: "English 선택" }).click();
+  await page.getByRole("button", { name: "Check my situation" }).click();
+  await expect(page).toHaveURL(/\/profile$/);
+  await page.locator('select[name="nationality"]').selectOption("VN");
+
+  const overflow = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    content: document.documentElement.scrollWidth,
+  }));
+  expect(overflow.content).toBeLessThanOrEqual(overflow.viewport);
+  await expect(page.getByRole("heading", { name: "Basic information", exact: true })).toBeVisible();
 });

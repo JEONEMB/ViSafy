@@ -38,12 +38,18 @@ public class RuleCandidate {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
     private RuleLevel ruleLevel;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    private RuleNature ruleNature;
     @Column(nullable = false)
     private boolean mandatory;
     @Column(nullable = false, columnDefinition = "TEXT")
     private String sourceExcerpt;
     @Column(nullable = false, length = 500)
     private String sourceLocator;
+    private Integer pageNumber;
+    @Column(length = 255)
+    private String sectionName;
     private LocalDate validFrom;
     private LocalDate validTo;
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -66,6 +72,15 @@ public class RuleCandidate {
                          String ruleValue, RuleLevel ruleLevel, boolean mandatory, String sourceExcerpt,
                          String sourceLocator, LocalDate validFrom, LocalDate validTo, String description,
                          BigDecimal confidence) {
+        this(sourceDocument, productCode, ruleKey, operator, ruleValue, ruleLevel,
+                RuleNature.defaultFor(ruleLevel), mandatory, sourceExcerpt, sourceLocator, null, null,
+                validFrom, validTo, description, confidence);
+    }
+
+    public RuleCandidate(SourceDocument sourceDocument, String productCode, String ruleKey, RuleOperator operator,
+                         String ruleValue, RuleLevel ruleLevel, RuleNature ruleNature, boolean mandatory,
+                         String sourceExcerpt, String sourceLocator, Integer pageNumber, String sectionName,
+                         LocalDate validFrom, LocalDate validTo, String description, BigDecimal confidence) {
         Instant now = Instant.now();
         this.sourceDocument = sourceDocument;
         this.productCode = productCode;
@@ -73,9 +88,12 @@ public class RuleCandidate {
         this.operator = operator;
         this.ruleValue = ruleValue;
         this.ruleLevel = ruleLevel;
+        this.ruleNature = ruleNature == null ? RuleNature.defaultFor(ruleLevel) : ruleNature;
         this.mandatory = mandatory;
         this.sourceExcerpt = sourceExcerpt;
         this.sourceLocator = sourceLocator;
+        this.pageNumber = pageNumber;
+        this.sectionName = sectionName;
         this.validFrom = validFrom;
         this.validTo = validTo;
         this.description = description;
@@ -94,7 +112,7 @@ public class RuleCandidate {
 
     public void approve() { reviewStatus = ReviewStatus.APPROVED; lastVerifiedAt = Instant.now(); updatedAt = lastVerifiedAt; }
     public void reject() { reviewStatus = ReviewStatus.REJECTED; lastVerifiedAt = Instant.now(); updatedAt = lastVerifiedAt; }
-    public void markUnknown() { ruleLevel = RuleLevel.UNKNOWN; approve(); }
+    public void markUnknown() { ruleLevel = RuleLevel.UNKNOWN; ruleNature = RuleNature.UNKNOWN_ELIGIBILITY; approve(); }
     public void requireReview() { reviewStatus = ReviewStatus.NEED_REVIEW; updatedAt = Instant.now(); }
     public void expire() { reviewStatus = ReviewStatus.EXPIRED; updatedAt = Instant.now(); }
 
@@ -105,9 +123,12 @@ public class RuleCandidate {
     public RuleOperator getOperator() { return operator; }
     public String getRuleValue() { return ruleValue; }
     public RuleLevel getRuleLevel() { return ruleLevel; }
+    public RuleNature getRuleNature() { return ruleNature; }
     public boolean isMandatory() { return mandatory; }
     public String getSourceExcerpt() { return sourceExcerpt; }
     public String getSourceLocator() { return sourceLocator; }
+    public Integer getPageNumber() { return pageNumber; }
+    public String getSectionName() { return sectionName; }
     public LocalDate getValidFrom() { return validFrom; }
     public LocalDate getValidTo() { return validTo; }
     public String getDescription() { return description; }

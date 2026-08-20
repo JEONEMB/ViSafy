@@ -30,6 +30,8 @@ public class PrecheckResultEntity {
     private LocalDate informationBaseDate;
     @Column(nullable = false, columnDefinition = "TEXT")
     private String disclaimer;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String requiredFields;
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
     @Column(nullable = false)
@@ -41,10 +43,11 @@ public class PrecheckResultEntity {
 
     PrecheckResultEntity(String id, String profileSessionHash, Long profileId, Long productId,
                          EligibilityStatus status, LocalDate informationBaseDate, String disclaimer,
-                         Instant createdAt, Instant expiresAt) {
+                         String requiredFields, Instant createdAt, Instant expiresAt) {
         this.id = id; this.profileSessionHash = profileSessionHash; this.profileId = profileId;
         this.productId = productId; this.status = status; this.informationBaseDate = informationBaseDate;
-        this.disclaimer = disclaimer; this.createdAt = createdAt; this.expiresAt = expiresAt;
+        this.disclaimer = disclaimer; this.requiredFields = requiredFields;
+        this.createdAt = createdAt; this.expiresAt = expiresAt;
     }
 
     void add(PrecheckRuleResultEntity result) { ruleResults.add(result); }
@@ -54,6 +57,7 @@ public class PrecheckResultEntity {
     public EligibilityStatus getStatus() { return status; }
     public LocalDate getInformationBaseDate() { return informationBaseDate; }
     public String getDisclaimer() { return disclaimer; }
+    public String getRequiredFields() { return requiredFields; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getExpiresAt() { return expiresAt; }
     public List<PrecheckRuleResultEntity> getRuleResults() { return List.copyOf(ruleResults); }

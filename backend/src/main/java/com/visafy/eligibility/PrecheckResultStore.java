@@ -26,7 +26,8 @@ public class PrecheckResultStore {
         Instant now = Instant.now(); Instant expiresAt = profile.getExpiresAt();
         PrecheckResultEntity entity = new PrecheckResultEntity(UUID.randomUUID().toString(),
                 ApiExecutionHistoryService.hashSessionId(sessionId), profile.getId(), result.productId(),
-                result.status(), informationBaseDate, result.disclaimer(), now, expiresAt);
+                result.status(), informationBaseDate, result.disclaimer(),
+                String.join(",", result.requiredFields()), now, expiresAt);
         add(entity, PrecheckRuleOutcome.PASS, result.passedRules());
         add(entity, PrecheckRuleOutcome.FAIL, result.failedRules());
         add(entity, PrecheckRuleOutcome.EXTERNAL_CHECK, result.externalChecks());
@@ -53,7 +54,10 @@ public class PrecheckResultStore {
     private StoredPrecheck toStored(PrecheckResultEntity entity) {
         List<RuleDetail> pass = new ArrayList<>(), fail = new ArrayList<>(), external = new ArrayList<>(), unknown = new ArrayList<>(), insufficient = new ArrayList<>();
         entity.getRuleResults().forEach(value -> { switch (value.getResult()) { case PASS -> pass.add(value.toDetail()); case FAIL -> fail.add(value.toDetail()); case EXTERNAL_CHECK -> external.add(value.toDetail()); case UNKNOWN -> unknown.add(value.toDetail()); case NOT_APPLICABLE -> insufficient.add(value.toDetail()); } });
-        EligibilityResult result = new EligibilityResult(entity.getStatus(), entity.getProductId(), pass, fail, external, unknown, insufficient, entity.getDisclaimer());
+        List<String> requiredFields = entity.getRequiredFields() == null || entity.getRequiredFields().isBlank()
+                ? List.of() : List.of(entity.getRequiredFields().split(","));
+        EligibilityResult result = new EligibilityResult(entity.getStatus(), entity.getProductId(), pass, fail,
+                external, unknown, insufficient, requiredFields, entity.getDisclaimer());
         return new StoredPrecheck(entity.getId(), result, entity.getInformationBaseDate(), entity.getCreatedAt(), entity.getExpiresAt());
     }
     public record StoredPrecheck(String id, EligibilityResult result, LocalDate informationBaseDate,

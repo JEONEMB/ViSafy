@@ -7,6 +7,7 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { LocalizedDateField } from "@/components/localized-date-field";
 import { localeOptions } from "@/i18n/config";
 import { amountInWords, digitsOnly, formatGroupedDigits } from "@/lib/amount-words";
+import { nationalityOptions } from "@/lib/nationalities";
 import { createProfile, getVisas } from "@/services/profile";
 
 const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2";
@@ -32,9 +33,8 @@ function LegacyProfilePage() {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const fallbackNationality = locale === "ko" ? "KR" : locale === "en" ? "US" : "VN";
     mutation.mutate({
-      nationality: localStorage.getItem("visafyNationality") ?? fallbackNationality,
+      nationality: data.get("nationality"),
       birthDate: data.get("birthDate"),
       visaType: data.get("visaType"),
       visaExpiry: data.get("visaExpiry"),
@@ -78,6 +78,12 @@ function LegacyProfilePage() {
       <form className="mt-8 space-y-8 rounded-xl border bg-white p-6 shadow-sm" onSubmit={submit}>
         <fieldset className="grid gap-4 sm:grid-cols-2">
           <legend className="mb-4 text-xl font-bold">{profileText.required}</legend>
+          <label className="text-sm font-medium">{profileText.nationality}
+            <select className={inputClass} name="nationality" required defaultValue="">
+              <option value="" disabled>—</option>
+              {nationalityOptions.map((option) => <option key={option.code} value={option.code}>{option.flag} {option.names[locale]} ({option.code})</option>)}
+            </select>
+          </label>
           <LocalizedDateField label={profileText.birthDate} name="birthDate" minYear={new Date().getFullYear() - 100} maxYear={new Date().getFullYear()} hint={profileText.dateInputHint} invalidMessage={profileText.invalidDate} />
           <label className="text-sm font-medium">{profileText.visaType}
             <select className={inputClass} name="visaType" required defaultValue="">

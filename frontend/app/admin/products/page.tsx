@@ -92,7 +92,7 @@ export default function ProductAdminPage() {
   const approvedSources = sources.data?.filter((source) => source.reviewStatus === "APPROVED") ?? [];
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-12">
+    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
       <p className="text-sm font-semibold text-blue-700">FR-201 · FR-501 · FR-601</p>
       <h1 className="mt-2 text-3xl font-bold">금융상품 관리</h1>
       <p className="mt-3 text-slate-600">상품 설명 정보만 등록합니다. 가입 조건은 Source · Rule 검수에서 PRODUCT_RULE로 관리됩니다.</p>
@@ -109,8 +109,8 @@ export default function ProductAdminPage() {
             {approvedSources.map((source) => <option key={source.id} value={source.id}>{source.institution} · {source.title}</option>)}
           </select>
         </label>
-        <label className="text-sm font-medium">상품 유형<select className={inputClass} name="productType"><option value="CHECKING_ACCOUNT">입출금 계좌</option><option value="SAVINGS">예·적금</option><option value="LOAN">대출</option><option value="CARD">카드</option></select></label>
-        <label className="text-sm font-medium">금융 목적<select className={inputClass} name="financialPurpose"><option value="ACCOUNT">계좌 개설</option><option value="SAVINGS">저축</option><option value="LOAN">대출</option><option value="CARD">카드 발급</option></select></label>
+        <label className="text-sm font-medium">상품 유형<select className={inputClass} name="productType"><option value="CHECKING_ACCOUNT">입출금 계좌</option><option value="SAVINGS">예·적금</option><option value="LOAN">대출</option><option value="CARD">카드</option><option value="INVESTMENT">투자</option></select></label>
+        <label className="text-sm font-medium">금융 목적<select className={inputClass} name="financialPurpose"><option value="ACCOUNT">계좌 개설</option><option value="SAVINGS">저축</option><option value="LOAN">대출</option><option value="CARD">카드 발급</option><option value="INVESTMENT">투자</option></select></label>
         <label className="text-sm font-medium sm:col-span-2">상품 설명<textarea className={`${inputClass} min-h-24`} name="description" required /></label>
         <label className="text-sm font-medium sm:col-span-2">대상 요약<textarea className={inputClass} name="targetSummary" placeholder="예: 국내 거주 외국인 직장인" required /></label>
         <label className="text-sm font-medium">정보 기준일<input className={inputClass} name="informationBaseDate" type="date" required /></label>
@@ -160,6 +160,7 @@ export default function ProductAdminPage() {
             <article className="rounded-xl border bg-white p-5" key={product.id}>
               <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-sm text-slate-500">{product.institution} · {product.productCode}</p><h3 className="text-lg font-bold">{product.productName}</h3></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${statusClass[product.diagnosisStatus]}`}>{product.diagnosisStatus}</span></div>
               <p className="mt-3 text-sm text-slate-600">승인 PRODUCT_RULE {product.rules.length}개 · 정보 기준일 {product.informationBaseDate} · 최종 수정 {new Date(product.updatedAt).toLocaleString()} · {product.active ? "공개" : "비공개"}</p>
+              <p className="mt-2 text-xs font-semibold text-slate-500">판정 근거 상태: {product.diagnosisReasonCode} · 필요한 프로필: {product.requiredFields.join(", ") || "공식 가입조건 Source 필요"}</p>
               <div className="mt-4 flex flex-wrap gap-2"><button className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-bold text-white" onClick={() => setEditing(product)}>수정</button>{product.active ? <button className="rounded-lg bg-slate-700 px-3 py-2 text-sm font-bold text-white disabled:opacity-50" disabled={deactivateMutation.isPending} onClick={() => { if (window.confirm(`${product.productName}을 비활성화할까요?`)) deactivateMutation.mutate(product.id); }}>비활성화</button> : null}</div>
               {editing?.id === product.id ? <AdminProductEditForm product={editing} sources={approvedSources} pending={updateMutation.isPending} onCancel={() => setEditing(null)} onSave={(body) => updateMutation.mutate({ id: product.id, body })} /> : null}
             </article>

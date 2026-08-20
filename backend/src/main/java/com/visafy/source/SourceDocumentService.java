@@ -58,13 +58,18 @@ public class SourceDocumentService {
 
     @Transactional
     public SourceDocument review(Long id, ReviewStatus status) {
+        return review(id, status, "system");
+    }
+
+    @Transactional
+    public SourceDocument review(Long id, ReviewStatus status, String reviewer) {
         SourceDocument source = get(id);
         source.expireIfNeeded(LocalDate.now());
         if (source.getReviewStatus() == ReviewStatus.EXPIRED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Expired sources cannot be reviewed");
         }
         try {
-            source.review(status);
+            source.review(status, reviewer);
         } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage());
         }
@@ -95,6 +100,8 @@ public class SourceDocumentService {
         }
         if (status == SourceLifecycleStatus.ACTIVE) source.review(ReviewStatus.APPROVED);
         else if (status == SourceLifecycleStatus.NEED_REVIEW) source.review(ReviewStatus.NEED_REVIEW);
+        else if (status == SourceLifecycleStatus.SUPERSEDED) source.review(ReviewStatus.SUPERSEDED);
+        else if (status == SourceLifecycleStatus.UNKNOWN) source.review(ReviewStatus.UNKNOWN);
         else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported source lifecycle status");
         return source;
     }

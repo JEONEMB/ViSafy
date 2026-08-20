@@ -1,7 +1,10 @@
-import { apiGet, apiPost } from "./api-client";
-import type { TempProfile, VisaMaster } from "@/types/profile";
+import { apiGet, apiPost, apiPut } from "./api-client";
+import type { TempProfile, TempProfileInput, VisaMaster } from "@/types/profile";
 
 export const getVisas = () => apiGet<VisaMaster[]>("/api/visas");
 export const createProfile = (body: Record<string, unknown>) =>
   apiPost<TempProfile, Record<string, unknown>>("/api/profiles", body);
-
+export const getProfile = (id: number, sessionId: string) =>
+  apiGet<TempProfile>(`/api/profiles/${id}`, { "X-Profile-Session-Id": sessionId });
+export const updateProfile = (id: number, sessionId: string, body: TempProfileInput) =>
+  apiPut<TempProfile, TempProfileInput>(`/api/profiles/${id}`, body, { "X-Profile-Session-Id": sessionId });

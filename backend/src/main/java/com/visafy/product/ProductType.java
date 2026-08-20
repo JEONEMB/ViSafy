@@ -4,5 +4,6 @@ public enum ProductType {
     CHECKING_ACCOUNT,
     SAVINGS,
     LOAN,
-    CARD
+    CARD,
+    INVESTMENT
 }

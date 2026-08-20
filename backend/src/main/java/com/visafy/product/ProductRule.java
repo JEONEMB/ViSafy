@@ -3,6 +3,7 @@ package com.visafy.product;
 import com.visafy.rule.RuleCandidate;
 import com.visafy.rule.RuleLevel;
 import com.visafy.rule.RuleOperator;
+import com.visafy.rule.RuleNature;
 import com.visafy.common.domain.ReviewStatus;
 import com.visafy.source.SourceDocument;
 import jakarta.persistence.Column;
@@ -44,12 +45,18 @@ public class ProductRule {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
     private RuleLevel ruleLevel;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    private RuleNature ruleNature;
     @Column(nullable = false)
     private boolean mandatory;
     @Lob @Column(nullable = false, columnDefinition = "TEXT")
     private String sourceExcerpt;
     @Column(nullable = false, length = 500)
     private String sourceLocator;
+    private Integer pageNumber;
+    @Column(length = 255)
+    private String sectionName;
     private LocalDate validFrom;
     private LocalDate validTo;
     @Enumerated(EnumType.STRING)
@@ -83,9 +90,12 @@ public class ProductRule {
         this.operator = candidate.getOperator();
         this.ruleValue = candidate.getRuleValue();
         this.ruleLevel = candidate.getRuleLevel();
+        this.ruleNature = candidate.getRuleNature();
         this.mandatory = candidate.isMandatory();
         this.sourceExcerpt = candidate.getSourceExcerpt();
         this.sourceLocator = candidate.getSourceLocator();
+        this.pageNumber = candidate.getPageNumber();
+        this.sectionName = candidate.getSectionName();
         this.validFrom = candidate.getValidFrom();
         this.validTo = candidate.getValidTo();
         this.reviewStatus = candidate.getReviewStatus();
@@ -102,9 +112,12 @@ public class ProductRule {
     public RuleOperator getOperator() { return operator; }
     public String getRuleValue() { return ruleValue; }
     public RuleLevel getRuleLevel() { return ruleLevel; }
+    public RuleNature getRuleNature() { return ruleNature; }
     public boolean isMandatory() { return mandatory; }
     public String getSourceExcerpt() { return sourceExcerpt; }
     public String getSourceLocator() { return sourceLocator; }
+    public Integer getPageNumber() { return pageNumber; }
+    public String getSectionName() { return sectionName; }
     public LocalDate getValidFrom() { return validFrom; }
     public LocalDate getValidTo() { return validTo; }
     public ReviewStatus getReviewStatus() { return reviewStatus; }

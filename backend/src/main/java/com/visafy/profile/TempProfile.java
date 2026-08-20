@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -45,6 +47,12 @@ public class TempProfile {
     private BigDecimal desiredAmount;
     @Column(length = 120)
     private String preferredBank;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 40)
+    private ResidentStatus residentStatus;
+    private Boolean hasExistingProductAccount;
+    @Column(precision = 15, scale = 2)
+    private BigDecimal desiredMonthlyAmount;
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
     @Column(nullable = false)
@@ -69,7 +77,11 @@ public class TempProfile {
         occupation = data.occupation(); employmentType = data.employmentType(); monthlyIncome = data.monthlyIncome();
         employmentDurationMonths = data.employmentDurationMonths(); financialPurpose = data.financialPurpose();
         language = data.language(); hasBankAccount = data.hasBankAccount(); housingType = data.housingType();
-        desiredAmount = data.desiredAmount(); preferredBank = data.preferredBank(); updatedAt = Instant.now();
+        desiredAmount = data.desiredAmount(); preferredBank = data.preferredBank();
+        residentStatus = data.residentStatus();
+        hasExistingProductAccount = data.hasExistingProductAccount();
+        desiredMonthlyAmount = data.desiredMonthlyAmount();
+        updatedAt = Instant.now();
         expiresAt = updatedAt.plusSeconds(24 * 60 * 60);
     }
 
@@ -77,7 +89,17 @@ public class TempProfile {
                               LocalDate residencyStartDate, String occupation, String employmentType,
                               BigDecimal monthlyIncome, Integer employmentDurationMonths, String financialPurpose,
                               String language, Boolean hasBankAccount, String housingType,
-                              BigDecimal desiredAmount, String preferredBank) {
+                              BigDecimal desiredAmount, String preferredBank, ResidentStatus residentStatus,
+                              Boolean hasExistingProductAccount, BigDecimal desiredMonthlyAmount) {
+        public ProfileData(String nationality, LocalDate birthDate, String visaType, LocalDate visaExpiry,
+                           LocalDate residencyStartDate, String occupation, String employmentType,
+                           BigDecimal monthlyIncome, Integer employmentDurationMonths, String financialPurpose,
+                           String language, Boolean hasBankAccount, String housingType,
+                           BigDecimal desiredAmount, String preferredBank) {
+            this(nationality, birthDate, visaType, visaExpiry, residencyStartDate, occupation, employmentType,
+                    monthlyIncome, employmentDurationMonths, financialPurpose, language, hasBankAccount,
+                    housingType, desiredAmount, preferredBank, null, null, null);
+        }
     }
 
     public Long getId() { return id; }
@@ -97,5 +119,8 @@ public class TempProfile {
     public String getHousingType() { return housingType; }
     public BigDecimal getDesiredAmount() { return desiredAmount; }
     public String getPreferredBank() { return preferredBank; }
+    public ResidentStatus getResidentStatus() { return residentStatus; }
+    public Boolean getHasExistingProductAccount() { return hasExistingProductAccount; }
+    public BigDecimal getDesiredMonthlyAmount() { return desiredMonthlyAmount; }
     public Instant getExpiresAt() { return expiresAt; }
 }

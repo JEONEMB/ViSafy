@@ -10,6 +10,7 @@ import com.visafy.product.ProductRule;
 import com.visafy.product.ProductType;
 import com.visafy.profile.TempProfile;
 import com.visafy.profile.TempProfile.ProfileData;
+import com.visafy.profile.ResidentStatus;
 import com.visafy.rule.RuleCandidate;
 import com.visafy.rule.RuleLevel;
 import com.visafy.rule.RuleOperator;
@@ -107,6 +108,57 @@ class RuleEvaluatorTest {
                 .isEqualTo(RuleEvaluator.EvaluationKind.FAIL);
         assertThat(evaluator.evaluate(minimumThreeMonths, exactlyThreeMonths, TODAY).kind())
                 .isEqualTo(RuleEvaluator.EvaluationKind.PASS);
+    }
+
+    @Test
+    void hanaEasySavingsUsesProductSpecificFields() {
+        TempProfile eligible = productProfile("VN", ResidentStatus.RESIDENT, false, "200000");
+        assertThat(evaluator.evaluate(rule("IS_FOREIGNER", RuleOperator.EQ, "true", true), eligible, TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.PASS);
+        assertThat(evaluator.evaluate(rule("RESIDENT_STATUS", RuleOperator.NE, "NON_RESIDENT", true), eligible, TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.PASS);
+        assertThat(evaluator.evaluate(rule("HAS_EXISTING_PRODUCT_ACCOUNT", RuleOperator.EQ, "false", true), eligible, TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.PASS);
+        assertThat(evaluator.evaluate(rule("DESIRED_MONTHLY_AMOUNT", RuleOperator.GTE, "10000", true), eligible, TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.PASS);
+        assertThat(evaluator.evaluate(rule("DESIRED_MONTHLY_AMOUNT", RuleOperator.LTE, "300000", true), eligible, TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.PASS);
+
+        assertThat(evaluator.evaluate(rule("RESIDENT_STATUS", RuleOperator.NE, "NON_RESIDENT", true),
+                productProfile("VN", ResidentStatus.NON_RESIDENT, false, "200000"), TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.FAIL);
+        assertThat(evaluator.evaluate(rule("HAS_EXISTING_PRODUCT_ACCOUNT", RuleOperator.EQ, "false", true),
+                productProfile("VN", ResidentStatus.RESIDENT, true, "200000"), TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.FAIL);
+        assertThat(evaluator.evaluate(rule("DESIRED_MONTHLY_AMOUNT", RuleOperator.LTE, "300000", true),
+                productProfile("VN", ResidentStatus.RESIDENT, false, "500000"), TODAY).kind())
+                .isEqualTo(RuleEvaluator.EvaluationKind.FAIL);
+    }
+
+    @Test
+    void kbForeignStockUsesResidencyAndNationalityWithoutVisaRule() {
+        ProductRule resident = rule("RESIDENT_STATUS", RuleOperator.EQ, "RESIDENT", true);
+        ProductRule allowedNationality = rule("NATIONALITY", RuleOperator.NOT_IN, "[\"US\",\"CA\"]", true);
+
+        TempProfile vietnameseResident = productProfile("VN", ResidentStatus.RESIDENT, false, null);
+        assertThat(evaluator.evaluate(resident, vietnameseResident, TODAY).kind()).isEqualTo(RuleEvaluator.EvaluationKind.PASS);
+        assertThat(evaluator.evaluate(allowedNationality, vietnameseResident, TODAY).kind()).isEqualTo(RuleEvaluator.EvaluationKind.PASS);
+        assertThat(evaluator.evaluate(allowedNationality,
+                productProfile("US", ResidentStatus.RESIDENT, false, null), TODAY).kind()).isEqualTo(RuleEvaluator.EvaluationKind.FAIL);
+        assertThat(evaluator.evaluate(allowedNationality,
+                productProfile("CA", ResidentStatus.RESIDENT, false, null), TODAY).kind()).isEqualTo(RuleEvaluator.EvaluationKind.FAIL);
+        assertThat(evaluator.evaluate(resident,
+                productProfile("VN", ResidentStatus.NON_RESIDENT, false, null), TODAY).kind()).isEqualTo(RuleEvaluator.EvaluationKind.FAIL);
+    }
+
+    private static TempProfile productProfile(String nationality, ResidentStatus residentStatus,
+                                              boolean hasExistingProductAccount, String desiredMonthlyAmount) {
+        TempProfile profile = new TempProfile("product-session");
+        profile.update(new ProfileData(nationality, TODAY.minusYears(30), "E-9", TODAY.plusYears(1),
+                TODAY.minusYears(2), "Worker", "REGULAR", new BigDecimal("2800000"), 10,
+                "INVESTMENT", "ko", null, null, null, null, residentStatus,
+                hasExistingProductAccount, desiredMonthlyAmount == null ? null : new BigDecimal(desiredMonthlyAmount)));
+        return profile;
     }
 
     private ProductRule rule(String key, RuleOperator operator, String value, boolean mandatory) {

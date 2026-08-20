@@ -21,8 +21,8 @@ class FinancialProductServiceTest {
     }
 
     @Test
-    void hardVisaRuleWithoutUncertainRulesIsReady() {
-        assertThat(FinancialProductService.diagnose(List.of(rule("VISA_TYPE", RuleLevel.HARD))))
+    void anyOfficialHardRuleWithoutUncertainRulesIsReady() {
+        assertThat(FinancialProductService.diagnose(List.of(rule("NATIONALITY", RuleLevel.HARD))))
                 .isEqualTo(DiagnosisStatus.READY);
     }
 

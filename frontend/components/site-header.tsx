@@ -12,7 +12,7 @@ export function SiteHeader() {
   if (pathname === "/") return null;
   return (
     <header className="border-b border-slate-200 bg-white">
-      <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-2 px-6 py-4 text-sm font-semibold">
+      <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 text-xs font-semibold sm:gap-x-5 sm:px-6 sm:py-4 sm:text-sm">
         <Link className="mr-auto text-lg text-teal-700" href="/">ViSafy</Link>
         <Link href="/products">{text.nav.products}</Link>
         <Link href="/profile">{text.nav.profile}</Link>

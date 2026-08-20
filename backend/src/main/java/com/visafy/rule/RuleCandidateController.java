@@ -36,7 +36,8 @@ public class RuleCandidateController {
     public RuleCandidateResponse create(@Valid @RequestBody CreateRuleCandidateRequest request) {
         return RuleCandidateResponse.from(service.create(request.sourceDocumentId(), request.productCode(),
                 request.ruleKey(), request.operator(), request.ruleValue(), request.ruleLevel(),
-                request.mandatory(), request.sourceExcerpt(), request.sourceLocator(), request.validFrom(),
+                request.ruleNature(), request.mandatory(), request.sourceExcerpt(), request.sourceLocator(),
+                request.pageNumber(), request.sectionName(), request.validFrom(),
                 request.validTo(), request.description(), request.confidence()));
     }
 
@@ -78,9 +79,12 @@ public class RuleCandidateController {
             @NotNull RuleOperator operator,
             @NotBlank String ruleValue,
             @NotNull RuleLevel ruleLevel,
+            RuleNature ruleNature,
             boolean mandatory,
             @NotBlank String sourceExcerpt,
             @NotBlank String sourceLocator,
+            @jakarta.validation.constraints.Min(1) Integer pageNumber,
+            String sectionName,
             LocalDate validFrom,
             LocalDate validTo,
             @NotBlank String description,
@@ -99,14 +103,16 @@ public class RuleCandidateController {
     public record RuleCandidateResponse(
             Long id, Long sourceDocumentId, String sourceTitle, String productCode, String ruleKey,
             RuleOperator operator, String ruleValue, RuleLevel ruleLevel, boolean mandatory,
-            String sourceExcerpt, String sourceLocator, LocalDate validFrom, LocalDate validTo,
+            RuleNature ruleNature, String sourceExcerpt, String sourceLocator, Integer pageNumber,
+            String sectionName, LocalDate validFrom, LocalDate validTo,
             String description, BigDecimal confidence, ReviewStatus reviewStatus, Instant lastVerifiedAt
     ) {
         static RuleCandidateResponse from(RuleCandidate candidate) {
             return new RuleCandidateResponse(candidate.getId(), candidate.getSourceDocument().getId(),
                     candidate.getSourceDocument().getTitle(), candidate.getProductCode(), candidate.getRuleKey(),
                     candidate.getOperator(), candidate.getRuleValue(), candidate.getRuleLevel(),
-                    candidate.isMandatory(), candidate.getSourceExcerpt(), candidate.getSourceLocator(),
+                    candidate.isMandatory(), candidate.getRuleNature(), candidate.getSourceExcerpt(),
+                    candidate.getSourceLocator(), candidate.getPageNumber(), candidate.getSectionName(),
                     candidate.getValidFrom(), candidate.getValidTo(), candidate.getDescription(),
                     candidate.getConfidence(), candidate.getReviewStatus(), candidate.getLastVerifiedAt());
         }

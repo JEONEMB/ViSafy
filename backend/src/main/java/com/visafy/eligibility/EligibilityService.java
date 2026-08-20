@@ -81,15 +81,10 @@ public class EligibilityService {
         List<ProductRule> rules = activeRules.stream().filter(rule -> rule.isEffective(today)).toList();
         inspectCandidateState(product, today, insufficient, messages);
 
-        boolean hasRequiredVisaRule = rules.stream().anyMatch(rule -> rule.isMandatory()
-                && rule.getRuleLevel() == RuleLevel.HARD
-                && "VISA_TYPE".equalsIgnoreCase(rule.getRuleKey()));
-        if (!hasRequiredVisaRule) {
-            addInsufficient(insufficient, null, "VISA_TYPE", InsufficientReasonCode.INSUFFICIENT_RULES,
+        boolean hasHardEligibilityRule = rules.stream().anyMatch(rule -> rule.getRuleLevel() == RuleLevel.HARD);
+        if (!hasHardEligibilityRule) {
+            addInsufficient(insufficient, null, "PRODUCT_RULES", InsufficientReasonCode.SOURCE_INSUFFICIENT,
                     true, null, product.getSourceDocument().getSourceUrl(), messages);
-            unknown.add(new RuleDetail(null, "VISA_TYPE", "SOURCE_MISSING",
-                    messages.sourceMissing("VISA_TYPE"), profile.getVisaType(), null,
-                    true, true, null, null, null));
         }
 
         for (ProductRule rule : rules) {
@@ -113,7 +108,7 @@ public class EligibilityService {
 
         return new EligibilityResult(status, productId, List.copyOf(passed), List.copyOf(failed),
                 List.copyOf(external), List.copyOf(unknown), List.copyOf(insufficient.values()),
-                messages.disclaimer());
+                RequiredProfileFields.from(rules), messages.disclaimer());
     }
 
     private void evaluateHardRule(ProductRule rule, TempProfile profile, LocalDate today,
@@ -159,9 +154,10 @@ public class EligibilityService {
         Map<String, List<RuleCandidate>> byKey = candidates.stream().collect(
                 java.util.stream.Collectors.groupingBy(candidate -> candidate.getRuleKey().toUpperCase(Locale.ROOT)));
         byKey.forEach((key, values) -> {
-            boolean conflict = values.size() > 1 && values.stream()
-                    .map(candidate -> candidate.getOperator() + "\u0000" + candidate.getRuleValue())
-                    .distinct().count() > 1;
+            boolean conflict = values.stream()
+                    .collect(java.util.stream.Collectors.groupingBy(RuleCandidate::getOperator))
+                    .values().stream().anyMatch(sameOperator -> sameOperator.stream()
+                            .map(RuleCandidate::getRuleValue).distinct().count() > 1);
             RuleCandidate sample = values.getFirst();
             addInsufficient(insufficient, null, key,
                     conflict ? InsufficientReasonCode.SOURCE_CONFLICT

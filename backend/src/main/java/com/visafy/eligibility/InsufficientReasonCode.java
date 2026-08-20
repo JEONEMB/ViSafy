@@ -1,6 +1,7 @@
 package com.visafy.eligibility;
 
 public enum InsufficientReasonCode {
+    SOURCE_INSUFFICIENT,
     MISSING_PROFILE_INPUT,
     SOURCE_CONFLICT,
     SOURCE_NOT_EFFECTIVE,

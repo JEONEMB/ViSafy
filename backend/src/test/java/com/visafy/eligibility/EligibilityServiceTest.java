@@ -135,24 +135,19 @@ class EligibilityServiceTest {
     }
 
     @Test
-    void missingRequiredVisaRuleReturnsInsufficientInformation() {
+    void productWithoutVisaRuleUsesItsActualHardRuleFields() {
         when(ruleRepository.findByProductIdAndActiveTrueOrderByRuleKeyAsc(1L)).thenReturn(List.of(
                 rule("AGE", RuleOperator.GTE, "19", RuleLevel.HARD, true)));
 
         EligibilityResult result = service.precheck("session", 1L);
 
-        assertThat(result.status()).isEqualTo(EligibilityStatus.INSUFFICIENT_INFORMATION);
-        assertThat(result.unknownRules()).singleElement().satisfies(detail -> {
-            assertThat(detail.key()).isEqualTo("VISA_TYPE");
-            assertThat(detail.messageCode()).isEqualTo("SOURCE_MISSING");
-            assertThat(detail.actualValue()).isEqualTo("F-5");
-        });
-        assertThat(result.insufficientReasons()).extracting(EligibilityResult.RuleDetail::messageCode)
-                .contains("INSUFFICIENT_RULES");
+        assertThat(result.status()).isEqualTo(EligibilityStatus.PUBLIC_CONDITIONS_MET);
+        assertThat(result.unknownRules()).isEmpty();
+        assertThat(result.requiredFields()).containsExactly("birthDate");
     }
 
     @Test
-    void expiredVisaRuleIsExcludedAndNeverTreatedAsPass() {
+    void expiredOnlyRuleIsExcludedAndProductBecomesSourceInsufficient() {
         ProductRule expiredVisaRule = rule("VISA_TYPE", RuleOperator.IN, "[\"F-5\"]",
                 RuleLevel.HARD, true, null, LocalDate.now().minusDays(1));
         when(ruleRepository.findByProductIdAndActiveTrueOrderByRuleKeyAsc(1L))
@@ -162,10 +157,8 @@ class EligibilityServiceTest {
 
         assertThat(result.status()).isEqualTo(EligibilityStatus.INSUFFICIENT_INFORMATION);
         assertThat(result.passedRules()).isEmpty();
-        assertThat(result.unknownRules()).extracting(EligibilityResult.RuleDetail::messageCode)
-                .contains("SOURCE_MISSING");
         assertThat(result.insufficientReasons()).extracting(EligibilityResult.RuleDetail::messageCode)
-                .contains("INSUFFICIENT_RULES");
+                .contains("SOURCE_INSUFFICIENT");
     }
 
     @Test

@@ -17,9 +17,9 @@ final class ProfileRuleValueResolver {
             case "VISA_TYPE" -> string(profile.getVisaType());
             case "VISA_REMAINING_MONTH" -> number(Math.max(0,
                     ChronoUnit.MONTHS.between(today, profile.getVisaExpiry())));
-            case "RESIDENCY_MONTH" -> number(Math.max(0,
+            case "RESIDENCY_MONTH", "RESIDENCE_MONTHS" -> number(Math.max(0,
                     ChronoUnit.MONTHS.between(profile.getResidencyStartDate(), today)));
-            case "DOMESTIC_INCOME_MONTH", "EMPLOYMENT_DURATION_MONTHS" ->
+            case "DOMESTIC_INCOME_MONTH", "EMPLOYMENT_DURATION_MONTHS", "EMPLOYMENT_MONTHS" ->
                     number(profile.getEmploymentDurationMonths());
             case "MONTHLY_INCOME" -> number(profile.getMonthlyIncome());
             case "NATIONALITY" -> string(profile.getNationality());
@@ -30,8 +30,20 @@ final class ProfileRuleValueResolver {
             case "HOUSING_TYPE" -> string(profile.getHousingType());
             case "DESIRED_AMOUNT" -> number(profile.getDesiredAmount());
             case "PREFERRED_BANK" -> string(profile.getPreferredBank());
+            case "IS_FOREIGNER" -> bool(isForeigner(profile.getNationality()));
+            case "RESIDENT_STATUS" -> string(profile.getResidentStatus() == null
+                    ? null : profile.getResidentStatus().name());
+            case "HAS_EXISTING_PRODUCT_ACCOUNT" -> bool(profile.getHasExistingProductAccount());
+            case "DESIRED_MONTHLY_AMOUNT" -> number(profile.getDesiredMonthlyAmount());
             default -> ResolvedValue.unsupported();
         };
+    }
+
+    private static boolean isForeigner(String nationality) {
+        if (nationality == null || nationality.isBlank()) return false;
+        String normalized = nationality.strip().toUpperCase(Locale.ROOT);
+        return !normalized.equals("KR") && !normalized.equals("KOR")
+                && !normalized.equals("SOUTH KOREA") && !normalized.equals("대한민국");
     }
 
     private static ResolvedValue string(String value) {

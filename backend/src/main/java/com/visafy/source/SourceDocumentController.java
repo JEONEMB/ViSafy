@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/admin/sources")
@@ -42,8 +43,10 @@ public class SourceDocumentController {
     }
 
     @PutMapping("/{id}/review")
-    public SourceResponse review(@PathVariable Long id, @Valid @RequestBody ReviewSourceRequest request) {
-        return SourceResponse.from(service.review(id, request.reviewStatus()));
+    public SourceResponse review(@PathVariable Long id, @Valid @RequestBody ReviewSourceRequest request,
+                                 Principal principal) {
+        return SourceResponse.from(service.review(id, request.reviewStatus(),
+                principal == null ? "system" : principal.getName()));
     }
 
     @PutMapping("/{id}")
@@ -82,13 +85,14 @@ public class SourceDocumentController {
             Long id, String institution, SourceType sourceType, String title, String sourceUrl,
             String snapshotText, String snapshotPath, String contentHash, Instant retrievedAt, LocalDate validFrom,
             LocalDate validTo, String language, ReviewStatus reviewStatus,
-            SourceLifecycleStatus lifecycleStatus, Instant lastVerifiedAt
+            SourceLifecycleStatus lifecycleStatus, Instant lastVerifiedAt, String reviewedBy
     ) {
         static SourceResponse from(SourceDocument source) {
             return new SourceResponse(source.getId(), source.getInstitution(), source.getSourceType(),
                     source.getTitle(), source.getSourceUrl(), source.getSnapshotText(), source.getSnapshotPath(), source.getContentHash(),
                     source.getRetrievedAt(), source.getValidFrom(), source.getValidTo(), source.getLanguage(),
-                    source.getReviewStatus(), source.getLifecycleStatus(), source.getLastVerifiedAt());
+                    source.getReviewStatus(), source.getLifecycleStatus(), source.getLastVerifiedAt(),
+                    source.getReviewedBy());
         }
     }
 }

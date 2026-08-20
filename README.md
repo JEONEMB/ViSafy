@@ -68,7 +68,7 @@ docker compose down
 ### 1. 언어 선택
 
 1. 메인 화면 http://localhost:3000 에 접속합니다.
-2. `🇰🇷 대한민국`, `🇺🇸 United States`, `🇻🇳 Việt Nam` 중 사용할 언어를 선택합니다.
+2. `한국어`, `English`, `Tiếng Việt` 중 표시 언어를 선택합니다. 국기는 언어 선택을 돕는 시각 요소이며 국적을 확정하지 않습니다.
 3. 선택하면 임시 프로필 화면으로 이동하며 공통 메뉴, 필드명, 선택지, 비자명, 예시와 안내문이 해당 언어로 바뀝니다.
 4. 선택한 언어는 브라우저에 저장되어 페이지를 다시 열어도 유지됩니다. 프로필 화면 상단의 언어 버튼으로 언제든 변경할 수 있습니다.
 
@@ -81,7 +81,7 @@ docker compose down
 
 1. 상단 메뉴에서 **프로필**을 선택합니다.
 2. 한국어, English 또는 Tiếng Việt 중 사용할 언어가 맞는지 확인합니다.
-3. 메인에서 선택한 국가가 국적으로 자동 저장됩니다. 생년월일, 지원 비자, 체류기간, 직업, 소득과 금융 목적을 입력합니다.
+3. Profile 첫 단계에서 실제 국적을 표시 언어와 별도로 선택합니다. 이후 생년월일, 지원 비자, 체류기간, 직업, 소득과 금융 목적을 입력합니다. 언어를 변경해도 국적은 변경되지 않습니다.
 4. 날짜는 선택한 언어에 맞는 `연도·월·일`, `Month·Day·Year`, `Ngày·Tháng·Năm` 순서와 표기로 입력합니다.
 5. **저장 후 금융상품 보기**를 누릅니다.
 6. 프로필이 저장되면 금융상품 목록으로 자동 이동합니다.
@@ -123,11 +123,13 @@ docker compose down
 
 진단 준비 상태는 다음 MVP 기준으로 계산합니다.
 
-- `NOT_READY`: 승인된 PRODUCT_RULE이 없음
-- `PARTIAL`: 승인 Rule은 있지만 핵심 `VISA_TYPE` HARD Rule이 없거나 필수 `EXTERNAL_CHECK`/`UNKNOWN` Rule이 포함됨
-- `READY`: `VISA_TYPE` HARD Rule이 있고 필수 불확실 Rule이 없음
+- `NOT_READY`: 상품 존재는 확인됐지만 평가할 승인 HARD Rule이 없어 공식 가입조건 Source가 부족함
+- `PARTIAL`: 승인 Rule은 있지만 필수 `EXTERNAL_CHECK`/`UNKNOWN` Rule이 포함되거나 HARD Rule이 부족함
+- `READY`: 상품에 적용되는 승인 HARD Rule이 하나 이상 있고 필수 불확실 Rule이 없음
 
 `READY`는 시스템이 검수된 조건으로 사전 진단할 준비가 됐다는 뜻이며 실제 가입 승인이나 가입 가능 확률을 의미하지 않습니다.
+모든 상품에 `VISA_TYPE`을 강제하지 않으며, 각 상품의 유효한 Rule에서 `requiredFields`를 동적으로 계산합니다.
+공통 Profile에는 언어·국적·생년월일·체류·직업·소득·금융목적을 저장하고, `hasExistingProductAccount`, `desiredMonthlyAmount`처럼 특정 상품에만 필요한 값은 상품 상세에서 실제 `requiredFields`에 포함될 때만 추가로 요청합니다. Boolean 항목은 미응답(`null`)과 아니요(`false`)를 구분하므로 미입력을 충족으로 잘못 판정하지 않습니다.
 
 #### Rule 모델
 
@@ -135,8 +137,45 @@ docker compose down
 - `EXTERNAL_CHECK`: 보증보험, 은행 내부 신용평가처럼 외부 심사가 필요한 조건
 - `UNKNOWN`: 조건의 존재는 확인했지만 공개된 세부 기준이 없는 조건
 - Operator: `EQ`, `NE`, `GT`, `GTE`, `LT`, `LTE`, `IN`, `NOT_IN`, `EXISTS`
+- Rule 성격: `HARD_ELIGIBILITY`, `UNKNOWN_ELIGIBILITY`, `EXTERNAL_CHECK`, `REQUIRED_DOCUMENT`, `IDENTIFICATION_METHOD`, `CHANNEL_REQUIREMENT`, `BENEFIT_CONDITION`, `INFORMATION`
 
-Runtime `PRODUCT_RULE`은 `product_id`, `rule_key`, `operator`, `rule_value`, `rule_level`, `mandatory`, `source_document_id`, `source_locator`, `valid_from`, `valid_to`, `review_status`, `verified_at`, `description`을 보관합니다. 승인된 후보만 동기화되며, 조회 시 `APPROVED` 상태이면서 현재 유효기간 안에 있는 Rule만 사용합니다. `source_excerpt`, 후보 연결값과 활성 상태는 추적·운영을 위한 내부 필드로 추가 보존합니다.
+Runtime `PRODUCT_RULE`은 `product_id`, `rule_key`, `operator`, `rule_value`, `rule_level`, `rule_nature`, `mandatory`, `source_document_id`, `source_locator`, `page_number`, `section_name`, `valid_from`, `valid_to`, `review_status`, `verified_at`, `description`을 보관합니다. 승인된 후보 중 가입자격·Unknown 가입조건·외부심사 성격만 Runtime에 활성화하며, 필요서류·본인확인·채널·혜택·일반정보 문장을 가입 가능/불가 판정에 사용하지 않습니다.
+
+#### Phase 0 공식 데이터 현황
+
+다음 데이터는 `V9__verified_official_product_dataset.sql`에서 공식 URL과 Snapshot을 함께 등록합니다.
+
+| 상품 | 상태 | 실행 Rule |
+| --- | --- | --- |
+| 하나은행 하나더이지 적금 | `READY` | 외국인, 비거주자 제외, 동일 상품 1인 1계좌, 월 1만~30만원 |
+| KB증권 외국인 해외주식 거래 | `READY` | 거주 외국인, 미국·캐나다 국적 제외 |
+| 신한은행 SOL글로벌 적금 | `READY` | 외국인, 비거주자 제외, 동일 상품 1인 1계좌, 월 1천~300만원 |
+| 하나은행 Easy-One Pack 통장 | `READY` | 외국인 개인 또는 외국인 개인사업자 |
+| 하나은행 Easy-One Pack 적금 | `READY` | 외국인, 동일 상품 1인 1계좌, 월 1만~1천만원 |
+| 하나은행 하나 외국인 EZ Loan | `PARTIAL` | E-7·E-9, 거주·급여소득 3개월 비교 가능; 거래외국환 지정·E-9 최초 입국 은행 확인 |
+| 신한은행 SOL글로벌 전세대출 | `NOT_READY` | 상품 존재 보조근거만 있어 Rule을 생성하지 않음 |
+
+기존 `DEMO-*`, `ADM-DEMO-*` 상품은 삭제하지 않고 비활성화합니다. Season 2 READY 상품별 Source·Snapshot·Rule·검수 기록·대표 Profile 패키지는 [`docs/season2-ready-product-packages.md`](docs/season2-ready-product-packages.md)에 기록합니다.
+
+#### Season 2 P0 Gate 현황
+
+| Gate | 현재 상태 | 남은 작업 |
+| --- | --- | --- |
+| READY 상품 5개 이상 | `5/5` | 하나·신한·KB증권, 적금·계좌·투자 유형 |
+| Source·Snapshot·Evidence·검수일 | 적용 | 추가 상품도 동일 기준으로 등록 |
+| 한국어·영어·베트남어 사용자 흐름 | 적용 | 제출 전 전체 문구 최종 검수 |
+| 언어와 국적 분리 | 적용 | 언어 변경 후 국적 불변 E2E 포함 |
+| Profile → 추천 → 근거 → 서류 → 절차 → 문의문 | 적용 | 고정 Demo 데이터 최종 확정 |
+| SOURCE_INSUFFICIENT Demo | 적용 | EZ Loan·SOL글로벌 전세대출 |
+| EXTERNAL_CHECK/UNKNOWN 실제 Demo | 미충족 | 직접 공식 문서가 있는 조건 확보 필요 |
+| 관리자/일반 사용자 접근 분리 | 적용 | 운영 관리자 비밀번호 교체 |
+| HTTPS 배포 URL | 미충족 | 제출용 Hosting과 Monitoring 구성 |
+
+공식 Source가 필요한 미충족 Gate는 테스트용 가상 Rule로 채우지 않습니다.
+
+P1 운영 보완으로 관리자 Source 화면에서 `ACTIVE`, `NEED_REVIEW`, `SUPERSEDED`, `UNKNOWN`, `EXPIRED`, `REJECTED` 상태를 직접 관리할 수 있습니다. 같은 화면의 RAG 품질 Dashboard는 진단 가능 상품 수, 유효 Source, 색인 대상 Source, 근거가 완성된 Rule과 Evidence 연결률을 표시합니다. 지표 API는 `GET /api/admin/rag/quality`입니다.
+
+중국어 UI와 READY 8개 확대는 중요 Gate인 READY 5개·Demo 4개·배포 URL 안정성을 먼저 충족한 뒤 진행합니다. 일본어·태국어, 자동 Rule 추출, Source 변경 자동감지, AI Chat 고도화는 제출 이후 범위로 유지합니다.
 
 ### 7. 사전자격 진단
 
@@ -152,9 +191,9 @@ Runtime `PRODUCT_RULE`은 `product_id`, `rule_key`, `operator`, `rule_value`, `r
 - `NEED_BANK_CONFIRMATION`: FAIL과 정보부족은 없지만 EXTERNAL_CHECK 또는 필수 UNKNOWN이 있음
 - `PUBLIC_CONDITIONS_MET`: 적용 가능한 HARD Rule이 모두 통과하고 중요한 불확실 조건이 없음
 
-지원 Rule Key는 `AGE`, `VISA_TYPE`, `VISA_REMAINING_MONTH`, `RESIDENCY_MONTH`, `DOMESTIC_INCOME_MONTH`, `EMPLOYMENT_DURATION_MONTHS`, `MONTHLY_INCOME`, `NATIONALITY`, `OCCUPATION`, `EMPLOYMENT_TYPE`, `FINANCIAL_PURPOSE`, `HAS_BANK_ACCOUNT`, `HOUSING_TYPE`, `DESIRED_AMOUNT`, `PREFERRED_BANK`입니다. `IN`과 `NOT_IN` 값은 반드시 `["F-2","F-5"]`처럼 JSON 배열로 입력합니다. 숫자 비교 값은 `19`, 문자열 동등 비교 값은 `F-5`, 존재 여부는 `EXISTS`를 사용합니다.
+지원 Rule Key는 `AGE`, `VISA_TYPE`, `VISA_REMAINING_MONTH`, `RESIDENCY_MONTH`, `RESIDENCE_MONTHS`, `DOMESTIC_INCOME_MONTH`, `EMPLOYMENT_DURATION_MONTHS`, `EMPLOYMENT_MONTHS`, `MONTHLY_INCOME`, `NATIONALITY`, `IS_FOREIGNER`, `RESIDENT_STATUS`, `HAS_EXISTING_PRODUCT_ACCOUNT`, `DESIRED_MONTHLY_AMOUNT`, `OCCUPATION`, `EMPLOYMENT_TYPE`, `FINANCIAL_PURPOSE`, `HAS_BANK_ACCOUNT`, `HOUSING_TYPE`, `DESIRED_AMOUNT`, `PREFERRED_BANK`입니다. `IN`과 `NOT_IN` 값은 반드시 `["F-2","F-5"]`처럼 JSON 배열로 입력합니다. 범위는 동일 Rule Key에 `GTE`와 `LTE`를 각각 등록합니다.
 
-진단 결과는 DB에 저장하지 않습니다. 모든 결과는 공개조건을 기반으로 한 사전 확인이며 최종 가입승인이 아닙니다.
+진단 결과 Snapshot은 임시 프로필 만료시각까지만 DB에 저장되며 `requiredFields`도 함께 보존됩니다. 모든 결과는 공개조건을 기반으로 한 사전 확인이며 최종 가입승인이 아닙니다.
 
 ### 8. 상품 추천 및 정렬
 
@@ -216,13 +255,14 @@ RAG 색인과 답변은 `APPROVED` 상태이며 현재 유효한 공식 Source�
 
 ### 12. Frontend 사용자 흐름
 
-1. http://localhost:3000 에서 언어와 국적을 선택하고 **내 조건 확인하기**를 시작합니다.
+1. http://localhost:3000 에서 표시 언어를 선택하고 **내 조건 확인하기**를 누른 뒤 Profile에서 실제 국적을 별도로 선택합니다.
 2. 프로필은 `기본정보 → 체류정보 → 직업·소득 → 금융목적 → 사전진단` Wizard로 입력합니다. 각 `?` 도움말에서 입력 이유를 확인할 수 있습니다.
 3. 날짜는 앞선 UX 결정에 따라 Picker 대신 키보드 `YYYY-MM-DD` 입력을 사용합니다. 월 소득은 원화 기준이며 세 자리 구분과 선택 언어의 금액 읽기를 함께 표시합니다.
 4. 상품 화면은 추천 API가 실제 처리 중인 사용자 조건·검수 Rule 비교·추가 확인 탐지만 진행 상태로 표시합니다. 공식 근거 단계는 상품 상세에서 근거 요청이 시작된 경우에만 활성화됩니다.
 5. 결과 Card에서 공개조건 충족 수, 추가 확인 수, 조건별 설명과 정보 기준일을 확인하고 판단 근거·필요서류·은행 문의 화면으로 이동합니다.
-6. 상품 상세는 **사전진단 / 판단 근거 / 필요서류 / 신청 절차 / 공식 정보** 탭으로 구성됩니다. 상태는 초록·노랑·빨강·회색 계열로 구분하고 모든 진단에 최종 승인이 아니라는 문구를 표시합니다.
-7. 판단 근거에는 Rule의 공식 Source, 근거 위치와 검증일을 표시합니다. 은행 문의문은 한국어와 선택 언어를 각각 복사할 수 있습니다.
+6. 상품 상세는 **사전진단 / 판단 근거 / 필요서류 / 신청 절차 / 공식 정보** 탭으로 구성됩니다. `requiredFields` 중 임시 프로필에 없는 값이 있으면 해당 상품에 필요한 추가 질문만 표시하며, 저장 후 진단을 자동으로 이어갑니다.
+7. 상태는 초록·노랑·빨강·회색 계열로 구분하고 모든 진단에 최종 승인이 아니라는 문구를 표시합니다.
+8. 판단 근거에는 Rule의 공식 Source, 근거 위치와 검증일을 표시합니다. 은행 문의문은 한국어와 선택 언어를 각각 복사할 수 있습니다.
 
 AI Chat은 P1 보조기능입니다. 현재 상품과 선택 Rule에 연결된 공식 RAG 문서만 질문할 수 있으며 Eligibility 결과를 변경하지 않습니다. 일반적인 투자·대출 추천 Chat으로 사용하지 않습니다.
 
@@ -258,6 +298,9 @@ docker run --rm --ipc=host -e E2E_BASE_URL=http://host.docker.internal:3000 -v "
 
 ### 14. 현재 제한사항
 
+- Season 2 공식 데이터는 현재 `READY` 5개입니다. 상품 수보다 공식 조건의 완전성을 우선하며, 각 상품은 승인 Source와 Rule Evidence 위치를 가집니다.
+- 하나 외국인 EZ Loan은 공식 상세페이지를 확보해 `PARTIAL`로 전환했습니다. SOL글로벌 전세대출은 직접 상품설명서가 추가로 필요하며, 신한 생계비계좌는 신분증 문구의 성격을 확인할 공식 원문이 필요합니다. 확보 전에는 READY로 전환하지 않습니다.
+- `거주자/비거주자`는 민감한 식별번호 없이 사용자가 구분값만 입력합니다. 본인의 법적 구분이 불확실하면 금융기관 확인이 필요합니다.
 - 구조화 필요서류와 신청절차는 MVP에서 등록·조회 중심으로 지원합니다. 수정·비활성화 관리 UI와 변경 이력은 후속 보완 항목입니다.
 - DATA-003의 LLM 자동 추출은 아직 연결하지 않았습니다. 현재는 관리자 화면에서 후보 구조를 직접 입력합니다.
 - `/api/admin/**`, 상품 관리, Source·Rule 검수 화면은 기본적으로 관리자 인증이 필요합니다. 로그인 정보는 브라우저 탭의 `sessionStorage`에만 유지되며 탭을 닫으면 삭제됩니다.
@@ -327,7 +370,7 @@ http://localhost:3000/admin/sources 에서는 다음 작업을 수행합니다.
 - 공식 문서 URL과 Snapshot 등록
 - Source 기관·제목·공식 URL·언어·유효기간 수정
 - 최근 검증일, 수집일, 유효기간과 공식 Source 링크 확인
-- Source 상태를 `ACTIVE`, `NEED_REVIEW`, `EXPIRED`로 관리
+- Source 상태를 `ACTIVE`, `SUPERSEDED`, `EXPIRED`, `UNKNOWN`, `NEED_REVIEW`로 관리
 - AI Rule Candidate의 승인, 값 수정 후 승인, UNKNOWN 변경, 거절
 - Rule별 operator·value·level·status의 변경 전후 값, 검수자와 검수시각 조회
 

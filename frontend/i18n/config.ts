@@ -1,9 +1,9 @@
 export type Locale = "ko" | "en" | "vi";
 
-export const localeOptions: Array<{ locale: Locale; flag: string; country: string; language: string }> = [
-  { locale: "ko", flag: "🇰🇷", country: "대한민국", language: "한국어" },
-  { locale: "en", flag: "🇺🇸", country: "United States", language: "English" },
-  { locale: "vi", flag: "🇻🇳", country: "Việt Nam", language: "Tiếng Việt" },
+export const localeOptions: Array<{ locale: Locale; flag: string; language: string }> = [
+  { locale: "ko", flag: "🇰🇷", language: "한국어" },
+  { locale: "en", flag: "🇺🇸", language: "English" },
+  { locale: "vi", flag: "🇻🇳", language: "Tiếng Việt" },
 ];
 
 export const messages = {
@@ -31,6 +31,10 @@ export const messages = {
       employmentDuration: "근속기간 (개월)", financialPurpose: "금융 목적",
       hasBankAccount: "한국 은행계좌 보유", housingType: "주거 형태", housingExample: "예: 월세",
       desiredAmount: "희망 금액 (원)", preferredBank: "선호 은행",
+      residentStatus: "금융상품 기준 거주자 구분", resident: "거주자", nonResident: "비거주자",
+      yes: "예", no: "아니요",
+      hasExistingProductAccount: "현재 하나더이지 적금 계좌를 보유하고 있습니다",
+      desiredMonthlyAmount: "월 적금 납입 희망액 (원)",
       submit: "저장 후 금융상품 보기", submitting: "저장 중...", saved: "프로필이 저장되었습니다.",
       dateParts: { year: "연도", month: "월", day: "일" },
       dateInputHint: "숫자 8자리를 입력하세요. 예: 1995-01-31",
@@ -38,7 +42,7 @@ export const messages = {
       monthlyIncomeWords: "입력 금액",
       saveError: "프로필을 저장하지 못했습니다. 입력값을 확인해 주세요.",
       employment: { regular: "정규직", contract: "계약직", partTime: "시간제", selfEmployed: "자영업", student: "학생" },
-      purpose: { account: "입출금 계좌", savings: "예·적금", loan: "대출", card: "카드" },
+      purpose: { account: "입출금 계좌", savings: "예·적금", loan: "대출", card: "카드", investment: "투자" },
       visaNames: { "D-2": "유학", "D-4": "일반연수", "E-7": "특정활동", "E-9": "비전문취업", "F-2": "거주", "F-5": "영주", "F-6": "결혼이민" },
     },
   },
@@ -65,6 +69,10 @@ export const messages = {
       employmentDuration: "Employment duration (months)", financialPurpose: "Financial purpose",
       hasBankAccount: "I have a Korean bank account", housingType: "Housing type", housingExample: "e.g. Monthly rent",
       desiredAmount: "Desired amount (KRW)", preferredBank: "Preferred bank",
+      residentStatus: "Resident/non-resident status for financial products", resident: "Resident", nonResident: "Non-resident",
+      yes: "Yes", no: "No",
+      hasExistingProductAccount: "I already hold a Hana Easy Savings account",
+      desiredMonthlyAmount: "Desired monthly savings amount (KRW)",
       submit: "Save and browse products", submitting: "Saving...", saved: "Your profile has been saved.",
       dateParts: { year: "Year", month: "Month", day: "Day" },
       dateInputHint: "Enter 8 digits. Example: 1995-01-31",
@@ -72,7 +80,7 @@ export const messages = {
       monthlyIncomeWords: "Amount entered",
       saveError: "Could not save the profile. Please check your entries.",
       employment: { regular: "Permanent employee", contract: "Contract employee", partTime: "Part-time", selfEmployed: "Self-employed", student: "Student" },
-      purpose: { account: "Checking account", savings: "Savings or deposit", loan: "Loan", card: "Card" },
+      purpose: { account: "Checking account", savings: "Savings or deposit", loan: "Loan", card: "Card", investment: "Investment" },
       visaNames: { "D-2": "Student", "D-4": "General trainee", "E-7": "Specially designated activities", "E-9": "Non-professional employment", "F-2": "Resident", "F-5": "Permanent resident", "F-6": "Marriage migrant" },
     },
   },
@@ -99,6 +107,10 @@ export const messages = {
       employmentDuration: "Thời gian làm việc (tháng)", financialPurpose: "Mục đích tài chính",
       hasBankAccount: "Có tài khoản ngân hàng tại Hàn Quốc", housingType: "Hình thức nhà ở", housingExample: "Ví dụ: Thuê nhà theo tháng",
       desiredAmount: "Số tiền mong muốn (KRW)", preferredBank: "Ngân hàng ưu tiên",
+      residentStatus: "Tình trạng cư trú đối với sản phẩm tài chính", resident: "Người cư trú", nonResident: "Người không cư trú",
+      yes: "Có", no: "Không",
+      hasExistingProductAccount: "Tôi đã có tài khoản tiết kiệm Hana Easy",
+      desiredMonthlyAmount: "Số tiền tiết kiệm mong muốn hàng tháng (KRW)",
       submit: "Lưu và xem sản phẩm", submitting: "Đang lưu...", saved: "Hồ sơ đã được lưu.",
       dateParts: { year: "Năm", month: "Tháng", day: "Ngày" },
       dateInputHint: "Nhập 8 chữ số. Ví dụ: 1995-01-31",
@@ -106,7 +118,7 @@ export const messages = {
       monthlyIncomeWords: "Số tiền đã nhập",
       saveError: "Không thể lưu hồ sơ. Vui lòng kiểm tra thông tin đã nhập.",
       employment: { regular: "Nhân viên chính thức", contract: "Nhân viên hợp đồng", partTime: "Bán thời gian", selfEmployed: "Tự kinh doanh", student: "Sinh viên" },
-      purpose: { account: "Tài khoản thanh toán", savings: "Tiết kiệm hoặc tiền gửi", loan: "Khoản vay", card: "Thẻ" },
+      purpose: { account: "Tài khoản thanh toán", savings: "Tiết kiệm hoặc tiền gửi", loan: "Khoản vay", card: "Thẻ", investment: "Đầu tư" },
       visaNames: { "D-2": "Du học", "D-4": "Đào tạo tổng hợp", "E-7": "Hoạt động đặc thù", "E-9": "Lao động phổ thông", "F-2": "Cư trú", "F-5": "Thường trú", "F-6": "Kết hôn di trú" },
     },
   },

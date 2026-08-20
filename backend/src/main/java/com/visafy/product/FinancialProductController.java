@@ -10,6 +10,7 @@ import java.util.List;
 import com.visafy.common.domain.ReviewStatus;
 import com.visafy.rule.RuleLevel;
 import com.visafy.rule.RuleOperator;
+import com.visafy.rule.RuleNature;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -108,13 +109,15 @@ public class FinancialProductController {
 
     public record ProductRuleResponse(
             Long id, Long productId, String ruleKey, RuleOperator operator, String ruleValue, RuleLevel ruleLevel,
-            boolean mandatory, Long sourceDocumentId, String sourceLocator, LocalDate validFrom, LocalDate validTo,
+            RuleNature ruleNature, boolean mandatory, Long sourceDocumentId, String sourceLocator,
+            Integer pageNumber, String sectionName, LocalDate validFrom, LocalDate validTo,
             ReviewStatus reviewStatus, Instant verifiedAt, String description, String sourceExcerpt
     ) {
         static ProductRuleResponse from(ProductRule rule) {
             return new ProductRuleResponse(rule.getId(), rule.getProduct().getId(), rule.getRuleKey(),
-                    rule.getOperator(), rule.getRuleValue(), rule.getRuleLevel(), rule.isMandatory(),
-                    rule.getSourceDocument().getId(), rule.getSourceLocator(), rule.getValidFrom(),
+                    rule.getOperator(), rule.getRuleValue(), rule.getRuleLevel(), rule.getRuleNature(),
+                    rule.isMandatory(), rule.getSourceDocument().getId(), rule.getSourceLocator(),
+                    rule.getPageNumber(), rule.getSectionName(), rule.getValidFrom(),
                     rule.getValidTo(), rule.getReviewStatus(), rule.getVerifiedAt(), rule.getDescription(),
                     rule.getSourceExcerpt());
         }
@@ -126,7 +129,7 @@ public class FinancialProductController {
             boolean foreignerTarget, LocalDate informationBaseDate, String publicConditions,
             String additionalConditions, String requiredDocuments, String applicationMethod,
             DiagnosisStatus diagnosisStatus, Long sourceDocumentId, String sourceTitle, String sourceUrl, Instant updatedAt,
-            List<ProductRuleResponse> rules
+            List<ProductRuleResponse> rules, List<String> requiredFields, String diagnosisReasonCode
     ) {
         static ProductResponse from(ProductView view) {
             FinancialProduct product = view.product();
@@ -137,7 +140,8 @@ public class FinancialProductController {
                     product.getAdditionalConditions(), product.getRequiredDocuments(),
                     product.getApplicationMethod(), view.diagnosisStatus(), product.getSourceDocument().getId(),
                     product.getSourceDocument().getTitle(), product.getSourceDocument().getSourceUrl(),
-                    product.getUpdatedAt(), view.rules().stream().map(ProductRuleResponse::from).toList());
+                    product.getUpdatedAt(), view.rules().stream().map(ProductRuleResponse::from).toList(),
+                    view.requiredFields(), view.diagnosisReasonCode());
         }
     }
 }

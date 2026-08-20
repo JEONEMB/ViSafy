@@ -1,6 +1,7 @@
-export type ReviewStatus = "PENDING" | "APPROVED" | "REJECTED" | "NEED_REVIEW" | "EXPIRED";
+export type ReviewStatus = "PENDING" | "APPROVED" | "REJECTED" | "NEED_REVIEW" | "EXPIRED" | "SUPERSEDED" | "UNKNOWN";
 export type SourceType = "PRODUCT_PAGE" | "PRODUCT_DESCRIPTION" | "TERMS" | "FAQ" | "PUBLIC_GUIDE";
 export type RuleLevel = "HARD" | "EXTERNAL_CHECK" | "UNKNOWN";
+export type RuleNature = "HARD_ELIGIBILITY" | "REQUIRED_DOCUMENT" | "IDENTIFICATION_METHOD" | "CHANNEL_REQUIREMENT" | "BENEFIT_CONDITION" | "EXTERNAL_CHECK" | "UNKNOWN_ELIGIBILITY" | "INFORMATION";
 export type RuleOperator = "EQ" | "NE" | "GT" | "GTE" | "LT" | "LTE" | "IN" | "NOT_IN" | "EXISTS";
 
 export type SourceDocument = {
@@ -16,8 +17,9 @@ export type SourceDocument = {
   validTo?: string;
   language: "ko" | "en" | "vi";
   reviewStatus: ReviewStatus;
-  lifecycleStatus: "ACTIVE" | "EXPIRED" | "NEED_REVIEW" | "PENDING" | "REJECTED";
+  lifecycleStatus: "ACTIVE" | "EXPIRED" | "NEED_REVIEW" | "PENDING" | "REJECTED" | "SUPERSEDED" | "UNKNOWN";
   lastVerifiedAt: string;
+  reviewedBy?: string | null;
 };
 
 export type RuleChangeHistory = {
@@ -45,9 +47,12 @@ export type RuleCandidate = {
   operator: RuleOperator;
   ruleValue: string;
   ruleLevel: RuleLevel;
+  ruleNature: RuleNature;
   mandatory: boolean;
   sourceExcerpt: string;
   sourceLocator: string;
+  pageNumber?: number | null;
+  sectionName?: string | null;
   validFrom?: string | null;
   validTo?: string | null;
   description: string;

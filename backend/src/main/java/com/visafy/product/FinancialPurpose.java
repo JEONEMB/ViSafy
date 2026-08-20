@@ -4,5 +4,6 @@ public enum FinancialPurpose {
     ACCOUNT,
     SAVINGS,
     LOAN,
-    CARD
+    CARD,
+    INVESTMENT
 }

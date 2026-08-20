@@ -1,5 +1,5 @@
-export type ProductType = "CHECKING_ACCOUNT" | "SAVINGS" | "LOAN" | "CARD";
-export type FinancialPurpose = "ACCOUNT" | "SAVINGS" | "LOAN" | "CARD";
+export type ProductType = "CHECKING_ACCOUNT" | "SAVINGS" | "LOAN" | "CARD" | "INVESTMENT";
+export type FinancialPurpose = "ACCOUNT" | "SAVINGS" | "LOAN" | "CARD" | "INVESTMENT";
 export type DiagnosisStatus = "READY" | "PARTIAL" | "NOT_READY";
 
 export type ProductRule = {
@@ -9,9 +9,12 @@ export type ProductRule = {
   operator: "EQ" | "NE" | "GT" | "GTE" | "LT" | "LTE" | "IN" | "NOT_IN" | "EXISTS";
   ruleValue: string;
   ruleLevel: "HARD" | "EXTERNAL_CHECK" | "UNKNOWN";
+  ruleNature: "HARD_ELIGIBILITY" | "REQUIRED_DOCUMENT" | "IDENTIFICATION_METHOD" | "CHANNEL_REQUIREMENT" | "BENEFIT_CONDITION" | "EXTERNAL_CHECK" | "UNKNOWN_ELIGIBILITY" | "INFORMATION";
   mandatory: boolean;
   sourceDocumentId: number;
   sourceLocator: string;
+  pageNumber?: number | null;
+  sectionName?: string | null;
   validFrom?: string | null;
   validTo?: string | null;
   reviewStatus: "APPROVED";
@@ -42,6 +45,8 @@ export type FinancialProduct = {
   sourceUrl: string;
   updatedAt: string;
   rules: ProductRule[];
+  requiredFields: string[];
+  diagnosisReasonCode: "APPROVED_HARD_RULES_AVAILABLE" | "ADDITIONAL_CONFIRMATION_REQUIRED" | "SOURCE_INSUFFICIENT";
 };
 
 export type ProductFilters = {

@@ -2,6 +2,7 @@ package com.visafy.product;
 
 import com.visafy.common.domain.ReviewStatus;
 import com.visafy.rule.RuleLevel;
+import com.visafy.eligibility.RequiredProfileFields;
 import com.visafy.source.SourceDocument;
 import com.visafy.source.SourceDocumentService;
 import jakarta.transaction.Transactional;
@@ -106,19 +107,29 @@ public class FinancialProductService {
     private ProductView toView(FinancialProduct product) {
         List<ProductRule> rules = ruleRepository.findByProductIdAndActiveTrueOrderByRuleKeyAsc(product.getId())
                 .stream().filter(rule -> rule.isEffective(LocalDate.now())).toList();
-        return new ProductView(product, rules, diagnose(rules));
+        DiagnosisStatus status = diagnose(rules);
+        return new ProductView(product, rules, status, RequiredProfileFields.from(rules),
+                diagnosisReason(status));
     }
 
     static DiagnosisStatus diagnose(List<ProductRule> rules) {
         if (rules.isEmpty()) return DiagnosisStatus.NOT_READY;
-        boolean hasVisaHardRule = rules.stream().anyMatch(rule ->
-                "VISA_TYPE".equalsIgnoreCase(rule.getRuleKey()) && rule.getRuleLevel() == RuleLevel.HARD);
+        boolean hasHardRule = rules.stream().anyMatch(rule -> rule.getRuleLevel() == RuleLevel.HARD);
         boolean hasUncertainRule = rules.stream().anyMatch(rule ->
                 rule.isMandatory() && rule.getRuleLevel() != RuleLevel.HARD);
-        return hasVisaHardRule && !hasUncertainRule ? DiagnosisStatus.READY : DiagnosisStatus.PARTIAL;
+        return hasHardRule && !hasUncertainRule ? DiagnosisStatus.READY : DiagnosisStatus.PARTIAL;
+    }
+
+    private String diagnosisReason(DiagnosisStatus status) {
+        return switch (status) {
+            case READY -> "APPROVED_HARD_RULES_AVAILABLE";
+            case PARTIAL -> "ADDITIONAL_CONFIRMATION_REQUIRED";
+            case NOT_READY -> "SOURCE_INSUFFICIENT";
+        };
     }
 
     public record ProductView(FinancialProduct product, List<ProductRule> rules,
-                              DiagnosisStatus diagnosisStatus) {
+                              DiagnosisStatus diagnosisStatus, List<String> requiredFields,
+                              String diagnosisReasonCode) {
     }
 }

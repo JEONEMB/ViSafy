@@ -50,29 +50,32 @@ final class EligibilityMessages {
     String insufficient(InsufficientReasonCode code, String key) {
         return switch (language) {
             case "en" -> switch (code) {
+                case SOURCE_INSUFFICIENT -> "The product exists, but approved official eligibility sources are insufficient for an automated pre-check.";
                 case MISSING_PROFILE_INPUT -> "Profile input required for %s is missing.".formatted(label(key));
                 case SOURCE_CONFLICT -> "Official sources conflict for rule %s.".formatted(key);
                 case SOURCE_NOT_EFFECTIVE -> "The official source for %s is not currently approved or effective.".formatted(key);
                 case RULE_REVIEW_INCOMPLETE -> "Rule review is not complete for %s.".formatted(key);
-                case INSUFFICIENT_RULES -> "A required approved VISA_TYPE rule is unavailable.";
+                case INSUFFICIENT_RULES -> "Required approved eligibility rules are unavailable.";
                 case UNSUPPORTED_RULE_KEY -> "Rule %s cannot yet be evaluated by the engine.".formatted(key);
                 case INVALID_RULE_VALUE -> "The configured value for rule %s is invalid.".formatted(key);
             };
             case "vi" -> switch (code) {
+                case SOURCE_INSUFFICIENT -> "Sản phẩm có tồn tại, nhưng chưa đủ nguồn điều kiện chính thức đã duyệt để kiểm tra tự động.";
                 case MISSING_PROFILE_INPUT -> "Thiếu thông tin hồ sơ cần thiết cho %s.".formatted(label(key));
                 case SOURCE_CONFLICT -> "Các nguồn chính thức mâu thuẫn đối với quy tắc %s.".formatted(key);
                 case SOURCE_NOT_EFFECTIVE -> "Nguồn chính thức cho %s hiện không được duyệt hoặc không còn hiệu lực.".formatted(key);
                 case RULE_REVIEW_INCOMPLETE -> "Việc kiểm duyệt quy tắc %s chưa hoàn tất.".formatted(key);
-                case INSUFFICIENT_RULES -> "Không có quy tắc VISA_TYPE bắt buộc đã được duyệt.";
+                case INSUFFICIENT_RULES -> "Không có đủ quy tắc điều kiện bắt buộc đã được duyệt.";
                 case UNSUPPORTED_RULE_KEY -> "Hệ thống chưa thể đánh giá quy tắc %s.".formatted(key);
                 case INVALID_RULE_VALUE -> "Giá trị cấu hình của quy tắc %s không hợp lệ.".formatted(key);
             };
             default -> switch (code) {
+                case SOURCE_INSUFFICIENT -> "상품 존재는 확인됐지만 승인된 공식 가입조건 Source가 부족하여 자동 진단할 수 없습니다.";
                 case MISSING_PROFILE_INPUT -> "%s 판정에 필요한 프로필 입력이 없습니다.".formatted(label(key));
                 case SOURCE_CONFLICT -> "%s Rule의 공식 Source 조건이 서로 충돌합니다.".formatted(key);
                 case SOURCE_NOT_EFFECTIVE -> "%s의 공식 Source가 현재 승인 또는 유효 상태가 아닙니다.".formatted(key);
                 case RULE_REVIEW_INCOMPLETE -> "%s Rule 검수가 완료되지 않았습니다.".formatted(key);
-                case INSUFFICIENT_RULES -> "필수 승인 VISA_TYPE Rule이 없어 진단할 수 없습니다.";
+                case INSUFFICIENT_RULES -> "필수 승인 가입조건 Rule이 부족하여 진단할 수 없습니다.";
                 case UNSUPPORTED_RULE_KEY -> "%s Rule은 현재 엔진에서 평가할 수 없습니다.".formatted(key);
                 case INVALID_RULE_VALUE -> "%s Rule에 설정된 값의 형식이 올바르지 않습니다.".formatted(key);
             };
@@ -111,9 +114,13 @@ final class EligibilityMessages {
             case "AGE" -> switch (language) { case "en" -> "age"; case "vi" -> "tuổi"; default -> "만 나이"; };
             case "VISA_TYPE" -> switch (language) { case "en" -> "visa type"; case "vi" -> "loại visa"; default -> "비자 유형"; };
             case "VISA_REMAINING_MONTH" -> switch (language) { case "en" -> "remaining visa period"; case "vi" -> "thời hạn visa còn lại"; default -> "비자 잔여기간"; };
-            case "RESIDENCY_MONTH" -> switch (language) { case "en" -> "residency period"; case "vi" -> "thời gian cư trú"; default -> "국내 체류기간"; };
-            case "DOMESTIC_INCOME_MONTH", "EMPLOYMENT_DURATION_MONTHS" -> switch (language) { case "en" -> "employment period"; case "vi" -> "thời gian làm việc"; default -> "근속기간"; };
+            case "RESIDENCY_MONTH", "RESIDENCE_MONTHS" -> switch (language) { case "en" -> "residency period"; case "vi" -> "thời gian cư trú"; default -> "국내 체류기간"; };
+            case "DOMESTIC_INCOME_MONTH", "EMPLOYMENT_DURATION_MONTHS", "EMPLOYMENT_MONTHS" -> switch (language) { case "en" -> "employment period"; case "vi" -> "thời gian làm việc"; default -> "근속기간"; };
             case "MONTHLY_INCOME" -> switch (language) { case "en" -> "monthly income"; case "vi" -> "thu nhập hàng tháng"; default -> "월 소득"; };
+            case "IS_FOREIGNER" -> switch (language) { case "en" -> "foreign nationality"; case "vi" -> "quốc tịch nước ngoài"; default -> "외국인 여부"; };
+            case "RESIDENT_STATUS" -> switch (language) { case "en" -> "resident status"; case "vi" -> "tình trạng cư trú"; default -> "거주자 구분"; };
+            case "HAS_EXISTING_PRODUCT_ACCOUNT" -> switch (language) { case "en" -> "existing account for this product"; case "vi" -> "tài khoản hiện có của sản phẩm này"; default -> "동일 상품 계좌 보유 여부"; };
+            case "DESIRED_MONTHLY_AMOUNT" -> switch (language) { case "en" -> "desired monthly amount"; case "vi" -> "số tiền mong muốn hàng tháng"; default -> "월 납입 희망액"; };
             default -> key;
         };
     }

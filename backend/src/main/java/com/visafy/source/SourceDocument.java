@@ -57,6 +57,9 @@ public class SourceDocument {
     @Column(nullable = false)
     private Instant lastVerifiedAt;
 
+    @Column(length = 120)
+    private String reviewedBy;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -94,10 +97,17 @@ public class SourceDocument {
     }
 
     public void review(ReviewStatus status) {
-        if (status != ReviewStatus.APPROVED && status != ReviewStatus.REJECTED && status != ReviewStatus.NEED_REVIEW) {
+        review(status, "system");
+    }
+
+    public void review(ReviewStatus status, String reviewer) {
+        if (status != ReviewStatus.APPROVED && status != ReviewStatus.REJECTED
+                && status != ReviewStatus.NEED_REVIEW && status != ReviewStatus.SUPERSEDED
+                && status != ReviewStatus.UNKNOWN) {
             throw new IllegalArgumentException("Unsupported source review status");
         }
         reviewStatus = status;
+        reviewedBy = reviewer == null || reviewer.isBlank() ? "system" : reviewer.strip();
         lastVerifiedAt = Instant.now();
         updatedAt = lastVerifiedAt;
     }
@@ -118,6 +128,8 @@ public class SourceDocument {
             case APPROVED -> SourceLifecycleStatus.ACTIVE;
             case NEED_REVIEW -> SourceLifecycleStatus.NEED_REVIEW;
             case REJECTED -> SourceLifecycleStatus.REJECTED;
+            case SUPERSEDED -> SourceLifecycleStatus.SUPERSEDED;
+            case UNKNOWN -> SourceLifecycleStatus.UNKNOWN;
             default -> SourceLifecycleStatus.PENDING;
         };
     }
@@ -142,4 +154,5 @@ public class SourceDocument {
     public String getLanguage() { return language; }
     public ReviewStatus getReviewStatus() { return reviewStatus; }
     public Instant getLastVerifiedAt() { return lastVerifiedAt; }
+    public String getReviewedBy() { return reviewedBy; }
 }

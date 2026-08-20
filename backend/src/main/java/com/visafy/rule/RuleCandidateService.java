@@ -33,6 +33,16 @@ public class RuleCandidateService {
                                 String ruleValue, RuleLevel ruleLevel, boolean mandatory, String sourceExcerpt,
                                 String sourceLocator, LocalDate validFrom, LocalDate validTo,
                                 String description, BigDecimal confidence) {
+        return create(sourceDocumentId, productCode, ruleKey, operator, ruleValue, ruleLevel,
+                RuleNature.defaultFor(ruleLevel), mandatory, sourceExcerpt, sourceLocator, null, null,
+                validFrom, validTo, description, confidence);
+    }
+
+    @Transactional
+    public RuleCandidate create(Long sourceDocumentId, String productCode, String ruleKey, RuleOperator operator,
+                                String ruleValue, RuleLevel ruleLevel, RuleNature ruleNature, boolean mandatory,
+                                String sourceExcerpt, String sourceLocator, Integer pageNumber, String sectionName,
+                                LocalDate validFrom, LocalDate validTo, String description, BigDecimal confidence) {
         SourceDocument source = sourceService.get(sourceDocumentId);
         if (source.getReviewStatus() == ReviewStatus.EXPIRED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Expired sources cannot create candidates");
@@ -40,9 +50,31 @@ public class RuleCandidateService {
         if (validFrom != null && validTo != null && validTo.isBefore(validFrom)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "validTo must not be before validFrom");
         }
+        validateNature(ruleLevel, ruleNature);
         return repository.save(new RuleCandidate(source, productCode.strip(), ruleKey.strip().toUpperCase(), operator,
-                ruleValue.strip(), ruleLevel, mandatory, sourceExcerpt.strip(), sourceLocator.strip(), validFrom,
+                ruleValue.strip(), ruleLevel, ruleNature, mandatory, sourceExcerpt.strip(), sourceLocator.strip(),
+                pageNumber, sectionName == null || sectionName.isBlank() ? null : sectionName.strip(), validFrom,
                 validTo, description.strip(), confidence));
+    }
+
+    private void validateNature(RuleLevel level, RuleNature nature) {
+        RuleNature normalized = nature == null ? RuleNature.defaultFor(level) : nature;
+        if (normalized == RuleNature.HARD_ELIGIBILITY && level != RuleLevel.HARD) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "HARD_ELIGIBILITY must use HARD ruleLevel");
+        }
+        if (normalized == RuleNature.EXTERNAL_CHECK && level != RuleLevel.EXTERNAL_CHECK) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "EXTERNAL_CHECK nature must use EXTERNAL_CHECK ruleLevel");
+        }
+        if (normalized == RuleNature.UNKNOWN_ELIGIBILITY && level != RuleLevel.UNKNOWN) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "UNKNOWN_ELIGIBILITY must use UNKNOWN ruleLevel");
+        }
+        if (level == RuleLevel.HARD && normalized != RuleNature.HARD_ELIGIBILITY) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Documents, identification, channels, benefits, and information cannot be HARD eligibility rules");
+        }
     }
 
     public List<RuleCandidate> findAll() {
@@ -108,8 +140,8 @@ public class RuleCandidateService {
         List<RuleCandidate> approved = repository.findByProductCodeAndRuleKeyAndReviewStatusAndIdNot(
                 candidate.getProductCode(), candidate.getRuleKey(), ReviewStatus.APPROVED, candidate.getId());
         boolean conflict = approved.stream().anyMatch(existing ->
-                !existing.getRuleValue().equals(candidate.getRuleValue())
-                        || !existing.getOperator().equals(candidate.getOperator()));
+                existing.getOperator().equals(candidate.getOperator())
+                        && !existing.getRuleValue().equals(candidate.getRuleValue()));
         if (conflict) {
             candidate.requireReview();
             approved.forEach(existing -> {

@@ -26,5 +26,6 @@ export type EligibilityResult = {
   externalChecks: EligibilityRuleDetail[];
   unknownRules: EligibilityRuleDetail[];
   insufficientReasons: EligibilityRuleDetail[];
+  requiredFields: string[];
   disclaimer: string;
 };

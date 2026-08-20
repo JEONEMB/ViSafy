@@ -1,7 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
-export async function apiGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, { headers: requestHeaders(path) });
+export async function apiGet<T>(path: string, additionalHeaders: Record<string, string> = {}): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, { headers: requestHeaders(path, false, additionalHeaders) });
   if (!response.ok) throw await toApiError(response);
   return (await response.json()) as T;
 }
@@ -10,14 +10,14 @@ export async function apiPost<TResponse, TBody>(path: string, body: TBody): Prom
   return apiWrite<TResponse, TBody>(path, "POST", body);
 }
 
-export async function apiPut<TResponse, TBody>(path: string, body: TBody): Promise<TResponse> {
-  return apiWrite<TResponse, TBody>(path, "PUT", body);
+export async function apiPut<TResponse, TBody>(path: string, body: TBody, additionalHeaders: Record<string, string> = {}): Promise<TResponse> {
+  return apiWrite<TResponse, TBody>(path, "PUT", body, additionalHeaders);
 }
 
-async function apiWrite<TResponse, TBody>(path: string, method: "POST" | "PUT", body: TBody) {
+async function apiWrite<TResponse, TBody>(path: string, method: "POST" | "PUT", body: TBody, additionalHeaders: Record<string, string> = {}) {
   const response = await fetch(`${API_URL}${path}`, {
     method,
-    headers: requestHeaders(path, true),
+    headers: requestHeaders(path, true, additionalHeaders),
     body: JSON.stringify(body),
   });
   if (!response.ok) throw await toApiError(response);
@@ -31,14 +31,14 @@ export async function verifyAdminAuthorization(authorization: string): Promise<v
   if (!response.ok) throw await toApiError(response);
 }
 
-function requestHeaders(path: string, json = false): Record<string, string> {
+function requestHeaders(path: string, json = false, additionalHeaders: Record<string, string> = {}): Record<string, string> {
   const headers: Record<string, string> = { Accept: "application/json" };
   if (json) headers["Content-Type"] = "application/json";
   if (path.startsWith("/api/admin/") && typeof window !== "undefined") {
     const authorization = sessionStorage.getItem("visafyAdminAuthorization");
     if (authorization) headers.Authorization = authorization;
   }
-  return headers;
+  return { ...headers, ...additionalHeaders };
 }
 
 async function toApiError(response: Response): Promise<Error> {
