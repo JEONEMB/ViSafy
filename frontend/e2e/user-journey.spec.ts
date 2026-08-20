@@ -1,5 +1,14 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
+type SubmittedProfile = {
+  financialPurpose?: string;
+  nationality?: string;
+  language?: string;
+  additionalUpdated?: boolean;
+  hasExistingProductAccount?: boolean;
+  desiredMonthlyAmount?: number;
+};
+
 const sourceUrl = "https://www.kbstar.com/official-product";
 const rule = {
   id: 101,
@@ -96,7 +105,7 @@ async function json(route: Route, body: unknown, status = 200) {
   await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 }
 
-async function mockApi(page: Page, submittedProfile: { financialPurpose?: string; nationality?: string; language?: string; additionalUpdated?: boolean; hasExistingProductAccount?: boolean; desiredMonthlyAmount?: number }) {
+async function mockApi(page: Page, submittedProfile: SubmittedProfile) {
   let storedProfile: Record<string, unknown> | null = null;
   await page.route("http://localhost:8080/api/**", async (route) => {
     const request = route.request();
@@ -140,7 +149,7 @@ async function mockApi(page: Page, submittedProfile: { financialPurpose?: string
 }
 
 test("TEST-106 foreign user completes the eligibility journey", async ({ page }) => {
-  const submittedProfile: { financialPurpose?: string } = {};
+  const submittedProfile: SubmittedProfile = {};
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await mockApi(page, submittedProfile);

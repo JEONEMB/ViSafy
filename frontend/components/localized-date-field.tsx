@@ -12,7 +12,7 @@ type Props = {
   reason?: string;
 };
 
-const inputClass = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2";
+const inputClass = "ui-input";
 
 function formatDateInput(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 8);
@@ -46,8 +46,8 @@ export function LocalizedDateField({ label, name, minYear, maxYear, hint, invali
   }
 
   return (
-    <label className="text-sm font-medium">
-      <span className="inline-flex items-center gap-1.5">{label}{reason ? <span aria-label={reason} className="inline-flex h-5 w-5 cursor-help items-center justify-center rounded-full bg-slate-100 text-[11px] font-bold text-slate-500" title={reason}>?</span> : null}</span>
+    <label className="ui-label">
+      <span className="inline-flex items-center gap-1.5">{label}{reason ? <span aria-label={reason} className="inline-flex h-6 w-6 cursor-help items-center justify-center rounded-full border border-line bg-surface-subtle text-xs font-bold text-muted" title={reason}>?</span> : null}</span>
       <input
         aria-describedby={`${name}-hint`}
         autoComplete="off"
@@ -63,7 +63,7 @@ export function LocalizedDateField({ label, name, minYear, maxYear, hint, invali
         required
         value={value}
       />
-      <span className="mt-1 block text-xs text-slate-500" id={`${name}-hint`}>{hint}</span>
+      <span className="mt-1.5 block text-xs text-muted" id={`${name}-hint`}>{hint}</span>
     </label>
   );
 }

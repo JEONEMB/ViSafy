@@ -10,16 +10,16 @@ import type { ReviewStatus } from "@/types/data-pipeline";
 import type { SourceDocument } from "@/types/data-pipeline";
 
 const badge: Record<ReviewStatus, string> = {
-  PENDING: "bg-amber-100 text-amber-800",
-  APPROVED: "bg-emerald-100 text-emerald-800",
-  REJECTED: "bg-slate-200 text-slate-700",
-  NEED_REVIEW: "bg-rose-100 text-rose-800",
-  EXPIRED: "bg-zinc-200 text-zinc-700",
-  SUPERSEDED: "bg-violet-100 text-violet-800",
-  UNKNOWN: "bg-slate-100 text-slate-700",
+  PENDING: "border-status-warning-border bg-status-warning-bg text-status-warning",
+  APPROVED: "border-status-success-border bg-status-success-bg text-status-success",
+  REJECTED: "border-status-danger-border bg-status-danger-bg text-status-danger",
+  NEED_REVIEW: "border-status-warning-border bg-status-warning-bg text-status-warning",
+  EXPIRED: "border-status-neutral-border bg-status-neutral-bg text-status-neutral",
+  SUPERSEDED: "border-status-neutral-border bg-status-neutral-bg text-status-neutral",
+  UNKNOWN: "border-status-neutral-border bg-status-neutral-bg text-status-neutral",
 };
 
-const inputClass = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2";
+const inputClass = "ui-input mt-0";
 
 export default function SourceAdminPage() {
   const queryClient = useQueryClient();
@@ -99,21 +99,21 @@ export default function SourceAdminPage() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-      <p className="text-sm font-semibold text-teal-700">DATA-001 ~ DATA-006</p>
-      <h1 className="mt-2 text-3xl font-bold">공식 Source · Rule 검수</h1>
-      <p className="mt-3 text-slate-600">공식 원문을 Snapshot으로 저장하고 AI 추출 후보를 사람이 승인합니다. confidence는 가입 가능 확률이 아닙니다.</p>
-      {message ? <div className="mt-6 rounded-lg bg-slate-900 px-4 py-3 text-sm text-white">{message}</div> : null}
-      <section className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-violet-200 bg-violet-50 p-5"><div><h2 className="font-bold text-violet-950">공식 Source RAG 색인</h2><p className="mt-1 text-sm text-violet-800">현재 APPROVED·유효 Source만 상품 메타데이터와 함께 ChromaDB에 다시 색인합니다.</p></div><button className="rounded-lg bg-violet-700 px-4 py-2 font-semibold text-white disabled:opacity-50" disabled={ragMutation.isPending} onClick={() => ragMutation.mutate()}>{ragMutation.isPending ? "색인 중..." : "RAG 전체 재색인"}</button></section>
+    <main className="ui-page">
+      <p className="ui-eyebrow">DATA-001 ~ DATA-006</p>
+      <h1 className="ui-page-heading mt-2">공식 Source · Rule 검수</h1>
+      <p className="mt-3 max-w-reading text-base leading-7 text-muted">공식 원문을 Snapshot으로 저장하고 AI 추출 후보를 사람이 승인합니다. confidence는 가입 가능 확률이 아닙니다.</p>
+      {message ? <div className="ui-alert-info mt-6" role="status">{message}</div> : null}
+      <section className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-card border border-status-info-border bg-status-info-bg p-5"><div><h2 className="font-bold text-ink">공식 Source RAG 색인</h2><p className="mt-1 text-sm text-muted">현재 APPROVED·유효 Source만 상품 메타데이터와 함께 ChromaDB에 다시 색인합니다.</p></div><button className="ui-button ui-button-primary" disabled={ragMutation.isPending} onClick={() => ragMutation.mutate()}>{ragMutation.isPending ? "색인 중..." : "RAG 전체 재색인"}</button></section>
 
-      <section className="mt-5 rounded-xl border bg-slate-950 p-5 text-white" aria-label="RAG 품질지표">
-        <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-widest text-violet-300">RAG Quality Dashboard</p><h2 className="mt-1 text-xl font-bold">공식 근거 품질지표</h2></div><p className="text-xs text-slate-400">마지막 색인: {ragQuality.data?.lastIndexedAt ? new Date(ragQuality.data.lastIndexedAt).toLocaleString() : "재기동 후 미실행"}</p></div>
-        {ragQuality.isLoading ? <div className="mt-5 h-24 animate-pulse rounded-xl bg-white/10" /> : ragQuality.data ? <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-5"><QualityMetric label="진단 가능 상품" value={`${ragQuality.data.diagnosableProducts}/${ragQuality.data.activeProducts}`} /><QualityMetric label="유효 공식 Source" value={ragQuality.data.approvedEffectiveSources} /><QualityMetric label="색인 대상 Source" value={ragQuality.data.indexedEligibleSources} /><QualityMetric label="근거 완성 Rule" value={`${ragQuality.data.evidenceCompleteRules}/${ragQuality.data.activeEffectiveRules}`} /><QualityMetric label="Evidence 연결률" value={`${ragQuality.data.evidenceCoveragePercent}%`} warning={ragQuality.data.evidenceCoveragePercent < 100} /></div> : <p className="mt-4 text-sm text-rose-300">품질지표를 불러오지 못했습니다.</p>}
-        {ragQuality.data && ragQuality.data.orphanedApprovedSources > 0 ? <p className="mt-4 rounded-lg bg-amber-400/15 p-3 text-sm text-amber-200">상품 또는 Rule에 연결되지 않은 승인 Source가 {ragQuality.data.orphanedApprovedSources}개 있습니다.</p> : null}
+      <section className="ui-card mt-5 p-5" aria-label="RAG 품질지표">
+        <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-brand">RAG Quality Dashboard</p><h2 className="mt-1 text-xl font-bold text-ink">공식 근거 품질지표</h2></div><p className="text-xs text-quiet">마지막 색인: {ragQuality.data?.lastIndexedAt ? new Date(ragQuality.data.lastIndexedAt).toLocaleString() : "재기동 후 미실행"}</p></div>
+        {ragQuality.isLoading ? <div className="mt-5 h-24 animate-pulse rounded-card bg-surface-subtle" /> : ragQuality.data ? <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-5"><QualityMetric label="진단 가능 상품" value={`${ragQuality.data.diagnosableProducts}/${ragQuality.data.activeProducts}`} /><QualityMetric label="유효 공식 Source" value={ragQuality.data.approvedEffectiveSources} /><QualityMetric label="색인 대상 Source" value={ragQuality.data.indexedEligibleSources} /><QualityMetric label="근거 완성 Rule" value={`${ragQuality.data.evidenceCompleteRules}/${ragQuality.data.activeEffectiveRules}`} /><QualityMetric label="Evidence 연결률" value={`${ragQuality.data.evidenceCoveragePercent}%`} warning={ragQuality.data.evidenceCoveragePercent < 100} /></div> : <p className="mt-4 text-sm text-status-danger">품질지표를 불러오지 못했습니다.</p>}
+        {ragQuality.data && ragQuality.data.orphanedApprovedSources > 0 ? <p className="ui-alert-warning mt-4">상품 또는 Rule에 연결되지 않은 승인 Source가 {ragQuality.data.orphanedApprovedSources}개 있습니다.</p> : null}
       </section>
 
       <section className="mt-10 grid gap-6 lg:grid-cols-2">
-        <form className="space-y-4 rounded-xl border bg-white p-6 shadow-sm" onSubmit={submitSource}>
+        <form className="ui-card space-y-4 p-6" onSubmit={submitSource}>
           <h2 className="text-xl font-bold">1. 공식 Source 등록</h2>
           <input className={inputClass} name="institution" placeholder="기관명 (예: KB국민은행)" required />
           <select className={inputClass} name="sourceType" defaultValue="PRODUCT_PAGE">
@@ -125,10 +125,10 @@ export default function SourceAdminPage() {
           <input className={inputClass} name="sourceUrl" type="url" placeholder="https://obank.kbstar.com/..." required />
           <textarea className={`${inputClass} min-h-36`} name="snapshotText" placeholder="수집 당시 공식 문서의 텍스트를 붙여 넣으세요." required />
           <div className="grid gap-3 sm:grid-cols-2"><label className="text-sm">유효 시작일<input className={inputClass} name="validFrom" type="date" /></label><label className="text-sm">유효 종료일<input className={inputClass} name="validTo" type="date" /></label></div>
-          <button className="rounded-lg bg-teal-700 px-4 py-2 font-semibold text-white disabled:opacity-50" disabled={sourceMutation.isPending}>Source 저장</button>
+          <button className="ui-button ui-button-primary" disabled={sourceMutation.isPending}>Source 저장</button>
         </form>
 
-        <form className="space-y-4 rounded-xl border bg-white p-6 shadow-sm" onSubmit={submitRule}>
+        <form className="ui-card space-y-4 p-6" onSubmit={submitRule}>
           <h2 className="text-xl font-bold">2. Rule Candidate 등록</h2>
           <select className={inputClass} name="sourceDocumentId" required defaultValue=""><option value="" disabled>근거 Source 선택</option>{sources.data?.map((source) => <option key={source.id} value={source.id}>{source.institution} · {source.title}</option>)}</select>
           <select className={inputClass} name="productCode" required defaultValue=""><option value="" disabled>등록 상품 선택</option>{products.data?.map((product) => <option key={product.id} value={product.productCode}>{product.institution} · {product.productName} ({product.productCode})</option>)}</select>
@@ -145,17 +145,32 @@ export default function SourceAdminPage() {
           <div className="grid gap-3 sm:grid-cols-2"><input className={inputClass} min="1" name="pageNumber" placeholder="PDF 페이지" type="number" /><input className={inputClass} name="sectionName" placeholder="HTML 섹션/항목명" /></div>
           <div className="grid gap-3 sm:grid-cols-2"><label className="text-sm">Rule 유효 시작일<input className={inputClass} name="validFrom" type="date" /></label><label className="text-sm">Rule 유효 종료일<input className={inputClass} name="validTo" type="date" /></label></div>
           <label className="text-sm">AI 추출 신뢰도 (0~1)<input className={inputClass} max="1" min="0" name="confidence" step="0.01" type="number" defaultValue="0.93" required /></label>
-          <button className="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white disabled:opacity-50" disabled={ruleMutation.isPending}>PENDING 후보 저장</button>
+          <button className="ui-button ui-button-primary" disabled={ruleMutation.isPending}>PENDING 후보 저장</button>
         </form>
       </section>
 
-      <section className="mt-12"><h2 className="text-2xl font-bold">Source Snapshot · 최신성 관리</h2><div className="mt-4 grid gap-4">{sources.data?.map((source) => <article className="rounded-xl border bg-white p-4 sm:p-5" key={source.id}><div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-bold">{source.institution} · {source.title}</h3><a className="text-sm text-teal-700 underline" href={source.sourceUrl} rel="noreferrer" target="_blank">공식 원문 열기 ↗</a></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${badge[source.reviewStatus]}`}>{source.lifecycleStatus}</span></div><p className="mt-3 break-all text-xs text-slate-500">{source.language.toUpperCase()} · SHA-256 {source.contentHash}</p><dl className="mt-3 grid gap-2 rounded-lg bg-slate-50 p-3 text-xs sm:grid-cols-3"><div><dt className="font-bold">최근 검증일</dt><dd>{new Date(source.lastVerifiedAt).toLocaleString()}</dd></div><div><dt className="font-bold">수집일</dt><dd>{new Date(source.retrievedAt).toLocaleString()}</dd></div><div><dt className="font-bold">유효기간</dt><dd>{source.validFrom ?? "제한 없음"} ~ {source.validTo ?? "제한 없음"}</dd></div></dl><details className="mt-3"><summary className="cursor-pointer font-semibold">저장 Snapshot 보기</summary><pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-slate-50 p-4 text-sm">{source.snapshotText}</pre></details><div className="mt-4 flex flex-wrap gap-2"><button className="rounded bg-blue-700 px-3 py-2 text-sm text-white" onClick={() => setEditingSource(source)}>정보 수정</button>{source.lifecycleStatus !== "EXPIRED" ? <><button className="rounded bg-emerald-700 px-3 py-2 text-sm text-white" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "ACTIVE" })}>ACTIVE</button><button className="rounded bg-amber-600 px-3 py-2 text-sm text-white" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "NEED_REVIEW" })}>NEED_REVIEW</button><button className="rounded bg-violet-700 px-3 py-2 text-sm text-white" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "SUPERSEDED" })}>SUPERSEDED</button><button className="rounded bg-slate-500 px-3 py-2 text-sm text-white" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "UNKNOWN" })}>UNKNOWN</button><button className="rounded bg-zinc-800 px-3 py-2 text-sm text-white" onClick={() => { if (window.confirm("이 Source를 만료 처리할까요?")) lifecycleMutation.mutate({ id: source.id, status: "EXPIRED" }); }}>EXPIRED</button><button className="rounded bg-rose-800 px-3 py-2 text-sm text-white" onClick={() => sourceReviewMutation.mutate({ id: source.id, status: "REJECTED" })}>REJECTED</button></> : null}</div>{editingSource?.id === source.id ? <AdminSourceEditForm source={editingSource} pending={sourceEditMutation.isPending} onCancel={() => setEditingSource(null)} onSave={(body) => sourceEditMutation.mutate({ id: source.id, body })} /> : null}</article>)}</div></section>
+      <section className="mt-12">
+        <h2 className="text-2xl font-bold text-ink">Source Snapshot · 최신성 관리</h2>
+        <div className="mt-4 grid gap-4">
+          {sources.data?.map((source) => <article className="ui-card p-5" key={source.id}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div><h3 className="font-bold text-ink">{source.institution} · {source.title}</h3><a className="ui-link text-sm" href={source.sourceUrl} rel="noreferrer" target="_blank">공식 원문 열기 ↗</a></div>
+              <div className="flex flex-wrap gap-2"><span className={`rounded-full border px-3 py-1 text-xs font-semibold ${badge[source.reviewStatus]}`}>{source.reviewStatus}</span><span className="rounded-full border border-line bg-surface-subtle px-3 py-1 text-xs font-semibold text-muted">{source.lifecycleStatus}</span></div>
+            </div>
+            <p className="mt-3 break-all text-xs text-muted">{source.language.toUpperCase()} · SHA-256 {source.contentHash}</p>
+            <dl className="mt-3 grid gap-3 rounded-control border border-line bg-surface-subtle p-4 text-xs sm:grid-cols-3"><div><dt className="font-bold text-ink">최근 검증일</dt><dd className="text-muted">{new Date(source.lastVerifiedAt).toLocaleString()}</dd></div><div><dt className="font-bold text-ink">수집일</dt><dd className="text-muted">{new Date(source.retrievedAt).toLocaleString()}</dd></div><div><dt className="font-bold text-ink">유효기간</dt><dd className="text-muted">{source.validFrom ?? "제한 없음"} ~ {source.validTo ?? "제한 없음"}</dd></div></dl>
+            <details className="mt-3 rounded-control border border-line"><summary className="min-h-11 cursor-pointer px-4 py-3 font-semibold text-ink">저장 Snapshot 보기</summary><pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words border-t border-line bg-surface-subtle p-4 text-sm text-muted">{source.snapshotText}</pre></details>
+            <div className="mt-4 flex flex-wrap gap-2"><button className="ui-button ui-button-primary min-h-9 px-3 py-1.5" onClick={() => setEditingSource(source)}>정보 수정</button>{source.lifecycleStatus !== "EXPIRED" ? <><button className="ui-button ui-button-secondary min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "ACTIVE" })}>ACTIVE</button><button className="ui-button ui-button-secondary min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "NEED_REVIEW" })}>NEED_REVIEW</button><button className="ui-button ui-button-quiet min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "SUPERSEDED" })}>SUPERSEDED</button><button className="ui-button ui-button-quiet min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "UNKNOWN" })}>UNKNOWN</button><button className="ui-button ui-button-danger min-h-9 px-3 py-1.5" onClick={() => { if (window.confirm("이 Source를 만료 처리할까요?")) lifecycleMutation.mutate({ id: source.id, status: "EXPIRED" }); }}>EXPIRED</button><button className="ui-button ui-button-danger min-h-9 px-3 py-1.5" onClick={() => sourceReviewMutation.mutate({ id: source.id, status: "REJECTED" })}>REJECTED</button></> : null}</div>
+            {editingSource?.id === source.id ? <AdminSourceEditForm source={editingSource} pending={sourceEditMutation.isPending} onCancel={() => setEditingSource(null)} onSave={(body) => sourceEditMutation.mutate({ id: source.id, body })} /> : null}
+          </article>)}
+        </div>
+      </section>
 
-      <section className="mt-12"><h2 className="text-2xl font-bold">Human Verification</h2><div className="mt-4 grid gap-4">{rules.data?.map((rule) => <article className="rounded-xl border bg-white p-5" key={rule.id}><div className="flex flex-wrap justify-between gap-3"><div><h3 className="font-bold">{rule.productCode} · {rule.ruleKey}</h3><p className="text-sm text-slate-500">{rule.description} · 근거: {rule.sourceTitle}</p></div><span className={`h-fit rounded-full px-3 py-1 text-xs font-bold ${badge[rule.reviewStatus]}`}>{rule.reviewStatus}</span></div><div className="mt-4 rounded-lg bg-slate-50 p-4 font-mono text-sm">{rule.operator} {rule.ruleValue} · {rule.ruleLevel} · {rule.mandatory ? "MANDATORY" : "OPTIONAL"}</div><blockquote className="mt-3 border-l-4 border-teal-600 pl-3 text-sm">{rule.sourceExcerpt}</blockquote><p className="mt-2 text-xs text-slate-500">위치: {rule.sourceLocator} · 유효기간: {rule.validFrom ?? "제한 없음"} ~ {rule.validTo ?? "제한 없음"}</p><p className="mt-1 text-xs text-slate-500">AI 추출 신뢰도: {rule.confidence} (가입 확률 아님) · 마지막 검수: {rule.lastVerifiedAt ? new Date(rule.lastVerifiedAt).toLocaleString() : "미검수"}</p>{rule.reviewStatus !== "EXPIRED" && rule.reviewStatus !== "REJECTED" ? <div className="mt-4 flex flex-wrap gap-2"><button className="rounded bg-emerald-700 px-3 py-2 text-sm text-white" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "APPROVE" } })}>승인</button><button className="rounded bg-blue-700 px-3 py-2 text-sm text-white" onClick={() => approveWithChanges(rule.id, rule.operator, rule.ruleValue, rule.sourceExcerpt)}>값 수정 후 승인</button><button className="rounded bg-amber-600 px-3 py-2 text-sm text-white" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "MARK_UNKNOWN" } })}>UNKNOWN</button><button className="rounded bg-slate-700 px-3 py-2 text-sm text-white" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "REJECT" } })}>거절</button></div> : null}<button className="mt-4 text-sm font-bold text-blue-700 underline" onClick={() => setHistoryRuleId(historyRuleId === rule.id ? null : rule.id)}>{historyRuleId === rule.id ? "변경 이력 닫기" : "변경 이력 보기"}</button>{historyRuleId === rule.id ? <AdminRuleHistoryPanel ruleId={rule.id} /> : null}</article>)}</div></section>
+      <section className="mt-12"><h2 className="text-2xl font-bold text-ink">Human Verification</h2><div className="mt-4 grid gap-4">{rules.data?.map((rule) => <article className="ui-card p-5" key={rule.id}><div className="flex flex-wrap justify-between gap-3"><div><h3 className="font-bold text-ink">{rule.productCode} · {rule.ruleKey}</h3><p className="text-sm text-muted">{rule.description} · 근거: {rule.sourceTitle}</p></div><span className={`h-fit rounded-full border px-3 py-1 text-xs font-semibold ${badge[rule.reviewStatus]}`}>{rule.reviewStatus}</span></div><div className="mt-4 rounded-control border border-line bg-surface-subtle p-4 text-sm font-semibold tabular-nums text-ink">{rule.operator} {rule.ruleValue} · {rule.ruleLevel} · {rule.mandatory ? "MANDATORY" : "OPTIONAL"}</div><blockquote className="mt-3 border-l-2 border-line-strong pl-3 text-sm leading-6 text-muted">{rule.sourceExcerpt}</blockquote><p className="mt-2 text-xs text-muted">위치: {rule.sourceLocator} · 유효기간: {rule.validFrom ?? "제한 없음"} ~ {rule.validTo ?? "제한 없음"}</p><p className="mt-1 text-xs text-muted">AI 추출 신뢰도: {rule.confidence} (가입 확률 아님) · 마지막 검수: {rule.lastVerifiedAt ? new Date(rule.lastVerifiedAt).toLocaleString() : "미검수"}</p>{rule.reviewStatus !== "EXPIRED" && rule.reviewStatus !== "REJECTED" ? <div className="mt-4 flex flex-wrap gap-2"><button className="ui-button ui-button-primary min-h-9 px-3 py-1.5" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "APPROVE" } })}>승인</button><button className="ui-button ui-button-secondary min-h-9 px-3 py-1.5" onClick={() => approveWithChanges(rule.id, rule.operator, rule.ruleValue, rule.sourceExcerpt)}>값 수정 후 승인</button><button className="ui-button ui-button-secondary min-h-9 px-3 py-1.5" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "MARK_UNKNOWN" } })}>UNKNOWN</button><button className="ui-button ui-button-danger min-h-9 px-3 py-1.5" onClick={() => reviewMutation.mutate({ id: rule.id, body: { action: "REJECT" } })}>거절</button></div> : null}<button className="ui-link mt-4 min-h-11 text-sm" onClick={() => setHistoryRuleId(historyRuleId === rule.id ? null : rule.id)}>{historyRuleId === rule.id ? "변경 이력 닫기" : "변경 이력 보기"}</button>{historyRuleId === rule.id ? <AdminRuleHistoryPanel ruleId={rule.id} /> : null}</article>)}</div></section>
     </main>
   );
 }
 
 function QualityMetric({ label, value, warning = false }: { label: string; value: string | number; warning?: boolean }) {
-  return <div className={`rounded-xl p-3 ${warning ? "bg-amber-400/15" : "bg-white/10"}`}><p className="text-[11px] font-semibold text-slate-400">{label}</p><p className={`mt-1 text-xl font-black ${warning ? "text-amber-200" : "text-white"}`}>{value}</p></div>;
+  return <div className={`rounded-control border p-3 ${warning ? "border-status-warning-border bg-status-warning-bg" : "border-line bg-surface-subtle"}`}><p className="text-xs font-semibold text-muted">{label}</p><p className={`mt-1 text-xl font-bold tabular-nums ${warning ? "text-status-warning" : "text-ink"}`}>{value}</p></div>;
 }

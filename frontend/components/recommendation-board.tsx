@@ -32,23 +32,23 @@ export function RecommendationBoard() {
   });
 
   if (profileSessionId === undefined) {
-    return <section className="mt-8 animate-pulse rounded-3xl bg-slate-100 p-10"><div className="h-5 w-48 rounded bg-slate-200" /><div className="mt-4 h-8 w-80 max-w-full rounded bg-slate-200" /></section>;
+    return <section className="ui-card mt-8 animate-pulse p-8" aria-label={text.loading}><div className="h-5 w-48 rounded bg-line" /><div className="mt-4 h-8 w-80 max-w-full rounded bg-surface-subtle" /></section>;
   }
   if (!profileSessionId) {
-    return <section className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-3xl bg-slate-950 p-7 text-white sm:p-9"><div><p className="text-sm font-semibold text-teal-300">{text.eyebrow}</p><h2 className="mt-2 text-2xl font-bold">{text.title}</h2><p className="mt-2 text-sm text-slate-300">{text.noProfile}</p></div><Link className="rounded-xl bg-teal-400 px-5 py-3 font-bold text-slate-950" href="/profile">{text.createProfile} →</Link></section>;
+    return <section className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-panel border border-status-info-border bg-status-info-bg p-6 sm:p-8"><div><p className="text-sm font-semibold text-status-info">{text.eyebrow}</p><h2 className="mt-2 text-2xl font-bold text-ink">{text.title}</h2><p className="mt-2 text-sm leading-6 text-muted">{text.noProfile}</p></div><Link className="ui-button ui-button-primary" href="/profile">{text.createProfile} →</Link></section>;
   }
 
-  return <section className="mt-8 rounded-3xl bg-slate-950 p-6 text-white shadow-xl sm:p-9">
-    <p className="text-sm font-semibold text-teal-300">{text.eyebrow}</p>
-    <h2 className="mt-2 text-2xl font-bold sm:text-3xl">{text.title}</h2>
-    <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">{text.description}</p>
-    {recommendations.isLoading ? <div className="mt-8"><p className="mb-3 text-sm text-slate-300">{text.loading}</p><AnalysisProgress /></div> : null}
-    {recommendations.isError ? <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-rose-400/15 p-5 text-sm text-rose-100"><p>{text.error}</p><Link className="font-bold underline" href="/profile">{text.retryProfile}</Link></div> : null}
+  return <section className="ui-panel mt-8 p-6 sm:p-8">
+    <p className="ui-eyebrow">{text.eyebrow}</p>
+    <h2 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">{text.title}</h2>
+    <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">{text.description}</p>
+    {recommendations.isLoading ? <div className="mt-8"><p className="mb-3 text-sm text-muted">{text.loading}</p><AnalysisProgress /></div> : null}
+    {recommendations.isError ? <div className="ui-alert-danger mt-8 flex flex-wrap items-center justify-between gap-3"><p>{text.error}</p><Link className="ui-link" href="/profile">{text.retryProfile}</Link></div> : null}
     {recommendations.data ? <>
       <RecommendationGroup items={recommendations.data.recommended} title={text.recommended} text={text} />
       {recommendations.data.additionalInformationNeeded.length ? <RecommendationGroup items={recommendations.data.additionalInformationNeeded} title={text.moreInfo} text={text} additional /> : null}
-      {recommendations.data.recommended.length === 0 ? <p className="mt-7 rounded-xl border border-dashed border-white/20 p-7 text-center text-slate-300">{text.empty}</p> : null}
-      {recommendations.data.excludedCount > 0 ? <p className="mt-6 text-xs text-slate-400">{recommendations.data.excludedCount} {text.excluded}</p> : null}
+      {recommendations.data.recommended.length === 0 ? <p className="mt-7 rounded-card border border-dashed border-line-strong p-7 text-center text-muted">{text.empty}</p> : null}
+      {recommendations.data.excludedCount > 0 ? <p className="mt-6 text-xs text-quiet">{recommendations.data.excludedCount} {text.excluded}</p> : null}
     </> : null}
   </section>;
 }
@@ -57,16 +57,16 @@ function RecommendationGroup({ items, title, text, additional = false }: { items
   const { locale } = useLocale();
   const dashboard = dashboardCopy[locale];
   return <section className="mt-8">
-    <div className="flex items-center gap-3"><h3 className="text-xl font-bold">{title}</h3><span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold">{items.length}</span></div>
-    <div className="mt-4 grid gap-4 lg:grid-cols-2">{items.map((item, index) => <article className="rounded-2xl bg-white p-5 text-slate-950" key={item.productId}>
-      <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold text-blue-700">#{index + 1} · {item.institution}</p><h4 className="mt-1 text-lg font-bold">{item.productName}</h4></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${additional ? "bg-slate-200 text-slate-700" : item.eligibilityStatus === "PUBLIC_CONDITIONS_MET" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}>{additional ? text.insufficient : item.eligibilityStatus === "PUBLIC_CONDITIONS_MET" ? text.met : text.confirm}</span></div>
-      <p className="mt-3 text-sm leading-6 text-slate-600">{item.targetSummary}</p>
-      <div className="mt-4 grid grid-cols-2 gap-3"><div className="rounded-xl bg-emerald-50 p-3"><p className="text-xs text-emerald-700">{text.confirmed}</p><p className="mt-1 text-lg font-extrabold text-emerald-950">{item.confirmedPublicConditions}/{item.totalPublicConditions}</p></div><div className="rounded-xl bg-amber-50 p-3"><p className="text-xs text-amber-700">{text.additional}</p><p className="mt-1 text-lg font-extrabold text-amber-950">{item.additionalCheckCount}{text.count}</p></div></div>
-      {!additional ? <div className="mt-4 grid gap-4 border-t pt-4 sm:grid-cols-2"><div><h5 className="text-xs font-black uppercase tracking-wider text-emerald-800">{dashboard.publicTitle}</h5><ul className="mt-2 space-y-1.5 text-xs text-slate-600">{item.eligibility.passedRules.slice(0, 4).map((rule, ruleIndex) => <li key={`${rule.key}-${ruleIndex}`}>✓ {rule.message}</li>)}</ul></div><div><h5 className="text-xs font-black uppercase tracking-wider text-amber-800">{dashboard.additionalTitle}</h5><ul className="mt-2 space-y-1.5 text-xs text-slate-600">{[...item.eligibility.externalChecks, ...item.eligibility.unknownRules].slice(0, 3).map((rule, ruleIndex) => <li key={`${rule.key}-${ruleIndex}`}>⚠ {rule.message}</li>)}</ul></div></div> : null}
-      <div className="mt-3 flex flex-wrap gap-2">{item.purposeMatched ? <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">✓ {text.purpose}</span> : null}{item.preferredConditionMatches > 0 ? <span className="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-semibold text-violet-700">✓ {text.preference}</span> : null}</div>
-      {additional && item.eligibility.insufficientReasons.length ? <ul className="mt-4 space-y-1 text-xs leading-5 text-slate-500">{item.eligibility.insufficientReasons.slice(0, 2).map((reason, reasonIndex) => <li key={`${reason.messageCode}-${reasonIndex}`}>• {reason.message}</li>)}</ul> : null}
-      <p className="mt-4 text-xs text-slate-400">{dashboard.baseDate} {item.informationBaseDate} · {dashboard.final}</p>
-      <div className="mt-4 flex flex-wrap gap-2"><Link className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-bold text-white" href={`/products/${item.productId}?tab=evidence`}>{dashboard.evidence}</Link><Link className="rounded-lg border px-3 py-2 text-xs font-bold text-slate-700" href={`/products/${item.productId}?tab=documents`}>{dashboard.documents}</Link><Link className="rounded-lg border px-3 py-2 text-xs font-bold text-slate-700" href={`/products/${item.productId}?tab=precheck#bank-inquiry`}>{dashboard.inquiry}</Link></div>
+    <div className="flex items-center gap-3"><h3 className="text-xl font-bold text-ink">{title}</h3><span className="rounded-full border border-line bg-surface-subtle px-3 py-1 text-xs font-semibold text-muted">{items.length}</span></div>
+    <div className="mt-4 grid gap-4 lg:grid-cols-2">{items.map((item, index) => <article className="rounded-card border border-line bg-surface p-5" key={item.productId}>
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold text-brand">#{index + 1} · {item.institution}</p><h4 className="mt-1 text-lg font-bold text-ink">{item.productName}</h4></div><span className={`rounded-full border px-3 py-1 text-xs font-semibold ${additional ? "border-status-neutral-border bg-status-neutral-bg text-status-neutral" : item.eligibilityStatus === "PUBLIC_CONDITIONS_MET" ? "border-status-success-border bg-status-success-bg text-status-success" : "border-status-warning-border bg-status-warning-bg text-status-warning"}`}>{additional ? text.insufficient : item.eligibilityStatus === "PUBLIC_CONDITIONS_MET" ? text.met : text.confirm}</span></div>
+      <p className="mt-3 text-sm leading-6 text-muted">{item.targetSummary}</p>
+      <div className="mt-4 grid grid-cols-2 gap-3"><div className="rounded-control border border-status-success-border bg-status-success-bg p-3"><p className="text-xs text-status-success">{text.confirmed}</p><p className="mt-1 text-lg font-bold text-status-success">{item.confirmedPublicConditions}/{item.totalPublicConditions}</p></div><div className="rounded-control border border-status-warning-border bg-status-warning-bg p-3"><p className="text-xs text-status-warning">{text.additional}</p><p className="mt-1 text-lg font-bold text-status-warning">{item.additionalCheckCount}{text.count}</p></div></div>
+      {!additional ? <div className="mt-4 grid gap-4 border-t border-line pt-4 sm:grid-cols-2"><div><h5 className="text-xs font-bold text-status-success">{dashboard.publicTitle}</h5><ul className="mt-2 space-y-1.5 text-xs text-muted">{item.eligibility.passedRules.slice(0, 4).map((rule, ruleIndex) => <li key={`${rule.key}-${ruleIndex}`}>✓ {rule.message}</li>)}</ul></div><div><h5 className="text-xs font-bold text-status-warning">{dashboard.additionalTitle}</h5><ul className="mt-2 space-y-1.5 text-xs text-muted">{[...item.eligibility.externalChecks, ...item.eligibility.unknownRules].slice(0, 3).map((rule, ruleIndex) => <li key={`${rule.key}-${ruleIndex}`}>△ {rule.message}</li>)}</ul></div></div> : null}
+      <div className="mt-3 flex flex-wrap gap-2">{item.purposeMatched ? <span className="rounded-full border border-status-info-border bg-status-info-bg px-2.5 py-1 text-xs font-semibold text-status-info">✓ {text.purpose}</span> : null}{item.preferredConditionMatches > 0 ? <span className="rounded-full border border-line bg-surface-subtle px-2.5 py-1 text-xs font-semibold text-muted">✓ {text.preference}</span> : null}</div>
+      {additional && item.eligibility.insufficientReasons.length ? <ul className="mt-4 space-y-1 text-xs leading-5 text-muted">{item.eligibility.insufficientReasons.slice(0, 2).map((reason, reasonIndex) => <li key={`${reason.messageCode}-${reasonIndex}`}>• {reason.message}</li>)}</ul> : null}
+      <p className="mt-4 text-xs text-quiet">{dashboard.baseDate} {item.informationBaseDate} · {dashboard.final}</p>
+      <div className="mt-4 flex flex-wrap gap-2"><Link className="ui-button ui-button-primary min-h-9 px-3 py-1.5 text-xs" href={`/products/${item.productId}?tab=evidence`}>{dashboard.evidence}</Link><Link className="ui-button ui-button-secondary min-h-9 px-3 py-1.5 text-xs" href={`/products/${item.productId}?tab=documents`}>{dashboard.documents}</Link><Link className="ui-button ui-button-secondary min-h-9 px-3 py-1.5 text-xs" href={`/products/${item.productId}?tab=precheck#bank-inquiry`}>{dashboard.inquiry}</Link></div>
     </article>)}</div>
   </section>;
 }

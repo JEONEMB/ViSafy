@@ -21,8 +21,8 @@ export function AiExplanationPanel({ data, loading, error }: { data?: AiExplanat
     window.setTimeout(() => setCopied(null), 1500);
   }
 
-  if (loading) return <section className="mt-6 animate-pulse rounded-3xl border bg-white p-7"><div className="h-5 w-36 rounded bg-slate-200" /><div className="mt-4 h-20 rounded bg-slate-100" /></section>;
-  if (error) return <p className="mt-6 rounded-2xl bg-rose-50 p-5 text-sm text-rose-800">{text.error}</p>;
+  if (loading) return <section className="ui-card mt-6 animate-pulse p-7"><div className="h-5 w-36 rounded bg-line" /><div className="mt-4 h-20 rounded bg-surface-subtle" /></section>;
+  if (error) return <p className="ui-alert-danger mt-6" role="alert">{text.error}</p>;
   if (!data) return null;
 
   const facts = data.facts;
@@ -36,20 +36,20 @@ export function AiExplanationPanel({ data, loading, error }: { data?: AiExplanat
     [text.unknown, String(facts.unknownCount)],
   ];
 
-  return <section className="mt-6 overflow-hidden rounded-3xl border border-cyan-200 bg-white shadow-sm" aria-live="polite">
-    <header className="bg-gradient-to-br from-cyan-950 to-slate-950 p-7 text-white sm:p-8">
-      <p className="text-sm font-bold text-cyan-300">{text.eyebrow}</p><h2 className="mt-2 text-2xl font-bold">{text.title}</h2><p className="mt-2 text-sm text-slate-300">{text.description}</p>
-      <p className="mt-5 rounded-2xl bg-white/10 p-5 text-sm leading-7">{data.explanation}</p>
+  return <section className="mt-6 overflow-hidden rounded-panel border border-line bg-surface" aria-live="polite">
+    <header className="border-b border-line bg-surface-subtle p-6 sm:p-8">
+      <p className="text-sm font-semibold text-accent">{text.eyebrow}</p><h2 className="mt-2 text-2xl font-bold text-ink">{text.title}</h2><p className="mt-2 text-sm leading-6 text-muted">{text.description}</p>
+      <p className="mt-5 rounded-card border border-line bg-surface p-5 text-sm leading-7 text-ink">{data.explanation}</p>
     </header>
     <div className="space-y-8 p-7 sm:p-8">
-      <section><h3 className="font-bold">{text.facts}</h3><dl className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{factItems.map(([label, value]) => <div className="rounded-xl bg-slate-50 p-3" key={label}><dt className="text-xs text-slate-500">{label}</dt><dd className="mt-1 font-mono text-sm font-bold text-slate-900">{value}</dd></div>)}</dl></section>
-      <section><h3 className="font-bold">{text.terms}</h3><div className="mt-3 grid gap-3 sm:grid-cols-2">{data.easyTerms.map((term) => <article className="rounded-xl border p-4" key={term.key}><h4 className="font-bold">{term.koreanTerm}{term.localizedTerm !== term.koreanTerm ? <span className="ml-2 text-sm font-medium text-cyan-800">({term.localizedTerm})</span> : null}</h4><p className="mt-2 text-sm leading-6 text-slate-600">{term.explanation}</p></article>)}</div></section>
-      <section><h3 className="font-bold">{text.inquiry}</h3>{data.inquiry ? <div className="mt-3 grid gap-4 lg:grid-cols-2"><MessageCard title={text.korean} value={data.inquiry.korean} action={copied === "ko" ? text.copied : text.copy} onCopy={() => void copyMessage(data.inquiry!.korean, "ko")} />{data.inquiry.language !== "ko" ? <MessageCard title={text.translated} value={data.inquiry.localized} action={copied === "localized" ? text.copied : text.copy} onCopy={() => void copyMessage(data.inquiry!.localized, "localized")} /> : null}</div> : <p className="mt-3 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-900">{text.noInquiry}</p>}</section>
-      <p className="rounded-xl bg-amber-50 p-4 text-sm font-medium text-amber-950">{data.disclaimer}</p>
+      <section><h3 className="font-bold text-ink">{text.facts}</h3><dl className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{factItems.map(([label, value]) => <div className="rounded-control border border-line bg-surface-subtle p-3" key={label}><dt className="text-xs text-muted">{label}</dt><dd className="mt-1 text-sm font-bold tabular-nums text-ink">{value}</dd></div>)}</dl></section>
+      <section><h3 className="font-bold text-ink">{text.terms}</h3><div className="mt-3 grid gap-3 sm:grid-cols-2">{data.easyTerms.map((term) => <article className="rounded-card border border-line p-4" key={term.key}><h4 className="font-bold text-ink">{term.koreanTerm}{term.localizedTerm !== term.koreanTerm ? <span className="ml-2 text-sm font-medium text-accent">({term.localizedTerm})</span> : null}</h4><p className="mt-2 text-sm leading-6 text-muted">{term.explanation}</p></article>)}</div></section>
+      <section><h3 className="font-bold text-ink">{text.inquiry}</h3>{data.inquiry ? <div className="mt-3 grid gap-4 lg:grid-cols-2"><MessageCard title={text.korean} value={data.inquiry.korean} action={copied === "ko" ? text.copied : text.copy} onCopy={() => void copyMessage(data.inquiry!.korean, "ko")} />{data.inquiry.language !== "ko" ? <MessageCard title={text.translated} value={data.inquiry.localized} action={copied === "localized" ? text.copied : text.copy} onCopy={() => void copyMessage(data.inquiry!.localized, "localized")} /> : null}</div> : <p className="ui-alert-success mt-3">{text.noInquiry}</p>}</section>
+      <p className="ui-alert-warning font-medium">{data.disclaimer}</p>
     </div>
   </section>;
 }
 
 function MessageCard({ title, value, action, onCopy }: { title: string; value: string; action: string; onCopy: () => void }) {
-  return <article className="rounded-2xl border border-cyan-100 bg-cyan-50/50 p-5"><div className="flex items-center justify-between gap-3"><h4 className="text-sm font-bold text-cyan-950">{title}</h4><button className="rounded-lg bg-cyan-900 px-3 py-1.5 text-xs font-bold text-white" onClick={onCopy} type="button">{action}</button></div><p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-700">{value}</p></article>;
+  return <article className="rounded-card border border-line bg-surface-subtle p-5"><div className="flex items-center justify-between gap-3"><h4 className="text-sm font-bold text-ink">{title}</h4><button className="ui-button ui-button-secondary min-h-9 px-3 py-1.5 text-xs" onClick={onCopy} type="button">{action}</button></div><p className="mt-4 whitespace-pre-line text-sm leading-7 text-muted">{value}</p></article>;
 }

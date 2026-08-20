@@ -15,9 +15,9 @@ const copy = {
 } as const;
 
 const readinessClass: Record<DiagnosisStatus, string> = {
-  READY: "bg-emerald-100 text-emerald-800",
-  PARTIAL: "bg-amber-100 text-amber-800",
-  NOT_READY: "bg-slate-200 text-slate-700",
+  READY: "border-status-success-border bg-status-success-bg text-status-success",
+  PARTIAL: "border-status-warning-border bg-status-warning-bg text-status-warning",
+  NOT_READY: "border-status-neutral-border bg-status-neutral-bg text-status-neutral",
 };
 
 export default function ProductsPage() {
@@ -30,35 +30,35 @@ export default function ProductsPage() {
   const typeLabel = { CHECKING_ACCOUNT: text.checking, SAVINGS: text.savings, LOAN: text.loan, CARD: text.card, INVESTMENT: text.investment };
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-      <p className="text-sm font-semibold text-blue-700">{text.eyebrow}</p>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{text.title}</h1>
-      <p className="mt-3 text-slate-600">{text.description}</p>
+    <main className="ui-page">
+      <p className="ui-eyebrow">{text.eyebrow}</p>
+      <h1 className="ui-page-heading mt-2">{text.title}</h1>
+      <p className="mt-3 max-w-reading text-base leading-7 text-muted">{text.description}</p>
 
       <RecommendationBoard />
 
-      <section className="mt-8 grid gap-3 rounded-2xl border bg-white p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-5" aria-label="Product filters">
-        <label className="text-xs font-semibold text-slate-600">{text.purpose}<select className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" value={filters.financialPurpose ?? ""} onChange={(event) => setFilter("financialPurpose", event.target.value)}><option value="">{text.all}</option><option value="ACCOUNT">{text.account}</option><option value="SAVINGS">{text.savings}</option><option value="LOAN">{text.loan}</option><option value="CARD">{text.card}</option><option value="INVESTMENT">{text.investment}</option></select></label>
-        <label className="text-xs font-semibold text-slate-600">{text.type}<select className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" value={filters.productType ?? ""} onChange={(event) => setFilter("productType", event.target.value)}><option value="">{text.all}</option><option value="CHECKING_ACCOUNT">{text.checking}</option><option value="SAVINGS">{text.savings}</option><option value="LOAN">{text.loan}</option><option value="CARD">{text.card}</option><option value="INVESTMENT">{text.investment}</option></select></label>
-        <label className="text-xs font-semibold text-slate-600">{text.bank}<input className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" value={filters.institution ?? ""} onChange={(event) => setFilter("institution", event.target.value)} /></label>
-        <label className="text-xs font-semibold text-slate-600">{text.status}<select className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" value={filters.diagnosisStatus ?? ""} onChange={(event) => setFilter("diagnosisStatus", event.target.value)}><option value="">{text.all}</option><option value="READY">{text.ready}</option><option value="PARTIAL">{text.partial}</option><option value="NOT_READY">{text.notReady}</option></select></label>
-        <label className="flex items-center gap-2 self-end rounded-lg bg-slate-50 px-3 py-2.5 text-sm"><input type="checkbox" checked={filters.foreignerTarget === "true"} onChange={(event) => setFilter("foreignerTarget", event.target.checked ? "true" : "")} />{text.foreigner}</label>
+      <section className="ui-card mt-8 grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-5" aria-label="Product filters">
+        <label className="ui-label">{text.purpose}<select className="ui-input text-sm" value={filters.financialPurpose ?? ""} onChange={(event) => setFilter("financialPurpose", event.target.value)}><option value="">{text.all}</option><option value="ACCOUNT">{text.account}</option><option value="SAVINGS">{text.savings}</option><option value="LOAN">{text.loan}</option><option value="CARD">{text.card}</option><option value="INVESTMENT">{text.investment}</option></select></label>
+        <label className="ui-label">{text.type}<select className="ui-input text-sm" value={filters.productType ?? ""} onChange={(event) => setFilter("productType", event.target.value)}><option value="">{text.all}</option><option value="CHECKING_ACCOUNT">{text.checking}</option><option value="SAVINGS">{text.savings}</option><option value="LOAN">{text.loan}</option><option value="CARD">{text.card}</option><option value="INVESTMENT">{text.investment}</option></select></label>
+        <label className="ui-label">{text.bank}<input className="ui-input text-sm" value={filters.institution ?? ""} onChange={(event) => setFilter("institution", event.target.value)} /></label>
+        <label className="ui-label">{text.status}<select className="ui-input text-sm" value={filters.diagnosisStatus ?? ""} onChange={(event) => setFilter("diagnosisStatus", event.target.value)}><option value="">{text.all}</option><option value="READY">{text.ready}</option><option value="PARTIAL">{text.partial}</option><option value="NOT_READY">{text.notReady}</option></select></label>
+        <label className="flex min-h-12 items-center gap-3 self-end rounded-control border border-line bg-surface-subtle px-4 text-sm font-medium text-ink"><input className="h-5 w-5 accent-brand" type="checkbox" checked={filters.foreignerTarget === "true"} onChange={(event) => setFilter("foreignerTarget", event.target.checked ? "true" : "")} />{text.foreigner}</label>
       </section>
 
       <section className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {products.data?.map((product) => (
-          <article className="flex min-h-72 flex-col rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg" key={product.id}>
-            <div className="flex items-start justify-between gap-3"><p className="text-sm font-semibold text-blue-700">{product.institution}</p><span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ${readinessClass[product.diagnosisStatus]}`}>{statusLabel[product.diagnosisStatus]}</span></div>
-            <h2 className="mt-4 text-xl font-bold">{product.productName}</h2>
-            <p className="mt-2 text-xs font-medium text-slate-400">{typeLabel[product.productType]}</p>
-            <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600">{product.targetSummary}</p>
-            <div className="mt-auto pt-6"><p className="text-xs text-slate-400">{text.source} {product.rules.length} · {text.baseDate} {product.informationBaseDate}</p><Link className="mt-3 inline-flex font-semibold text-blue-700" href={`/products/${product.id}`}>{text.detail} →</Link></div>
+          <article className="ui-card flex flex-col p-6 transition duration-200 hover:-translate-y-0.5 hover:border-line-strong" key={product.id}>
+            <div className="flex items-start justify-between gap-3"><p className="text-sm font-semibold text-brand">{product.institution}</p><span className={`whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold ${readinessClass[product.diagnosisStatus]}`}>{statusLabel[product.diagnosisStatus]}</span></div>
+            <h2 className="mt-4 text-xl font-bold leading-snug text-ink">{product.productName}</h2>
+            <p className="mt-2 text-xs font-medium text-quiet">{typeLabel[product.productType]}</p>
+            <p className="mt-4 line-clamp-3 text-sm leading-6 text-muted">{product.targetSummary}</p>
+            <div className="mt-auto border-t border-line pt-5"><p className="text-xs leading-5 text-quiet">{text.source} {product.rules.length} · {text.baseDate} {product.informationBaseDate}</p><Link className="ui-link mt-3 inline-flex min-h-11 items-center" href={`/products/${product.id}`}>{text.detail} →</Link></div>
           </article>
         ))}
       </section>
-      {products.isLoading ? <p className="mt-12 text-center text-slate-500">Loading...</p> : null}
-      {products.isError ? <p className="mt-12 rounded-xl bg-rose-100 p-5 text-rose-800">{products.error.message}</p> : null}
-      {products.data?.length === 0 ? <p className="mt-12 rounded-xl border border-dashed p-10 text-center text-slate-500">{text.empty}</p> : null}
+      {products.isLoading ? <p className="mt-12 text-center text-muted" role="status">Loading...</p> : null}
+      {products.isError ? <p className="ui-alert-danger mt-12" role="alert">{products.error.message}</p> : null}
+      {products.data?.length === 0 ? <p className="mt-12 rounded-card border border-dashed border-line-strong p-10 text-center text-muted">{text.empty}</p> : null}
     </main>
   );
 }

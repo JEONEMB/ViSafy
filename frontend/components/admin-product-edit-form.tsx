@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import type { FinancialProduct } from "@/types/product";
 import type { SourceDocument } from "@/types/data-pipeline";
 
-const input = "mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2";
+const input = "ui-input";
 
 export function AdminProductEditForm({ product, sources, pending, onCancel, onSave }: {
   product: FinancialProduct; sources: SourceDocument[]; pending: boolean;
@@ -14,7 +14,7 @@ export function AdminProductEditForm({ product, sources, pending, onCancel, onSa
     event.preventDefault(); const data = new FormData(event.currentTarget);
     onSave({ institution: data.get("institution"), productName: data.get("productName"), productType: data.get("productType"), financialPurpose: data.get("financialPurpose"), description: data.get("description"), targetSummary: data.get("targetSummary"), sourceDocumentId: Number(data.get("sourceDocumentId")), active: data.get("active") === "on", foreignerTarget: data.get("foreignerTarget") === "on", informationBaseDate: data.get("informationBaseDate"), publicConditions: data.get("publicConditions"), additionalConditions: data.get("additionalConditions"), requiredDocuments: data.get("requiredDocuments"), applicationMethod: data.get("applicationMethod") });
   }
-  return <form className="mt-5 grid gap-4 rounded-2xl border border-blue-200 bg-blue-50/40 p-5 sm:grid-cols-2" onSubmit={submit}>
+  return <form className="mt-5 grid gap-4 rounded-card border border-status-info-border bg-status-info-bg p-5 sm:grid-cols-2" onSubmit={submit}>
     <label className="text-sm">기관명<input className={input} defaultValue={product.institution} name="institution" required /></label>
     <label className="text-sm">상품명<input className={input} defaultValue={product.productName} name="productName" required /></label>
     <label className="text-sm">상품 유형<select className={input} defaultValue={product.productType} name="productType"><option value="CHECKING_ACCOUNT">입출금 계좌</option><option value="SAVINGS">예·적금</option><option value="LOAN">대출</option><option value="CARD">카드</option><option value="INVESTMENT">투자</option></select></label>
@@ -28,6 +28,6 @@ export function AdminProductEditForm({ product, sources, pending, onCancel, onSa
     <label className="text-sm sm:col-span-2">추가 확인조건<textarea className={input} defaultValue={product.additionalConditions} name="additionalConditions" required /></label>
     <label className="text-sm sm:col-span-2">기존 서류 안내<textarea className={input} defaultValue={product.requiredDocuments} name="requiredDocuments" required /></label>
     <label className="text-sm sm:col-span-2">기존 신청방법<textarea className={input} defaultValue={product.applicationMethod} name="applicationMethod" required /></label>
-    <div className="flex gap-2 sm:col-span-2"><button className="rounded-lg bg-blue-700 px-4 py-2 font-bold text-white disabled:opacity-50" disabled={pending}>{pending ? "저장 중..." : "수정 저장"}</button><button className="rounded-lg border bg-white px-4 py-2 font-bold" onClick={onCancel} type="button">취소</button></div>
+    <div className="flex gap-2 sm:col-span-2"><button className="ui-button ui-button-primary" disabled={pending}>{pending ? "저장 중..." : "수정 저장"}</button><button className="ui-button ui-button-secondary" onClick={onCancel} type="button">취소</button></div>
   </form>;
 }
