@@ -19,8 +19,19 @@ export type ProductRule = {
   validTo?: string | null;
   reviewStatus: "APPROVED";
   verifiedAt: string;
+  reviewedBy?: string | null;
   description: string;
   sourceExcerpt: string;
+  evidence: {
+    ruleId: number;
+    sourceDocumentId: number;
+    sourceExcerpt: string;
+    sourceLocator: string;
+    pageNumber?: number | null;
+    sectionName?: string | null;
+    verifiedAt: string;
+    reviewedBy?: string | null;
+  };
 };
 
 export type FinancialProduct = {

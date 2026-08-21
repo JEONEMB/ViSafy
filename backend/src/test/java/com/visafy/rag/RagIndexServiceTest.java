@@ -43,7 +43,7 @@ class RagIndexServiceTest {
         RagIndexService.QualityMetrics metrics = service.quality();
 
         assertThat(metrics.lastIndexedAt()).isNotNull();
-        assertThat(metrics.lastReindexResult()).isEqualTo(new RagIndexService.ReindexResult(0, 0, 0));
+        assertThat(metrics.lastReindexResult()).isEqualTo(new RagIndexService.ReindexResult(0, 0, 0, 0));
     }
 
     private void emptyRepositories() {

@@ -45,8 +45,9 @@ public class RagIndexService {
             associations.computeIfAbsent(product.getSourceDocument().getId(), ignored -> new LinkedHashMap<>())
                     .computeIfAbsent(product.getId(), ignored -> new LinkedHashSet<>());
         }
-        for (ProductRule rule : ruleRepository.findAllByActiveTrue()) {
-            if (!rule.getProduct().isActive() || !rule.isEffective(today)) continue;
+        List<ProductRule> effectiveRules = ruleRepository.findAllByActiveTrue().stream()
+                .filter(rule -> rule.getProduct().isActive() && rule.isEffective(today)).toList();
+        for (ProductRule rule : effectiveRules) {
             associations.computeIfAbsent(rule.getSourceDocument().getId(), ignored -> new LinkedHashMap<>())
                     .computeIfAbsent(rule.getProduct().getId(), ignored -> new LinkedHashSet<>())
                     .add(rule.getRuleKey());
@@ -54,6 +55,7 @@ public class RagIndexService {
 
         List<IndexDocument> documents = new ArrayList<>();
         int skippedUnlinked = 0;
+        int skippedUnavailableSnapshot = 0;
         for (SourceDocument source : sources) {
             if (!source.isEffective(today)) continue;
             Map<Long, Set<String>> products = associations.get(source.getId());
@@ -61,14 +63,31 @@ public class RagIndexService {
                 skippedUnlinked++;
                 continue;
             }
-            products.forEach((productId, ruleKeys) -> documents.add(new IndexDocument(
-                    source.getId(), source.getInstitution(), source.getTitle(), source.getSourceType().name(),
-                    source.getSourceUrl(), source.getRetrievedAt(), source.getValidFrom(), source.getValidTo(),
-                    productId, source.getLanguage(), source.getReviewStatus().name(), source.getContentHash(),
-                    source.getSnapshotText(), List.copyOf(ruleKeys))));
+            for (Map.Entry<Long, Set<String>> productEntry : products.entrySet()) {
+                Long productId = productEntry.getKey();
+                String content = source.getSnapshotText();
+                if (content == null || content.isBlank()) {
+                    content = effectiveRules.stream()
+                            .filter(rule -> rule.getSourceDocument().getId().equals(source.getId()))
+                            .filter(rule -> rule.getProduct().getId().equals(productId))
+                            .map(ProductRule::getSourceExcerpt)
+                            .filter(excerpt -> excerpt != null && !excerpt.isBlank())
+                            .distinct().reduce((left, right) -> left + "\n\n" + right).orElse(null);
+                }
+                if (content == null || content.isBlank()) {
+                    skippedUnavailableSnapshot++;
+                    continue;
+                }
+                documents.add(new IndexDocument(
+                        source.getId(), source.getInstitution(), source.getTitle(), source.getSourceType().name(),
+                        source.getSourceUrl(), source.getRetrievedAt(), source.getValidFrom(), source.getValidTo(),
+                        productId, source.getLanguage(), source.getReviewStatus().name(), source.getContentHash(),
+                        content, List.copyOf(productEntry.getValue())));
+            }
         }
         SyncResponse response = aiClient.sync(documents);
-        ReindexResult result = new ReindexResult(response.indexedDocuments(), response.indexedChunks(), skippedUnlinked);
+        ReindexResult result = new ReindexResult(response.indexedDocuments(), response.indexedChunks(),
+                skippedUnlinked, skippedUnavailableSnapshot);
         lastIndexedAt = Instant.now();
         lastReindexResult = result;
         return result;
@@ -102,7 +121,8 @@ public class RagIndexService {
                 lastIndexedAt, lastReindexResult);
     }
 
-    public record ReindexResult(int indexedDocuments, int indexedChunks, int skippedUnlinkedSources) {}
+    public record ReindexResult(int indexedDocuments, int indexedChunks, int skippedUnlinkedSources,
+                                int skippedUnavailableSnapshots) {}
     public record QualityMetrics(
             long approvedEffectiveSources,
             long indexedEligibleSources,

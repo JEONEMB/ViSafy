@@ -10,9 +10,11 @@ export type SourceDocument = {
   sourceType: SourceType;
   title: string;
   sourceUrl: string;
-  snapshotText: string;
+  snapshotText?: string | null;
+  snapshotPath?: string | null;
   contentHash: string;
   retrievedAt: string;
+  informationBaseDate: string;
   validFrom?: string;
   validTo?: string;
   language: "ko" | "en" | "vi";
@@ -59,4 +61,5 @@ export type RuleCandidate = {
   confidence: number;
   reviewStatus: ReviewStatus;
   lastVerifiedAt?: string;
+  reviewedBy?: string | null;
 };

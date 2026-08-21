@@ -18,7 +18,7 @@ export const reviewRule = (id: number, body: Record<string, unknown>) =>
 export const getRuleHistory = (id: number) =>
   apiGet<RuleChangeHistory[]>(`/api/admin/rules/${id}/history`);
 export const reindexRag = () =>
-  apiPost<{ indexedDocuments: number; indexedChunks: number; skippedUnlinkedSources: number }, Record<string, never>>("/api/admin/rag/reindex", {});
+  apiPost<{ indexedDocuments: number; indexedChunks: number; skippedUnlinkedSources: number; skippedUnavailableSnapshots: number }, Record<string, never>>("/api/admin/rag/reindex", {});
 
 export type RagQualityMetrics = {
   approvedEffectiveSources: number;
@@ -30,7 +30,7 @@ export type RagQualityMetrics = {
   evidenceCompleteRules: number;
   evidenceCoveragePercent: number;
   lastIndexedAt: string | null;
-  lastReindexResult: { indexedDocuments: number; indexedChunks: number; skippedUnlinkedSources: number } | null;
+  lastReindexResult: { indexedDocuments: number; indexedChunks: number; skippedUnlinkedSources: number; skippedUnavailableSnapshots: number } | null;
 };
 
 export const getRagQuality = () => apiGet<RagQualityMetrics>("/api/admin/rag/quality");

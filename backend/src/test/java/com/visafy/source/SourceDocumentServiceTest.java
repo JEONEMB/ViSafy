@@ -34,6 +34,30 @@ class SourceDocumentServiceTest {
 
         assertThat(source.getSnapshotText()).isEqualTo("official snapshot");
         assertThat(source.getContentHash()).hasSize(64);
+        assertThat(source.getInformationBaseDate()).isEqualTo(LocalDate.now());
+    }
+
+    @Test
+    void storesAFileSnapshotReferenceWithSuppliedHash() {
+        when(repository.save(any(SourceDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        SourceDocument source = service.create("Bank", SourceType.TERMS, "Official terms",
+                "https://www.kbstar.com/terms", null, "snapshots/terms.pdf", "a".repeat(64),
+                LocalDate.of(2026, 8, 20), null, null, "ko");
+
+        assertThat(source.getSnapshotText()).isNull();
+        assertThat(source.getSnapshotPath()).isEqualTo("snapshots/terms.pdf");
+        assertThat(source.getContentHash()).isEqualTo("a".repeat(64));
+        assertThat(source.getInformationBaseDate()).isEqualTo(LocalDate.of(2026, 8, 20));
+    }
+
+    @Test
+    void rejectsSnapshotPathWithoutSha256() {
+        assertThatThrownBy(() -> service.create("Bank", SourceType.TERMS, "Official terms",
+                "https://www.kbstar.com/terms", null, "snapshots/terms.pdf", null,
+                LocalDate.of(2026, 8, 20), null, null, "ko"))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("SHA-256");
     }
 
     @Test

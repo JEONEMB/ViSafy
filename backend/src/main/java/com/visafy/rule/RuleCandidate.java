@@ -60,6 +60,8 @@ public class RuleCandidate {
     @Column(nullable = false, length = 40)
     private ReviewStatus reviewStatus;
     private Instant lastVerifiedAt;
+    @Column(length = 120)
+    private String reviewedBy;
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
     @Column(nullable = false)
@@ -110,10 +112,22 @@ public class RuleCandidate {
         this.updatedAt = Instant.now();
     }
 
-    public void approve() { reviewStatus = ReviewStatus.APPROVED; lastVerifiedAt = Instant.now(); updatedAt = lastVerifiedAt; }
-    public void reject() { reviewStatus = ReviewStatus.REJECTED; lastVerifiedAt = Instant.now(); updatedAt = lastVerifiedAt; }
-    public void markUnknown() { ruleLevel = RuleLevel.UNKNOWN; ruleNature = RuleNature.UNKNOWN_ELIGIBILITY; approve(); }
-    public void requireReview() { reviewStatus = ReviewStatus.NEED_REVIEW; updatedAt = Instant.now(); }
+    public void approve() { approve("system"); }
+    public void approve(String reviewer) { completeReview(ReviewStatus.APPROVED, reviewer); }
+    public void reject() { reject("system"); }
+    public void reject(String reviewer) { completeReview(ReviewStatus.REJECTED, reviewer); }
+    public void markUnknown() { markUnknown("system"); }
+    public void markUnknown(String reviewer) {
+        ruleLevel = RuleLevel.UNKNOWN;
+        ruleNature = RuleNature.UNKNOWN_ELIGIBILITY;
+        approve(reviewer);
+    }
+    public void requireReview() { requireReview("system"); }
+    public void requireReview(String reviewer) {
+        reviewStatus = ReviewStatus.NEED_REVIEW;
+        reviewedBy = normalizeReviewer(reviewer);
+        updatedAt = Instant.now();
+    }
     public void expire() { reviewStatus = ReviewStatus.EXPIRED; updatedAt = Instant.now(); }
 
     public Long getId() { return id; }
@@ -135,4 +149,16 @@ public class RuleCandidate {
     public BigDecimal getConfidence() { return confidence; }
     public ReviewStatus getReviewStatus() { return reviewStatus; }
     public Instant getLastVerifiedAt() { return lastVerifiedAt; }
+    public String getReviewedBy() { return reviewedBy; }
+
+    private void completeReview(ReviewStatus status, String reviewer) {
+        reviewStatus = status;
+        reviewedBy = normalizeReviewer(reviewer);
+        lastVerifiedAt = Instant.now();
+        updatedAt = lastVerifiedAt;
+    }
+
+    private String normalizeReviewer(String reviewer) {
+        return reviewer == null || reviewer.isBlank() ? "system" : reviewer.strip();
+    }
 }

@@ -33,8 +33,8 @@ public class SourceDocumentController {
     @ResponseStatus(HttpStatus.CREATED)
     public SourceResponse create(@Valid @RequestBody CreateSourceRequest request) {
         return SourceResponse.from(service.create(request.institution(), request.sourceType(), request.title(),
-                request.sourceUrl(), request.snapshotText(), request.validFrom(), request.validTo(),
-                request.language()));
+                request.sourceUrl(), request.snapshotText(), request.snapshotPath(), request.contentHash(),
+                request.informationBaseDate(), request.validFrom(), request.validTo(), request.language()));
     }
 
     @GetMapping
@@ -52,7 +52,8 @@ public class SourceDocumentController {
     @PutMapping("/{id}")
     public SourceResponse update(@PathVariable Long id, @Valid @RequestBody UpdateSourceRequest request) {
         return SourceResponse.from(service.update(id, request.institution(), request.sourceType(), request.title(),
-                request.sourceUrl(), request.validFrom(), request.validTo(), request.language()));
+                request.sourceUrl(), request.informationBaseDate(), request.validFrom(), request.validTo(),
+                request.language()));
     }
 
     @PutMapping("/{id}/status")
@@ -65,7 +66,8 @@ public class SourceDocumentController {
     public record SourceStatusRequest(@NotNull SourceLifecycleStatus status) {}
     public record UpdateSourceRequest(
             @NotBlank String institution, @NotNull SourceType sourceType, @NotBlank String title,
-            @NotBlank @URL(protocol = "https") String sourceUrl, LocalDate validFrom, LocalDate validTo,
+            @NotBlank @URL(protocol = "https") String sourceUrl, @NotNull LocalDate informationBaseDate,
+            LocalDate validFrom, LocalDate validTo,
             @NotBlank @Pattern(regexp = "ko|en|vi") String language
     ) {}
 
@@ -74,7 +76,10 @@ public class SourceDocumentController {
             @NotNull SourceType sourceType,
             @NotBlank String title,
             @NotBlank @URL(protocol = "https") String sourceUrl,
-            @NotBlank String snapshotText,
+            String snapshotText,
+            String snapshotPath,
+            @Pattern(regexp = "(?i)[0-9a-f]{64}") String contentHash,
+            @NotNull LocalDate informationBaseDate,
             LocalDate validFrom,
             LocalDate validTo,
             @NotBlank @Pattern(regexp = "ko|en|vi") String language
@@ -83,14 +88,16 @@ public class SourceDocumentController {
 
     public record SourceResponse(
             Long id, String institution, SourceType sourceType, String title, String sourceUrl,
-            String snapshotText, String snapshotPath, String contentHash, Instant retrievedAt, LocalDate validFrom,
+            String snapshotText, String snapshotPath, String contentHash, Instant retrievedAt,
+            LocalDate informationBaseDate, LocalDate validFrom,
             LocalDate validTo, String language, ReviewStatus reviewStatus,
             SourceLifecycleStatus lifecycleStatus, Instant lastVerifiedAt, String reviewedBy
     ) {
         static SourceResponse from(SourceDocument source) {
             return new SourceResponse(source.getId(), source.getInstitution(), source.getSourceType(),
                     source.getTitle(), source.getSourceUrl(), source.getSnapshotText(), source.getSnapshotPath(), source.getContentHash(),
-                    source.getRetrievedAt(), source.getValidFrom(), source.getValidTo(), source.getLanguage(),
+                    source.getRetrievedAt(), source.getInformationBaseDate(), source.getValidFrom(),
+                    source.getValidTo(), source.getLanguage(),
                     source.getReviewStatus(), source.getLifecycleStatus(), source.getLastVerifiedAt(),
                     source.getReviewedBy());
         }

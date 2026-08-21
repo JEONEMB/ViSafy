@@ -105,7 +105,8 @@ public class RuleCandidateController {
             RuleOperator operator, String ruleValue, RuleLevel ruleLevel, boolean mandatory,
             RuleNature ruleNature, String sourceExcerpt, String sourceLocator, Integer pageNumber,
             String sectionName, LocalDate validFrom, LocalDate validTo,
-            String description, BigDecimal confidence, ReviewStatus reviewStatus, Instant lastVerifiedAt
+            String description, BigDecimal confidence, ReviewStatus reviewStatus, Instant lastVerifiedAt,
+            String reviewedBy
     ) {
         static RuleCandidateResponse from(RuleCandidate candidate) {
             return new RuleCandidateResponse(candidate.getId(), candidate.getSourceDocument().getId(),
@@ -114,7 +115,8 @@ public class RuleCandidateController {
                     candidate.isMandatory(), candidate.getRuleNature(), candidate.getSourceExcerpt(),
                     candidate.getSourceLocator(), candidate.getPageNumber(), candidate.getSectionName(),
                     candidate.getValidFrom(), candidate.getValidTo(), candidate.getDescription(),
-                    candidate.getConfidence(), candidate.getReviewStatus(), candidate.getLastVerifiedAt());
+                    candidate.getConfidence(), candidate.getReviewStatus(), candidate.getLastVerifiedAt(),
+                    candidate.getReviewedBy());
         }
     }
 

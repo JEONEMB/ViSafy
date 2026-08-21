@@ -44,6 +44,9 @@ public class SourceDocument {
     @Column(nullable = false)
     private Instant retrievedAt;
 
+    @Column(nullable = false)
+    private LocalDate informationBaseDate;
+
     private LocalDate validFrom;
     private LocalDate validTo;
 
@@ -72,14 +75,24 @@ public class SourceDocument {
     public SourceDocument(String institution, SourceType sourceType, String title, String sourceUrl,
                           String snapshotText, String contentHash, LocalDate validFrom, LocalDate validTo,
                           String language) {
+        this(institution, sourceType, title, sourceUrl, snapshotText, null, contentHash,
+                LocalDate.now(), validFrom, validTo, language);
+    }
+
+    public SourceDocument(String institution, SourceType sourceType, String title, String sourceUrl,
+                          String snapshotText, String snapshotPath, String contentHash,
+                          LocalDate informationBaseDate, LocalDate validFrom, LocalDate validTo,
+                          String language) {
         Instant now = Instant.now();
         this.institution = institution;
         this.sourceType = sourceType;
         this.title = title;
         this.sourceUrl = sourceUrl;
         this.snapshotText = snapshotText;
+        this.snapshotPath = snapshotPath;
         this.contentHash = contentHash;
         this.retrievedAt = now;
+        this.informationBaseDate = informationBaseDate;
         this.validFrom = validFrom;
         this.validTo = validTo;
         this.language = language;
@@ -113,8 +126,10 @@ public class SourceDocument {
     }
 
     public void updateMetadata(String institution, SourceType sourceType, String title, String sourceUrl,
-                               LocalDate validFrom, LocalDate validTo, String language) {
+                               LocalDate informationBaseDate, LocalDate validFrom, LocalDate validTo,
+                               String language) {
         this.institution = institution; this.sourceType = sourceType; this.title = title; this.sourceUrl = sourceUrl;
+        this.informationBaseDate = informationBaseDate;
         this.validFrom = validFrom; this.validTo = validTo; this.language = language;
         this.lastVerifiedAt = Instant.now(); this.updatedAt = this.lastVerifiedAt;
         if (validTo != null && validTo.isBefore(LocalDate.now())) this.reviewStatus = ReviewStatus.EXPIRED;
@@ -149,6 +164,7 @@ public class SourceDocument {
     public String getSnapshotPath() { return snapshotPath; }
     public String getContentHash() { return contentHash; }
     public Instant getRetrievedAt() { return retrievedAt; }
+    public LocalDate getInformationBaseDate() { return informationBaseDate; }
     public LocalDate getValidFrom() { return validFrom; }
     public LocalDate getValidTo() { return validTo; }
     public String getLanguage() { return language; }

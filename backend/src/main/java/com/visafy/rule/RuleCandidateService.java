@@ -113,8 +113,8 @@ public class RuleCandidateService {
                 candidate.applyCorrection(operator, ruleValue, sourceExcerpt);
                 approveWithConflictCheck(candidate, reviewer);
             }
-            case MARK_UNKNOWN -> candidate.markUnknown();
-            case REJECT -> candidate.reject();
+            case MARK_UNKNOWN -> candidate.markUnknown(reviewer);
+            case REJECT -> candidate.reject(reviewer);
         }
         productRuleService.synchronize(candidate);
         saveHistory(candidate, action, reviewer, before);
@@ -136,23 +136,31 @@ public class RuleCandidateService {
     }
 
     private void approveWithConflictCheck(RuleCandidate candidate, String reviewer) {
-        candidate.approve();
+        candidate.approve(reviewer);
         List<RuleCandidate> approved = repository.findByProductCodeAndRuleKeyAndReviewStatusAndIdNot(
                 candidate.getProductCode(), candidate.getRuleKey(), ReviewStatus.APPROVED, candidate.getId());
         boolean conflict = approved.stream().anyMatch(existing ->
-                existing.getOperator().equals(candidate.getOperator())
+                isCurrentlyEffective(existing)
+                        && existing.getOperator().equals(candidate.getOperator())
                         && !existing.getRuleValue().equals(candidate.getRuleValue()));
         if (conflict) {
-            candidate.requireReview();
-            approved.forEach(existing -> {
+            candidate.requireReview(reviewer);
+            approved.stream().filter(this::isCurrentlyEffective).forEach(existing -> {
                 RuleChangeHistory.RuleSnapshot existingBefore = RuleChangeHistory.snapshot(existing);
-                existing.requireReview();
+                existing.requireReview(reviewer);
                 productRuleService.synchronize(existing);
                 historyRepository.save(new RuleChangeHistory(existing, "SOURCE_CONFLICT",
                         reviewer == null || reviewer.isBlank() ? "system" : reviewer,
                         existingBefore, RuleChangeHistory.snapshot(existing)));
             });
         }
+    }
+
+    private boolean isCurrentlyEffective(RuleCandidate candidate) {
+        LocalDate today = LocalDate.now();
+        return candidate.getSourceDocument().isEffective(today)
+                && (candidate.getValidFrom() == null || !candidate.getValidFrom().isAfter(today))
+                && (candidate.getValidTo() == null || !candidate.getValidTo().isBefore(today));
     }
 
     public enum ReviewAction {

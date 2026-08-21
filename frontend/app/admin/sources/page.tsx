@@ -53,7 +53,7 @@ export default function SourceAdminPage() {
   });
   const ragMutation = useMutation({
     mutationFn: reindexRag,
-    onSuccess: (result) => { void queryClient.invalidateQueries({ queryKey: ["rag-quality"] }); setMessage(`RAG 색인 완료: 문서 ${result.indexedDocuments}개 · Chunk ${result.indexedChunks}개 · 미연결 Source ${result.skippedUnlinkedSources}개`); },
+    onSuccess: (result) => { void queryClient.invalidateQueries({ queryKey: ["rag-quality"] }); setMessage(`RAG 색인 완료: 문서 ${result.indexedDocuments}개 · Chunk ${result.indexedChunks}개 · 미연결 Source ${result.skippedUnlinkedSources}개 · 본문/Evidence 없음 ${result.skippedUnavailableSnapshots}개`); },
     onError: (error: Error) => setMessage(error.message),
   });
   const sourceEditMutation = useMutation({
@@ -72,7 +72,9 @@ export default function SourceAdminPage() {
     const data = new FormData(event.currentTarget);
     sourceMutation.mutate({
       institution: data.get("institution"), sourceType: data.get("sourceType"), title: data.get("title"),
-      sourceUrl: data.get("sourceUrl"), snapshotText: data.get("snapshotText"),
+      sourceUrl: data.get("sourceUrl"), snapshotText: data.get("snapshotText") || null,
+      snapshotPath: data.get("snapshotPath") || null, contentHash: data.get("contentHash") || null,
+      informationBaseDate: data.get("informationBaseDate"),
       validFrom: data.get("validFrom") || null, validTo: data.get("validTo") || null, language: data.get("language"),
     });
   }
@@ -123,7 +125,10 @@ export default function SourceAdminPage() {
           <input className={inputClass} name="title" placeholder="문서 제목" required />
           <label className="text-sm">문서 언어<select className={inputClass} name="language" defaultValue="ko"><option value="ko">한국어</option><option value="en">English</option><option value="vi">Tiếng Việt</option></select></label>
           <input className={inputClass} name="sourceUrl" type="url" placeholder="https://obank.kbstar.com/..." required />
-          <textarea className={`${inputClass} min-h-36`} name="snapshotText" placeholder="수집 당시 공식 문서의 텍스트를 붙여 넣으세요." required />
+          <label className="text-sm">정보 기준일<input className={inputClass} name="informationBaseDate" type="date" required /></label>
+          <textarea className={`${inputClass} min-h-36`} name="snapshotText" placeholder="수집 당시 공식 문서 텍스트 (텍스트 또는 파일 경로 중 하나 필수)" />
+          <input className={inputClass} name="snapshotPath" placeholder="Snapshot 파일 경로 (선택)" />
+          <input className={inputClass} name="contentHash" pattern="[0-9A-Fa-f]{64}" placeholder="파일 Snapshot SHA-256 (경로만 등록할 때 필수)" />
           <div className="grid gap-3 sm:grid-cols-2"><label className="text-sm">유효 시작일<input className={inputClass} name="validFrom" type="date" /></label><label className="text-sm">유효 종료일<input className={inputClass} name="validTo" type="date" /></label></div>
           <button className="ui-button ui-button-primary" disabled={sourceMutation.isPending}>Source 저장</button>
         </form>
@@ -157,9 +162,9 @@ export default function SourceAdminPage() {
               <div><h3 className="font-bold text-ink">{source.institution} · {source.title}</h3><a className="ui-link text-sm" href={source.sourceUrl} rel="noreferrer" target="_blank">공식 원문 열기 ↗</a></div>
               <div className="flex flex-wrap gap-2"><span className={`rounded-full border px-3 py-1 text-xs font-semibold ${badge[source.reviewStatus]}`}>{source.reviewStatus}</span><span className="rounded-full border border-line bg-surface-subtle px-3 py-1 text-xs font-semibold text-muted">{source.lifecycleStatus}</span></div>
             </div>
-            <p className="mt-3 break-all text-xs text-muted">{source.language.toUpperCase()} · SHA-256 {source.contentHash}</p>
+            <p className="mt-3 break-all text-xs text-muted">{source.language.toUpperCase()} · 기준일 {source.informationBaseDate} · SHA-256 {source.contentHash}</p>
             <dl className="mt-3 grid gap-3 rounded-control border border-line bg-surface-subtle p-4 text-xs sm:grid-cols-3"><div><dt className="font-bold text-ink">최근 검증일</dt><dd className="text-muted">{new Date(source.lastVerifiedAt).toLocaleString()}</dd></div><div><dt className="font-bold text-ink">수집일</dt><dd className="text-muted">{new Date(source.retrievedAt).toLocaleString()}</dd></div><div><dt className="font-bold text-ink">유효기간</dt><dd className="text-muted">{source.validFrom ?? "제한 없음"} ~ {source.validTo ?? "제한 없음"}</dd></div></dl>
-            <details className="mt-3 rounded-control border border-line"><summary className="min-h-11 cursor-pointer px-4 py-3 font-semibold text-ink">저장 Snapshot 보기</summary><pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words border-t border-line bg-surface-subtle p-4 text-sm text-muted">{source.snapshotText}</pre></details>
+            <details className="mt-3 rounded-control border border-line"><summary className="min-h-11 cursor-pointer px-4 py-3 font-semibold text-ink">저장 Snapshot 보기</summary><pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words border-t border-line bg-surface-subtle p-4 text-sm text-muted">{source.snapshotText ?? source.snapshotPath ?? "Snapshot 없음"}</pre></details>
             <div className="mt-4 flex flex-wrap gap-2"><button className="ui-button ui-button-primary min-h-9 px-3 py-1.5" onClick={() => setEditingSource(source)}>정보 수정</button>{source.lifecycleStatus !== "EXPIRED" ? <><button className="ui-button ui-button-secondary min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "ACTIVE" })}>ACTIVE</button><button className="ui-button ui-button-secondary min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "NEED_REVIEW" })}>NEED_REVIEW</button><button className="ui-button ui-button-quiet min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "SUPERSEDED" })}>SUPERSEDED</button><button className="ui-button ui-button-quiet min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "UNKNOWN" })}>UNKNOWN</button><button className="ui-button ui-button-danger min-h-9 px-3 py-1.5" onClick={() => { if (window.confirm("이 Source를 만료 처리할까요?")) lifecycleMutation.mutate({ id: source.id, status: "EXPIRED" }); }}>EXPIRED</button><button className="ui-button ui-button-danger min-h-9 px-3 py-1.5" onClick={() => sourceReviewMutation.mutate({ id: source.id, status: "REJECTED" })}>REJECTED</button></> : null}</div>
             {editingSource?.id === source.id ? <AdminSourceEditForm source={editingSource} pending={sourceEditMutation.isPending} onCancel={() => setEditingSource(null)} onSave={(body) => sourceEditMutation.mutate({ id: source.id, body })} /> : null}
           </article>)}

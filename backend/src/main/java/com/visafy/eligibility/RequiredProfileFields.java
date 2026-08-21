@@ -39,6 +39,7 @@ public final class RequiredProfileFields {
         LinkedHashSet<String> fields = new LinkedHashSet<>();
         rules.stream()
                 .filter(rule -> rule.getRuleLevel() == RuleLevel.HARD)
+                .filter(rule -> rule.getRuleNature().affectsEligibility())
                 .map(ProductRule::getRuleKey)
                 .map(key -> FIELD_BY_RULE.get(key.toUpperCase(Locale.ROOT)))
                 .filter(java.util.Objects::nonNull)

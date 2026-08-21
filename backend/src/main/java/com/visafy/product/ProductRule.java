@@ -68,6 +68,8 @@ public class ProductRule {
     private boolean active;
     @Column(nullable = false)
     private Instant verifiedAt;
+    @Column(length = 120)
+    private String reviewedBy;
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
     @Column(nullable = false)
@@ -102,6 +104,7 @@ public class ProductRule {
         this.description = candidate.getDescription();
         this.active = active;
         this.verifiedAt = candidate.getLastVerifiedAt() == null ? Instant.now() : candidate.getLastVerifiedAt();
+        this.reviewedBy = candidate.getReviewedBy();
         this.updatedAt = Instant.now();
     }
 
@@ -122,9 +125,11 @@ public class ProductRule {
     public LocalDate getValidTo() { return validTo; }
     public ReviewStatus getReviewStatus() { return reviewStatus; }
     public Instant getVerifiedAt() { return verifiedAt; }
+    public String getReviewedBy() { return reviewedBy; }
     public String getDescription() { return description; }
     public boolean isEffective(LocalDate date) {
-        return active && reviewStatus == ReviewStatus.APPROVED
+        return active && product.isActive() && reviewStatus == ReviewStatus.APPROVED
+                && ruleNature.affectsEligibility()
                 && sourceDocument.isEffective(date)
                 && (validFrom == null || !validFrom.isAfter(date))
                 && (validTo == null || !validTo.isBefore(date));

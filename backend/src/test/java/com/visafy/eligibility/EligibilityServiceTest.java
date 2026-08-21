@@ -147,6 +147,16 @@ class EligibilityServiceTest {
     }
 
     @Test
+    void isForeignerRuleRequestsNationalityOnly() {
+        when(ruleRepository.findByProductIdAndActiveTrueOrderByRuleKeyAsc(1L)).thenReturn(List.of(
+                rule("IS_FOREIGNER", RuleOperator.EQ, "true", RuleLevel.HARD, true)));
+
+        EligibilityResult result = service.precheck("session", 1L);
+
+        assertThat(result.requiredFields()).containsExactly("nationality");
+    }
+
+    @Test
     void expiredOnlyRuleIsExcludedAndProductBecomesSourceInsufficient() {
         ProductRule expiredVisaRule = rule("VISA_TYPE", RuleOperator.IN, "[\"F-5\"]",
                 RuleLevel.HARD, true, null, LocalDate.now().minusDays(1));

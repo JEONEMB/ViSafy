@@ -111,15 +111,27 @@ public class FinancialProductController {
             Long id, Long productId, String ruleKey, RuleOperator operator, String ruleValue, RuleLevel ruleLevel,
             RuleNature ruleNature, boolean mandatory, Long sourceDocumentId, String sourceLocator,
             Integer pageNumber, String sectionName, LocalDate validFrom, LocalDate validTo,
-            ReviewStatus reviewStatus, Instant verifiedAt, String description, String sourceExcerpt
+            ReviewStatus reviewStatus, Instant verifiedAt, String reviewedBy, String description,
+            String sourceExcerpt, RuleEvidenceResponse evidence
     ) {
         static ProductRuleResponse from(ProductRule rule) {
             return new ProductRuleResponse(rule.getId(), rule.getProduct().getId(), rule.getRuleKey(),
                     rule.getOperator(), rule.getRuleValue(), rule.getRuleLevel(), rule.getRuleNature(),
                     rule.isMandatory(), rule.getSourceDocument().getId(), rule.getSourceLocator(),
                     rule.getPageNumber(), rule.getSectionName(), rule.getValidFrom(),
-                    rule.getValidTo(), rule.getReviewStatus(), rule.getVerifiedAt(), rule.getDescription(),
-                    rule.getSourceExcerpt());
+                    rule.getValidTo(), rule.getReviewStatus(), rule.getVerifiedAt(), rule.getReviewedBy(),
+                    rule.getDescription(), rule.getSourceExcerpt(), RuleEvidenceResponse.from(rule));
+        }
+    }
+
+    public record RuleEvidenceResponse(
+            Long ruleId, Long sourceDocumentId, String sourceExcerpt, String sourceLocator,
+            Integer pageNumber, String sectionName, Instant verifiedAt, String reviewedBy
+    ) {
+        static RuleEvidenceResponse from(ProductRule rule) {
+            return new RuleEvidenceResponse(rule.getId(), rule.getSourceDocument().getId(),
+                    rule.getSourceExcerpt(), rule.getSourceLocator(), rule.getPageNumber(),
+                    rule.getSectionName(), rule.getVerifiedAt(), rule.getReviewedBy());
         }
     }
 

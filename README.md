@@ -93,10 +93,11 @@ docker compose down
 1. http://localhost:3000/admin/login 에서 서비스 관리자 계정으로 로그인합니다.
 2. 상단 메뉴에서 **Source · Rule 검수**를 선택합니다.
 3. 은행 또는 공공기관의 공식 페이지에서 원문을 확인합니다.
-4. 기관, Source 유형, 제목, HTTPS URL, 수집 당시 원문 텍스트와 유효기간을 입력합니다.
-5. **Source 저장**을 누릅니다.
-6. 저장된 Snapshot, SHA-256 hash, 최근 검증일을 확인합니다.
-7. 원문 링크와 Snapshot이 일치할 때만 **공식 Source 승인**을 누릅니다.
+4. 기관, Source 유형, 제목, HTTPS URL, 정보 기준일, 언어와 유효기간을 입력합니다.
+5. Snapshot 원문 텍스트를 붙여 넣거나, 보관 파일 경로와 해당 파일의 SHA-256 hash를 입력합니다. 둘 중 하나는 반드시 필요합니다.
+6. **Source 저장**을 누릅니다.
+7. 저장된 Snapshot, SHA-256 hash, 정보 기준일과 최근 검증일을 확인합니다.
+8. 원문 링크와 Snapshot이 일치할 때만 **공식 Source 승인**을 누릅니다.
 
 블로그, 커뮤니티, 광고성 제3자 페이지는 등록할 수 없습니다. 허용된 공식 도메인은 `.env`의 `SOURCE_ALLOWED_DOMAINS`에서 관리합니다. 새 기관을 추가할 때는 실제 공식 도메인임을 확인한 뒤 목록에 추가하고 컨테이너를 다시 시작하세요.
 
@@ -368,8 +369,8 @@ docker compose up --build --detach --wait backend frontend
 http://localhost:3000/admin/sources 에서는 다음 작업을 수행합니다.
 
 - 공식 문서 URL과 Snapshot 등록
-- Source 기관·제목·공식 URL·언어·유효기간 수정
-- 최근 검증일, 수집일, 유효기간과 공식 Source 링크 확인
+- Source 기관·제목·공식 URL·언어·정보 기준일·유효기간 수정
+- 최근 검증일, 수집일, 정보 기준일, 유효기간과 공식 Source 링크 확인
 - Source 상태를 `ACTIVE`, `SUPERSEDED`, `EXPIRED`, `UNKNOWN`, `NEED_REVIEW`로 관리
 - AI Rule Candidate의 승인, 값 수정 후 승인, UNKNOWN 변경, 거절
 - Rule별 operator·value·level·status의 변경 전후 값, 검수자와 검수시각 조회
@@ -391,7 +392,8 @@ DB 초안과 현재 구현의 대응 관계는 다음과 같습니다.
 - `TEMP_PROFILE.employment_duration`은 단위를 명확히 한 `employment_duration_months`로 저장합니다.
 - `FINANCIAL_PRODUCT.official_url`은 중복 저장하지 않고 연결된 승인 `SOURCE_DOCUMENT.source_url`에서 반환합니다.
 - `diagnosis_readiness`는 `APPROVED`이고 현재 유효한 Rule 상태로 계산하므로 상품 테이블에 고정값으로 저장하지 않습니다.
-- `SOURCE_DOCUMENT.snapshot_text`에 MVP Snapshot 원문을 보존하고, 외부 Object Storage 도입을 위한 nullable `snapshot_path`도 제공합니다. Source와 상품은 상품·Rule 연결을 통해 다대일/다대다 사용을 허용합니다.
+- `SOURCE_DOCUMENT`는 정보 기준일을 별도 보존합니다. Snapshot은 `snapshot_text` 또는 `snapshot_path` 중 하나로 등록하며, 파일 경로 방식은 실제 파일의 SHA-256 `content_hash`가 필수입니다.
+- Rule Evidence는 상품 Rule 응답의 `evidence`에 `ruleId`, `sourceDocumentId`, 원문 발췌, 위치, PDF 페이지/HTML 섹션, 검증시각과 검수자를 함께 반환합니다.
 - 초안의 `REQUIRED_DOCUMENT`는 기존 `product_document_requirement`로 구현합니다. `OFFICIAL_REQUIRED=REQUIRED`, `CONDITIONAL=CONDITIONAL`, `BANK_CONFIRMATION=NEED_CONFIRMATION`이며 `verified_at`을 보존합니다.
 - `PRECHECK_RESULT`에는 세션 원문 대신 SHA-256 해시, profile/product, 상태, 정보 기준일과 만료시각을 저장합니다. 조건별 결과는 `PRECHECK_RULE_RESULT`에 `PASS`, `FAIL`, `EXTERNAL_CHECK`, `UNKNOWN`, `NOT_APPLICABLE`로 정규화합니다.
 - 추천 Snapshot만 JSON으로 24시간 이내 보관하며, 프로필 원문은 복제하지 않습니다.

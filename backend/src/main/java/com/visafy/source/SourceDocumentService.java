@@ -30,18 +30,31 @@ public class SourceDocumentService {
     @Transactional
     public SourceDocument create(String institution, SourceType sourceType, String title, String sourceUrl,
                                  String snapshotText, LocalDate validFrom, LocalDate validTo, String language) {
+        return create(institution, sourceType, title, sourceUrl, snapshotText, null, null,
+                LocalDate.now(), validFrom, validTo, language);
+    }
+
+    @Transactional
+    public SourceDocument create(String institution, SourceType sourceType, String title, String sourceUrl,
+                                 String snapshotText, String snapshotPath, String suppliedContentHash,
+                                 LocalDate informationBaseDate, LocalDate validFrom, LocalDate validTo,
+                                 String language) {
         validateOfficialUrl(sourceUrl);
-        if (validFrom != null && validTo != null && validTo.isBefore(validFrom)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "validTo must not be before validFrom");
+        validateDates(validFrom, validTo);
+        String normalizedSnapshot = normalizeOptional(snapshotText);
+        String normalizedPath = normalizeOptional(snapshotPath);
+        if (normalizedSnapshot == null && normalizedPath == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Either snapshotText or snapshotPath is required");
         }
-        String normalizedSnapshot = snapshotText.strip();
-        String hash = sha256(normalizedSnapshot);
+        String hash = normalizedSnapshot != null ? sha256(normalizedSnapshot)
+                : normalizeHash(suppliedContentHash);
         if (repository.existsByContentHash(hash)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The same source snapshot is already registered");
         }
         return repository.save(new SourceDocument(
                 institution.strip(), sourceType, title.strip(), sourceUrl.strip(), normalizedSnapshot,
-                hash, validFrom, validTo, language));
+                normalizedPath, hash, informationBaseDate, validFrom, validTo, language));
     }
 
     @Transactional
@@ -78,12 +91,13 @@ public class SourceDocumentService {
 
     @Transactional
     public SourceDocument update(Long id, String institution, SourceType sourceType, String title, String sourceUrl,
-                                 LocalDate validFrom, LocalDate validTo, String language) {
+                                 LocalDate informationBaseDate, LocalDate validFrom, LocalDate validTo,
+                                 String language) {
         validateOfficialUrl(sourceUrl);
         validateDates(validFrom, validTo);
         SourceDocument source = get(id);
         source.updateMetadata(institution.strip(), sourceType, title.strip(), sourceUrl.strip(),
-                validFrom, validTo, language);
+                informationBaseDate, validFrom, validTo, language);
         return source;
     }
 
@@ -134,5 +148,18 @@ public class SourceDocumentService {
         } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("SHA-256 is unavailable", exception);
         }
+    }
+
+    private String normalizeOptional(String value) {
+        return value == null || value.isBlank() ? null : value.strip();
+    }
+
+    private String normalizeHash(String value) {
+        String normalized = normalizeOptional(value);
+        if (normalized == null || !normalized.matches("(?i)[0-9a-f]{64}")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A 64-character SHA-256 contentHash is required for snapshotPath");
+        }
+        return normalized.toLowerCase();
     }
 }
