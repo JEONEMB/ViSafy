@@ -26,8 +26,10 @@ export type BankInquiry = {
 
 export type AiExplanation = {
   eligibilityStatus: EligibilityStatus;
+  accessStatus: string;
   facts: StructuredExplanationFacts;
   explanation: string;
+  nextActions: string[];
   disclaimer: string;
   easyTerms: EasyTerm[];
   inquiry?: BankInquiry | null;

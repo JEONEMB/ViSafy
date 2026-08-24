@@ -94,11 +94,54 @@ class ExplanationBuilder:
     def build(self, request: ExplanationRequest) -> ExplanationResponse:
         return ExplanationResponse(
             explanation=self._explanation(request),
+            nextActions=self._next_actions(request),
             disclaimer=self._disclaimer(request.language),
             easyTerms=self._terms(request),
             inquiry=self._inquiry(request),
             guardrailsApplied=GUARDRAILS,
         )
+
+    def _next_actions(self, request: ExplanationRequest) -> list[str]:
+        status = request.eligibility_status
+        access = request.access_result
+        actions = {
+            "ko": {
+                "failed": "충족하지 못한 공개조건과 공식 근거를 먼저 확인하세요.",
+                "insufficient": "부족한 프로필 정보 또는 검수되지 않은 공식 자료를 확인하세요.",
+                "confirm": "추가 확인 조건을 공식 채널을 통해 금융기관에 문의하세요.",
+                "met": "공식 신청 채널과 준비서류를 확인한 뒤 신청을 준비하세요.",
+                "branch": "외국인 이용이 확인된 영업점 채널을 우선 확인하세요.",
+                "online": "모바일·온라인 이용 가능 여부는 공식 채널에서 다시 확인하세요.",
+            },
+            "en": {
+                "failed": "Review the unmet public conditions and their official evidence first.",
+                "insufficient": "Complete missing profile information or wait for official-source review.",
+                "confirm": "Ask the financial institution about the additional confirmation items.",
+                "met": "Check the official application channel and required documents before applying.",
+                "branch": "Use the branch channel whose foreign-customer access has been confirmed.",
+                "online": "Confirm mobile or online access through an official channel.",
+            },
+            "vi": {
+                "failed": "Trước tiên, hãy kiểm tra điều kiện công khai chưa đạt và căn cứ chính thức.",
+                "insufficient": "Hãy bổ sung thông tin hồ sơ còn thiếu hoặc chờ xác minh nguồn chính thức.",
+                "confirm": "Hãy hỏi tổ chức tài chính về các nội dung cần xác nhận thêm.",
+                "met": "Hãy kiểm tra kênh đăng ký chính thức và giấy tờ cần thiết trước khi đăng ký.",
+                "branch": "Ưu tiên kiểm tra kênh tại quầy đã xác nhận hỗ trợ khách hàng nước ngoài.",
+                "online": "Hãy xác nhận lại khả năng sử dụng trên ứng dụng hoặc trực tuyến qua kênh chính thức.",
+            },
+        }[request.language]
+        primary = {
+            "PUBLIC_CONDITIONS_NOT_MET": actions["failed"],
+            "INSUFFICIENT_INFORMATION": actions["insufficient"],
+            "NEED_BANK_CONFIRMATION": actions["confirm"],
+            "PUBLIC_CONDITIONS_MET": actions["met"],
+        }[status]
+        result = [primary]
+        if access.branch == "AVAILABLE" and access.online != "AVAILABLE":
+            result.append(actions["branch"])
+        elif access.online in {"UNKNOWN", "NEED_CONFIRMATION"}:
+            result.append(actions["online"])
+        return result
 
     def _explanation(self, request: ExplanationRequest) -> str:
         status = request.eligibility_status

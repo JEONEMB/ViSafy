@@ -7,6 +7,7 @@ from app.guardrail.answer_builder import DISCLAIMERS
 
 def request(language: str = "ko", status: str = "NEED_BANK_CONFIRMATION") -> ExplanationRequest:
     return ExplanationRequest(
+        productId=10,
         eligibilityStatus=status,
         language=language,
         productName="A 외국인 전세대출",
@@ -30,6 +31,14 @@ def request(language: str = "ko", status: str = "NEED_BANK_CONFIRMATION") -> Exp
             }
         ],
         termKeys=["STATUS_OF_STAY", "PROOF_OF_INCOME", "GUARANTEE_INSURANCE_CERTIFICATE"],
+        accessResult={
+            "status": "ACCESS_READY_BRANCH_ONLY",
+            "identification": "AVAILABLE",
+            "branch": "AVAILABLE",
+            "online": "UNKNOWN",
+            "details": [],
+            "realNameGuardrailApplied": False,
+        },
     )
 
 
@@ -45,6 +54,7 @@ def test_explanation_and_inquiry_preserve_structured_numbers_and_visa(language: 
     assert result.inquiry.confirmation_items
     assert len(result.easy_terms) == 3
     assert "NO_APPROVAL_GUARANTEE" in result.guardrails_applied
+    assert result.next_actions
 
 
 def test_met_result_never_claims_the_user_can_enroll_and_needs_no_inquiry() -> None:

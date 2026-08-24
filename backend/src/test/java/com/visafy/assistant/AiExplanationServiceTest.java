@@ -63,7 +63,7 @@ class AiExplanationServiceTest {
                 10L, List.of(passed), List.of(), List.of(external), List.of(unknown), List.of(),
                 "Not final approval");
         when(eligibilityService.precheck(profile, product)).thenReturn(eligibility);
-        ExplanationResponse aiResponse = new ExplanationResponse("설명", "면책", List.of(),
+        ExplanationResponse aiResponse = new ExplanationResponse("설명", List.of("다음 행동"), "면책", List.of(),
                 new BankInquiry("한국어 문의", "English inquiry", "en", List.of("보증 확인")),
                 List.of("STRUCTURED_NUMBERS_ONLY"));
         when(aiClient.explain(any())).thenReturn(aiResponse);
@@ -74,6 +74,8 @@ class AiExplanationServiceTest {
         verify(aiClient).explain(captor.capture());
         ExplanationRequest request = captor.getValue();
         assertThat(request.eligibilityStatus()).isEqualTo("NEED_BANK_CONFIRMATION");
+        assertThat(request.productId()).isEqualTo(10L);
+        assertThat(request.accessResult().status()).isEqualTo("ACCESS_UNKNOWN");
         assertThat(request.visaType()).isEqualTo("E-9");
         assertThat(request.visaRemainingMonths()).isEqualTo(14);
         assertThat(request.residencyMonths()).isEqualTo(24);
@@ -96,7 +98,7 @@ class AiExplanationServiceTest {
         EligibilityResult eligibility = new EligibilityResult(EligibilityStatus.NEED_BANK_CONFIRMATION,
                 10L, List.of(), List.of(), List.of(channel), List.of(), List.of(), "Not final approval");
         when(eligibilityService.precheck(minimalProfile, product)).thenReturn(eligibility);
-        when(aiClient.explain(any())).thenReturn(new ExplanationResponse("explanation", "disclaimer",
+        when(aiClient.explain(any())).thenReturn(new ExplanationResponse("explanation", List.of("next"), "disclaimer",
                 List.of(), null, List.of("NO_UNSOURCED_VISA_RULE")));
 
         AiExplanationService.ExplanationResult result = service.explain("general-session", 10L);

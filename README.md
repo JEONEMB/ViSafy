@@ -458,7 +458,7 @@ Season 3의 `READY`는 상품 페이지와 약관만 존재한다고 충족되�
 
 ### 현재 AI 구성
 
-OpenAI Responses API Adapter가 선택형으로 연결되어 있습니다. `LLM_PROVIDER=openai`, `LLM_API_KEY`, `LLM_MODEL`이 모두 설정된 운영환경에서만 공식 Rule Detail을 이용해 설명 문장을 보강하며, Key 누락·API 장애·숫자 또는 Visa 코드 무결성 위반 시 검증 가능한 템플릿으로 자동 복귀합니다. Eligibility와 Access 판정은 LLM에 의해 변경되지 않습니다. RAG의 기본 검색은 재현 가능한 384차원 해시 임베딩이며 `sentence_transformers` Adapter로 한국어·영어·베트남어 Semantic Embedding을 비교할 수 있습니다.
+OpenAI Responses API Adapter가 선택형으로 연결되어 있습니다. `LLM_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6-terra`, `OPENAI_REASONING_EFFORT=medium`을 배포환경 Secret으로 설정하면 승인된 공식 RAG Context, Eligibility Result, Access Result, Rule Detail을 이용해 쉬운 설명·다음 행동·필요 시 은행 문의문을 생성합니다. Key 누락·API 장애·구조화 출력 오류·숫자 또는 Visa 코드 무결성 위반 시 검증 가능한 템플릿으로 자동 복귀합니다. LLM 출력 스키마에는 상태 필드가 없으며 Backend가 계산한 Eligibility와 Access 판정은 응답 조립 단계에서 고정됩니다. RAG의 기본 검색은 재현 가능한 384차원 해시 임베딩이며 `sentence_transformers` Adapter로 한국어·영어·베트남어 Semantic Embedding을 비교할 수 있습니다.
 
 PDF/HTML 추출, 페이지 번호 보존, OCR 필요 페이지 표시, `contentHash` 변경 감지, PENDING Rule Candidate 추출과 RAG 평가 실행법은 [`docs/ai-rag-quality-and-secrets.md`](docs/ai-rag-quality-and-secrets.md)에 정리되어 있습니다. RAG Dataset은 Flyway V18/V19의 실제 승인 Source ID와 일반상품 5개별 질문 5개 이상으로 교체되었습니다.
 

@@ -85,7 +85,7 @@ Rule Candidate 응답의 `sourceExcerpt`, `sourceLocator`, `pageNumber`, `review
 
 선택 Provider를 연결할 때만 설정:
 
-- `OPENAI_API_KEY` + `OPENAI_MODEL`
+- `OPENAI_API_KEY` + `OPENAI_MODEL` + `OPENAI_REASONING_EFFORT`
 - `GEMINI_API_KEY` + `GEMINI_MODEL`
 - `ANTHROPIC_API_KEY` + `ANTHROPIC_MODEL`
 - 외부 Embedding용 `EMBEDDING_API_KEY`

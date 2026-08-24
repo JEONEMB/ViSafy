@@ -1,6 +1,8 @@
 package com.visafy.assistant;
 
 import com.visafy.assistant.AiExplanationClient.ConditionInput;
+import com.visafy.assistant.AiExplanationClient.AccessDetailInput;
+import com.visafy.assistant.AiExplanationClient.AccessResultInput;
 import com.visafy.assistant.AiExplanationClient.ExplanationRequest;
 import com.visafy.assistant.AiExplanationClient.ExplanationResponse;
 import com.visafy.eligibility.EligibilityResult;
@@ -51,17 +53,29 @@ public class AiExplanationService {
                 : Math.max(0, ChronoUnit.MONTHS.between(profile.getResidencyStartDate(), today));
 
         ExplanationRequest request = new ExplanationRequest(
-                eligibility.status().name(), normalizeLanguage(profile.getLanguage()), product.getProductName(),
+                eligibility.productId(), eligibility.status().name(), normalizeLanguage(profile.getLanguage()), product.getProductName(),
                 product.getInstitution(), profile.getVisaType(), visaRemainingMonths, residencyMonths,
                 eligibility.passedRules().size(), eligibility.failedRules().size(),
                 conditions(eligibility.externalChecks()), conditions(eligibility.unknownRules()),
-                allConditions(eligibility), termKeys(eligibility));
+                allConditions(eligibility), termKeys(eligibility), accessResult(eligibility), List.of());
         ExplanationResponse response = aiClient.explain(request);
         StructuredFacts facts = new StructuredFacts(profile.getVisaType(), visaRemainingMonths, residencyMonths,
                 eligibility.passedRules().size(), eligibility.failedRules().size(),
                 eligibility.externalChecks().size(), eligibility.unknownRules().size());
-        return new ExplanationResult(eligibility.status().name(), facts, response.explanation(),
-                response.disclaimer(), response.easyTerms(), response.inquiry(), response.guardrailsApplied());
+        return new ExplanationResult(eligibility.status().name(),
+                eligibility.accessAssessment().status().name(), facts, response.explanation(),
+                response.nextActions(), response.disclaimer(), response.easyTerms(), response.inquiry(),
+                response.guardrailsApplied());
+    }
+
+    private AccessResultInput accessResult(EligibilityResult eligibility) {
+        var access = eligibility.accessAssessment();
+        List<AccessDetailInput> details = access.details().stream().map(detail -> new AccessDetailInput(
+                detail.category(), detail.key(), detail.messageCode(), detail.message(), detail.sourceExcerpt(),
+                detail.sourceLocator(), detail.sourceUrl())).toList();
+        return new AccessResultInput(access.status().name(), access.identification().name(),
+                access.branch().name(), access.online().name(), details,
+                access.realNameGuardrailApplied());
     }
 
     private List<ConditionInput> conditions(List<RuleDetail> details) {
@@ -109,7 +123,8 @@ public class AiExplanationService {
             int failedCount, int externalCheckCount, int unknownCount
     ) {}
     public record ExplanationResult(
-            String eligibilityStatus, StructuredFacts facts, String explanation, String disclaimer,
+            String eligibilityStatus, String accessStatus, StructuredFacts facts, String explanation,
+            List<String> nextActions, String disclaimer,
             List<AiExplanationClient.EasyTerm> easyTerms, AiExplanationClient.BankInquiry inquiry,
             List<String> guardrailsApplied
     ) {}

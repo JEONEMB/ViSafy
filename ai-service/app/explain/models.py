@@ -19,8 +19,45 @@ class ConditionInput(BaseModel):
     source_locator: str | None = Field(default=None, alias="sourceLocator", max_length=1000)
     source_url: str | None = Field(default=None, alias="sourceUrl", max_length=2000)
 
+    model_config = {"populate_by_name": True}
+
+
+class AccessDetailInput(BaseModel):
+    category: str = Field(min_length=1, max_length=120)
+    key: str = Field(min_length=1, max_length=120)
+    message_code: str = Field(alias="messageCode", min_length=1, max_length=120)
+    message: str = Field(min_length=1, max_length=2000)
+    source_excerpt: str | None = Field(default=None, alias="sourceExcerpt", max_length=10000)
+    source_locator: str | None = Field(default=None, alias="sourceLocator", max_length=1000)
+    source_url: str | None = Field(default=None, alias="sourceUrl", max_length=2000)
+
+    model_config = {"populate_by_name": True}
+
+
+class AccessResultInput(BaseModel):
+    status: str = Field(min_length=1, max_length=80)
+    identification: str = Field(min_length=1, max_length=80)
+    branch: str = Field(min_length=1, max_length=80)
+    online: str = Field(min_length=1, max_length=80)
+    details: list[AccessDetailInput] = Field(default_factory=list, max_length=200)
+    real_name_guardrail_applied: bool = Field(alias="realNameGuardrailApplied")
+
+    model_config = {"populate_by_name": True}
+
+
+class RagContextInput(BaseModel):
+    document_id: int = Field(alias="documentId", gt=0)
+    title: str = Field(min_length=1, max_length=500)
+    content: str = Field(min_length=1, max_length=12000)
+    source_url: str = Field(alias="sourceUrl", min_length=1, max_length=2000)
+    retrieved_at: str = Field(alias="retrievedAt", min_length=1, max_length=100)
+    score: float = Field(ge=0, le=1)
+
+    model_config = {"populate_by_name": True}
+
 
 class ExplanationRequest(BaseModel):
+    product_id: int = Field(alias="productId", gt=0)
     eligibility_status: EligibilityStatus = Field(alias="eligibilityStatus")
     language: Literal["ko", "en", "vi"]
     product_name: str = Field(alias="productName", min_length=1, max_length=500)
@@ -34,6 +71,12 @@ class ExplanationRequest(BaseModel):
     unknown_conditions: list[ConditionInput] = Field(alias="unknownConditions")
     rule_details: list[ConditionInput] = Field(alias="ruleDetails", max_length=1000)
     term_keys: list[str] = Field(alias="termKeys", max_length=30)
+    access_result: AccessResultInput = Field(alias="accessResult")
+    rag_context: list[RagContextInput] = Field(
+        default_factory=list, alias="ragContext", max_length=20
+    )
+
+    model_config = {"populate_by_name": True}
 
 
 class EasyTerm(BaseModel):
@@ -56,6 +99,7 @@ class BankInquiry(BaseModel):
 
 class ExplanationResponse(BaseModel):
     explanation: str
+    next_actions: list[str] = Field(alias="nextActions")
     disclaimer: str
     easy_terms: list[EasyTerm] = Field(alias="easyTerms")
     inquiry: BankInquiry | None

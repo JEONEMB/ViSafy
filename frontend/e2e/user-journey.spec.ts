@@ -22,7 +22,7 @@ async function mockApi(page: Page, captured: Record<string, unknown>) {
     if (path === "/api/recommendations") return json(route, { recommended: [], additionalInformationNeeded: [], excludedCount: 0 });
     if (path === "/api/financial-journey") return json(route, { purpose: "GET_LOAN", currentStep: 2, headline: "My financial journey in Korea", nextAction: "Open an account first.", steps: [] });
     if (path === "/api/eligibility/pre-check") return json(route, eligibility);
-    if (path === "/api/ai/explanation") return json(route, { eligibilityStatus: "NEED_BANK_CONFIRMATION", facts: { visaType: "E-9", visaRemainingMonths: 12, residencyMonths: 24, passedCount: 1, failedCount: 0, externalCheckCount: 0, unknownCount: 0 }, explanation: "Official conditions checked.", disclaimer: "Not final approval.", easyTerms: [], inquiry: null, guardrailsApplied: [] });
+    if (path === "/api/ai/explanation") return json(route, { eligibilityStatus: "NEED_BANK_CONFIRMATION", accessStatus: "ACCESS_UNKNOWN", facts: { visaType: "E-9", visaRemainingMonths: 12, residencyMonths: 24, passedCount: 1, failedCount: 0, externalCheckCount: 0, unknownCount: 0 }, explanation: "Official conditions checked.", nextActions: ["Ask the bank."], disclaimer: "Not final approval.", easyTerms: [], inquiry: null, guardrailsApplied: [] });
     return json(route, { message: `Unhandled ${request.method()} ${path}` }, 500);
   });
 }

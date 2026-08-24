@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -11,7 +12,8 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_model: str = ""
     openai_api_key: str = ""
-    openai_model: str = ""
+    openai_model: str = "gpt-5.6-terra"
+    openai_reasoning_effort: Literal["none", "low", "medium", "high", "xhigh", "max"] = "medium"
     llm_timeout_seconds: float = 8.0
     vector_db_path: str = "./chroma-data"
     allowed_source_domains: str = ""

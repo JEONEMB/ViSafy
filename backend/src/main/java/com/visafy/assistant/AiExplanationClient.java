@@ -53,18 +53,30 @@ public class AiExplanationClient {
             String key, String messageCode, String actualValue, String expectedValue,
             String sourceExcerpt, String sourceLocator, String sourceUrl
     ) {}
+    public record AccessDetailInput(
+            String category, String key, String messageCode, String message, String sourceExcerpt,
+            String sourceLocator, String sourceUrl
+    ) {}
+    public record AccessResultInput(
+            String status, String identification, String branch, String online,
+            List<AccessDetailInput> details, boolean realNameGuardrailApplied
+    ) {}
+    public record RagContextInput(
+            Long documentId, String title, String content, String sourceUrl, String retrievedAt, double score
+    ) {}
     public record ExplanationRequest(
-            String eligibilityStatus, String language, String productName, String institution,
+            Long productId, String eligibilityStatus, String language, String productName, String institution,
             String visaType, Long visaRemainingMonths, Long residencyMonths, int passedCount,
             int failedCount, List<ConditionInput> externalConditions,
             List<ConditionInput> unknownConditions, List<ConditionInput> ruleDetails,
-            List<String> termKeys
+            List<String> termKeys, AccessResultInput accessResult, List<RagContextInput> ragContext
     ) {}
     public record EasyTerm(String key, String koreanTerm, String localizedTerm, String explanation) {}
     public record BankInquiry(String korean, String localized, String language,
                               List<String> confirmationItems) {}
     public record ExplanationResponse(
-            String explanation, String disclaimer, List<EasyTerm> easyTerms, BankInquiry inquiry,
+            String explanation, List<String> nextActions, String disclaimer,
+            List<EasyTerm> easyTerms, BankInquiry inquiry,
             List<String> guardrailsApplied
     ) {}
 }
