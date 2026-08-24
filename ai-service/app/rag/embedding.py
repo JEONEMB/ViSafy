@@ -2,6 +2,15 @@ import hashlib
 import math
 import re
 import unicodedata
+from typing import Protocol
+
+from app.config import Settings
+
+
+class EmbeddingProvider(Protocol):
+    dimensions: int
+
+    def embed(self, text: str) -> list[float]: ...
 
 
 class LocalHashEmbedding:
@@ -23,3 +32,34 @@ class LocalHashEmbedding:
             vector[bucket] += sign
         norm = math.sqrt(sum(value * value for value in vector))
         return [value / norm for value in vector] if norm else vector
+
+
+class SentenceTransformerEmbedding:
+    """Optional local multilingual semantic embedding.
+
+    The heavy model dependency is deliberately optional so the key-free MVP keeps
+    working offline with the hash baseline.
+    """
+
+    def __init__(self, model_name: str) -> None:
+        try:
+            from sentence_transformers import SentenceTransformer
+        except ImportError as exception:
+            raise RuntimeError(
+                "EMBEDDING_PROVIDER=sentence_transformers requires the semantic optional dependency"
+            ) from exception
+        self._model = SentenceTransformer(model_name)
+        self.dimensions = int(self._model.get_sentence_embedding_dimension())
+
+    def embed(self, text: str) -> list[float]:
+        vector = self._model.encode(text, normalize_embeddings=True)
+        return [float(value) for value in vector]
+
+
+def create_embedding_provider(settings: Settings) -> EmbeddingProvider:
+    provider = settings.embedding_provider.strip().lower()
+    if provider == "hash":
+        return LocalHashEmbedding(settings.embedding_dimensions)
+    if provider == "sentence_transformers":
+        return SentenceTransformerEmbedding(settings.embedding_model)
+    raise ValueError(f"Unsupported embedding provider: {settings.embedding_provider}")

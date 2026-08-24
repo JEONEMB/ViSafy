@@ -82,7 +82,8 @@ public class AccessAssessmentService {
 
     private AccessAvailability channelAvailability(List<RuleCandidate> candidates, boolean branch) {
         boolean found = candidates.stream().filter(candidate -> candidate.getRuleNature() == RuleNature.CHANNEL_REQUIREMENT)
-                .anyMatch(candidate -> branch ? concernsBranch(candidate) : concernsOnline(candidate));
+                .anyMatch(candidate -> branch ? concernsBranch(candidate)
+                        : concernsOnline(candidate) && explicitlySupportsForeignerAccess(candidate));
         return found ? AccessAvailability.AVAILABLE : AccessAvailability.UNKNOWN;
     }
 

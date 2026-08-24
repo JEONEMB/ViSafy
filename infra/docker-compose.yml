@@ -26,6 +26,13 @@ services:
       APP_ENVIRONMENT: local
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_MODEL: ${LLM_MODEL:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-none}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-hash}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-384}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
+      OCR_PROVIDER: ${OCR_PROVIDER:-none}
+      OCR_API_KEY: ${OCR_API_KEY:-}
       VECTOR_DB_PATH: /data/chroma
       ALLOWED_SOURCE_DOMAINS: ${SOURCE_ALLOWED_DOMAINS:-kbstar.com,kebhana.com,hanabank.com,shinhan.com,kbsec.com,wooribank.com,ibk.co.kr,nhbank.com,kdb.co.kr,sc.co.kr,citibank.co.kr,kakaobank.com,kbanknow.com,tossbank.com,fss.or.kr,fsc.go.kr,finlife.fss.or.kr}
       RAG_INTERNAL_TOKEN: ${RAG_INTERNAL_TOKEN:-local-rag-development-token}

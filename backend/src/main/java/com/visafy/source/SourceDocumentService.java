@@ -52,6 +52,10 @@ public class SourceDocumentService {
         if (repository.existsByContentHash(hash)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The same source snapshot is already registered");
         }
+        repository.findFirstBySourceUrlOrderByRetrievedAtDesc(sourceUrl.strip())
+                .filter(previous -> !previous.getContentHash().equalsIgnoreCase(hash))
+                .filter(previous -> previous.getReviewStatus() == ReviewStatus.APPROVED)
+                .ifPresent(previous -> previous.review(ReviewStatus.NEED_REVIEW, "content-change-detector"));
         return repository.save(new SourceDocument(
                 institution.strip(), sourceType, title.strip(), sourceUrl.strip(), normalizedSnapshot,
                 normalizedPath, hash, informationBaseDate, validFrom, validTo, language));

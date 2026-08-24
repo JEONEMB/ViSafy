@@ -49,8 +49,8 @@ class AccessAssessmentServiceTest {
         SourceDocument source = source();
         RuleCandidate foreigner = candidate(source, "IS_FOREIGNER", "true", RuleNature.HARD_ELIGIBILITY,
                 "외국인 고객 가입 가능");
-        RuleCandidate online = candidate(source, "ONLINE_AVAILABLE", "true", RuleNature.CHANNEL_REQUIREMENT,
-                "모바일 앱에서 신청 가능");
+        RuleCandidate online = candidate(source, "FOREIGNER_ONLINE_AVAILABLE", "true", RuleNature.CHANNEL_REQUIREMENT,
+                "외국인 고객은 모바일 앱에서 신청 가능");
         foreigner.approve(); online.approve();
         FinancialProduct product = product(source);
         TempProfile profile = mock(TempProfile.class);
@@ -62,6 +62,29 @@ class AccessAssessmentServiceTest {
         assertThat(result.status()).isEqualTo(AccessStatus.ACCESS_READY_ONLINE);
         assertThat(result.online()).isEqualTo(AccessAssessment.AccessAvailability.AVAILABLE);
         assertThat(result.realNameGuardrailApplied()).isFalse();
+    }
+
+    @Test
+    void productLevelMobileEvidenceKeepsForeignerMobileAccessUnknown() {
+        SourceDocument source = source();
+        RuleCandidate identity = candidate(source, "RESIDENCE_CARD", "true", RuleNature.IDENTIFICATION_METHOD,
+                "외국인등록증을 실명확인증표로 사용할 수 있음");
+        RuleCandidate branch = candidate(source, "BRANCH_AVAILABLE", "true", RuleNature.CHANNEL_REQUIREMENT,
+                "영업점에서 신규 가능");
+        RuleCandidate productMobile = candidate(source, "MOBILE_APP", "true", RuleNature.CHANNEL_REQUIREMENT,
+                "모바일 앱에서 상품 신규 가능");
+        identity.approve(); branch.approve(); productMobile.approve();
+        TempProfile profile = mock(TempProfile.class);
+        when(profile.getLanguage()).thenReturn("ko");
+        when(repository.findByProductCodeOrderByCreatedAtDesc("DEMO"))
+                .thenReturn(List.of(identity, branch, productMobile));
+
+        AccessAssessment result = service.assess(profile, product(source));
+
+        assertThat(result.identification()).isEqualTo(AccessAssessment.AccessAvailability.AVAILABLE);
+        assertThat(result.branch()).isEqualTo(AccessAssessment.AccessAvailability.AVAILABLE);
+        assertThat(result.online()).isEqualTo(AccessAssessment.AccessAvailability.UNKNOWN);
+        assertThat(result.status()).isEqualTo(AccessStatus.ACCESS_READY);
     }
 
     @Test

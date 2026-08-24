@@ -427,7 +427,53 @@ Season 3의 `READY`는 상품 페이지와 약관만 존재한다고 충족되�
 
 현재 저장된 기존 상품은 이 강화된 Gate로 다시 계산합니다. 부족한 공식 자료가 있는 상품은 의도적으로 `PARTIAL` 또는 `NOT_READY`로 표시하며, 임의의 Demo 근거로 `READY` 수를 채우지 않습니다. Season 3 목표인 READY 8개(입출금 2, 일반 예·적금 3, 외국인 특화 2, 해외송금 1, 대출 1 중 중복 허용)와 은행 3곳 이상을 달성하려면 각 상품의 공식 Source 패키지를 관리자 화면에서 등록·승인해야 합니다.
 
-고정 Demo A~E의 입력·기대결과·자동검증 위치는 [`docs/season3-demo-scenarios.md`](docs/season3-demo-scenarios.md)에 기록합니다.
+고정 Demo A~E의 실제 상품 ID·입력·기대결과는 [`docs/season3-demo-manifest.md`](docs/season3-demo-manifest.md)에 기록하며, 설계 배경과 회귀 테스트는 [`docs/season3-demo-scenarios.md`](docs/season3-demo-scenarios.md)에 기록합니다.
+
+### Season 2와 Season 3 데이터 상태
+
+두 시즌의 `READY`는 기준이 다릅니다. Season 2의 `READY 5개`는 승인된 Eligibility Rule과 공식 Source를 이용해 공개조건을 평가할 수 있다는 뜻입니다. Season 3의 `READY`는 여기에 외국인 신분확인, 영업점·모바일 채널, 필요서류, 신청절차 Evidence까지 모두 갖춘 상품만 의미합니다.
+
+2026-08-24 실행 데이터 측정값은 다음과 같습니다.
+
+| 항목 | 현재 값 |
+| --- | ---: |
+| 전체 상품 | 12개 |
+| 금융기관 | 3곳 |
+| `GENERAL` | 5개 |
+| `FOREIGNER_SPECIALIZED` | 7개 |
+| Season 3 `READY` | 5개 |
+| Season 3 `PARTIAL` | 기존 상품은 근거 보강 상태에 따라 별도 표시 |
+| 완성된 Season 3 Source 패키지 | 5개 |
+
+따라서 Season 2 Rule Engine의 동작 여부와 Season 3 제출 데이터의 완성도를 혼동해서는 안 됩니다. 일반상품과 Access Evidence는 [`docs/season3-data-collection-prompts.md`](docs/season3-data-collection-prompts.md)의 프롬프트로 조사한 뒤 반드시 사람이 공식 원문을 다시 확인하고 관리자 화면에서 승인해야 합니다.
+
+### Demo A~E 실행
+
+1. `docker compose up --build --detach --wait`로 네 서비스를 실행합니다.
+2. `http://localhost:3000`에서 언어와 금융목적을 선택하고 Profile을 저장합니다.
+3. [`docs/season3-demo-scenarios.md`](docs/season3-demo-scenarios.md)에 기록된 Demo별 Profile과 상품 ID를 사용합니다.
+4. 상품 상세에서 Eligibility와 Identity·Branch·Mobile Access를 각각 확인합니다.
+5. 판단 근거 탭에서 공식 Source 원문과 확인일을 대조합니다.
+6. Demo A~E는 실제 공식 상품 패키지가 확정되기 전까지 시나리오 정의이며, 제출 Demo로 확정했다고 표현하지 않습니다.
+
+### 현재 AI 구성
+
+OpenAI Responses API Adapter가 선택형으로 연결되어 있습니다. `LLM_PROVIDER=openai`, `LLM_API_KEY`, `LLM_MODEL`이 모두 설정된 운영환경에서만 공식 Rule Detail을 이용해 설명 문장을 보강하며, Key 누락·API 장애·숫자 또는 Visa 코드 무결성 위반 시 검증 가능한 템플릿으로 자동 복귀합니다. Eligibility와 Access 판정은 LLM에 의해 변경되지 않습니다. RAG의 기본 검색은 재현 가능한 384차원 해시 임베딩이며 `sentence_transformers` Adapter로 한국어·영어·베트남어 Semantic Embedding을 비교할 수 있습니다.
+
+PDF/HTML 추출, 페이지 번호 보존, OCR 필요 페이지 표시, `contentHash` 변경 감지, PENDING Rule Candidate 추출과 RAG 평가 실행법은 [`docs/ai-rag-quality-and-secrets.md`](docs/ai-rag-quality-and-secrets.md)에 정리되어 있습니다. RAG Dataset은 Flyway V18/V19의 실제 승인 Source ID와 일반상품 5개별 질문 5개 이상으로 교체되었습니다.
+
+운영 LLM은 OpenAI를 선택했습니다. 실제 호출을 활성화하려면 OpenAI Project API Key와 계정에서 사용 가능한 모델 ID를 배포환경 Secret으로 설정해야 합니다. 공식 OpenAI 문서의 Responses API 방식으로 호출하며 Key는 저장소나 문서에 기록하지 않습니다.
+
+### 제출 배포 상태
+
+Caddy 자동 TLS와 운영 Compose 사용법은 [`docs/production-deployment.md`](docs/production-deployment.md)에 정리되어 있습니다. 저장소에는 운영 Secret을 포함하지 않으며 `.env.production`은 생성 스크립트로 만들고 Git에서 제외합니다.
+
+현재 문서의 URL은 로컬 개발 주소입니다. 공개 HTTPS 제출 URL은 아직 확정되지 않았으며, 배포 후 아래 항목을 실제 값으로 갱신해야 합니다.
+
+- 제출 URL 및 Health 확인 주소
+- 운영 관리자 계정 생성·비밀번호 교체 절차
+- `RAG_INTERNAL_TOKEN`, DB 비밀번호 등 운영 Secret 설정 여부
+- 심사 기간 모니터링 및 장애 대응 담당자
 
 ## 주요 API
 

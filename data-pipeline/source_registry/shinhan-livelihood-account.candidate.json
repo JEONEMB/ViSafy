@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "season3-candidate-v1",
+  "candidateStatus": "NEED_REVIEW",
+  "runtimeEligible": false,
+  "blockingReasons": [
+    "SNAPSHOT_MISSING",
+    "HUMAN_REVIEW_REQUIRED",
+    "APPLICATION_STEP_EVIDENCE_MISSING"
+  ],
+  "product": {
+    "institution": "신한은행",
+    "productName": "신한 생계비계좌",
+    "productCode": null,
+    "productAudience": "GENERAL",
+    "productCategory": "DEMAND_DEPOSIT",
+    "productPurpose": "ACCOUNT",
+    "description": "1개월간 생계유지에 필요한 예금에 대하여 압류를 금지하는 저축예금",
+    "informationBaseDate": "2026-08-24"
+  },
+  "source": {
+    "sourceUrl": "https://img.shinhan.com/sbank2016/seol/20260120000000320003LC000030.PDF?1779118005667=",
+    "title": "신한 생계비계좌 상품설명서",
+    "sourceType": "PRODUCT_DESCRIPTION",
+    "attachmentFileName": "Shinhan.pdf",
+    "snapshotText": null,
+    "snapshotPath": null,
+    "contentHash": "8CCFC9DAF87798A33E2B9D1E8D6237EAEAC7B45AFFE4711180B6A25AF1EB9DF3",
+    "validFrom": "2026-05-18",
+    "validTo": "2027-05-12",
+    "reviewStatus": "NEED_REVIEW"
+  },
+  "eligibilityEvidence": [
+    {
+      "ruleNature": "HARD_ELIGIBILITY",
+      "condition": "전 금융기관 1인 1계좌",
+      "sourceExcerpt": "실명의 개인 및 개인사업자 (전 금융기관 1인 1계좌)",
+      "sourceLocator": "상품설명서 p.1 가입대상",
+      "reviewStatus": "NEED_REVIEW",
+      "runtimeRuleCreated": false
+    }
+  ],
+  "guardrails": {
+    "realNameIndividualCreatesForeignerAllowedRule": false,
+    "notFoundValuesMayBeInferred": false
+  },
+  "identityEvidence": [
+    {
+      "identityType": "RESIDENCE_CARD",
+      "status": "SUPPORTED",
+      "ruleNature": "IDENTIFICATION_METHOD",
+      "sourceExcerpt": "단, 외국인의 실명확인증표는 외국인등록증(외국인등록증, 국내거소신고증, 영주증)을 보유한 경우로 한정",
+      "sourceLocator": "상품설명서 p.1 가입대상",
+      "reviewStatus": "NEED_REVIEW"
+    },
+    {
+      "identityType": "DOMESTIC_RESIDENCE_REPORT_CARD",
+      "status": "SUPPORTED",
+      "ruleNature": "IDENTIFICATION_METHOD",
+      "sourceExcerpt": "단, 외국인의 실명확인증표는 외국인등록증(외국인등록증, 국내거소신고증, 영주증)을 보유한 경우로 한정",
+      "sourceLocator": "상품설명서 p.1 가입대상",
+      "reviewStatus": "NEED_REVIEW"
+    },
+    {
+      "identityType": "PERMANENT_RESIDENT_CARD",
+      "status": "SUPPORTED",
+      "ruleNature": "IDENTIFICATION_METHOD",
+      "sourceExcerpt": "단, 외국인의 실명확인증표는 외국인등록증(외국인등록증, 국내거소신고증, 영주증)을 보유한 경우로 한정",
+      "sourceLocator": "상품설명서 p.1 가입대상",
+      "reviewStatus": "NEED_REVIEW"
+    }
+  ],
+  "channelEvidence": {
+    "branch": [
+      {
+        "channel": "BRANCH",
+        "status": "AVAILABLE",
+        "ruleNature": "CHANNEL_REQUIREMENT",
+        "sourceExcerpt": "가입방법 영업점, 신한은행 모바일앱",
+        "sourceLocator": "상품설명서 p.1 가입방법",
+        "reviewStatus": "NEED_REVIEW"
+      }
+    ],
+    "mobileOrOnline": [
+      {
+        "channel": "MOBILE_APP",
+        "productLevelStatus": "AVAILABLE",
+        "foreignResidentStatus": "UNKNOWN",
+        "runtimeAccessAvailability": "UNKNOWN",
+        "ruleNature": "CHANNEL_REQUIREMENT",
+        "sourceExcerpt": "가입방법 영업점, 신한은행 모바일앱",
+        "sourceLocator": "상품설명서 p.1 가입방법",
+        "reviewStatus": "NEED_REVIEW"
+      }
+    ]
+  },
+  "requiredDocumentEvidence": [
+    {
+      "documentType": "RESIDENCE_CARD",
+      "ruleNature": "REQUIRED_DOCUMENT",
+      "sourceExcerpt": "단, 외국인의 실명확인증표는 외국인등록증(외국인등록증, 국내거소신고증, 영주증)을 보유한 경우로 한정",
+      "sourceLocator": "상품설명서 p.1 가입대상",
+      "reviewStatus": "NEED_REVIEW"
+    },
+    {
+      "documentType": "DOMESTIC_RESIDENCE_REPORT_CARD",
+      "ruleNature": "REQUIRED_DOCUMENT",
+      "sourceExcerpt": "단, 외국인의 실명확인증표는 외국인등록증(외국인등록증, 국내거소신고증, 영주증)을 보유한 경우로 한정",
+      "sourceLocator": "상품설명서 p.1 가입대상",
+      "reviewStatus": "NEED_REVIEW"
+    },
+    {
+      "documentType": "PERMANENT_RESIDENT_CARD",
+      "ruleNature": "REQUIRED_DOCUMENT",
+      "sourceExcerpt": "단, 외국인의 실명확인증표는 외국인등록증(외국인등록증, 국내거소신고증, 영주증)을 보유한 경우로 한정",
+      "sourceLocator": "상품설명서 p.1 가입대상",
+      "reviewStatus": "NEED_REVIEW"
+    }
+  ],
+  "applicationStepEvidence": [],
+  "conflicts": [],
+  "notFound": [
+    "별도 상품약관",
+    "외국인 모바일 신규 가능 여부를 직접 명시한 상품별 Source",
+    "외국인의 기타 필요서류",
+    "상세 모바일 신청절차",
+    "상세 영업점 신청절차"
+  ],
+  "humanReviewQuestions": [
+    "외국인등록증 보유 외국인이 실제로 신한은행 모바일앱에서 이 상품을 신규할 수 있는가?",
+    "외국인 신규 시 실명확인증표 외 추가 요구서류가 존재하는가?",
+    "이 상품에 별도 상품특약 또는 예금약관이 존재하는가?"
+  ]
+}

@@ -6,17 +6,17 @@ import chromadb
 from app.config import Settings
 from app.ingestion.models import OfficialDocument
 from app.ingestion.text_processor import FinancialDocumentProcessor
-from app.rag.embedding import LocalHashEmbedding
+from app.rag.embedding import EmbeddingProvider, create_embedding_provider
 from app.rag.models import RetrievedDocument
 
 
 class OfficialDocumentStore:
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, embedding: EmbeddingProvider | None = None) -> None:
         self.settings = settings
         self.processor = FinancialDocumentProcessor(
             settings.rag_chunk_size, settings.rag_chunk_overlap
         )
-        self.embedding = LocalHashEmbedding()
+        self.embedding = embedding or create_embedding_provider(settings)
         self.client = chromadb.PersistentClient(path=settings.vector_db_path)
 
     def sync(self, documents: list[OfficialDocument]) -> tuple[int, int]:

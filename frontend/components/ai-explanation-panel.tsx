@@ -26,15 +26,15 @@ export function AiExplanationPanel({ data, loading, error }: { data?: AiExplanat
   if (!data) return null;
 
   const facts = data.facts;
-  const factItems = [
+  const factItems: Array<[string, string | null]> = [
     [text.visa, facts.visaType],
-    [text.visaRemaining, `${facts.visaRemainingMonths} ${text.months}`],
-    [text.residency, `${facts.residencyMonths} ${text.months}`],
+    [text.visaRemaining, facts.visaRemainingMonths === null ? null : `${facts.visaRemainingMonths} ${text.months}`],
+    [text.residency, facts.residencyMonths === null ? null : `${facts.residencyMonths} ${text.months}`],
     [text.passed, String(facts.passedCount)],
     [text.failed, String(facts.failedCount)],
     [text.external, String(facts.externalCheckCount)],
     [text.unknown, String(facts.unknownCount)],
-  ];
+  ].filter((item): item is [string, string] => item[1] !== null);
 
   return <section className="mt-6 overflow-hidden rounded-panel border border-line bg-surface" aria-live="polite">
     <header className="border-b border-line bg-surface-subtle p-6 sm:p-8">

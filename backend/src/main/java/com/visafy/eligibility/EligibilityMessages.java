@@ -36,7 +36,19 @@ final class EligibilityMessages {
         };
     }
 
-    String unknown(String excerpt, String visaType) {
+    String unknown(String key, String excerpt, String visaType) {
+        boolean visaRelated = key != null && key.toUpperCase(Locale.ROOT).contains("VISA");
+        boolean hasVisa = visaType != null && !visaType.isBlank();
+        if (!visaRelated || !hasVisa) {
+            return switch (language) {
+                case "en" -> "The official information states “%s”, but the detailed criteria are not public. The financial institution must confirm this condition."
+                        .formatted(excerpt);
+                case "vi" -> "Thông tin chính thức nêu “%s”, nhưng tiêu chí chi tiết không được công khai. Tổ chức tài chính cần xác nhận điều kiện này."
+                        .formatted(excerpt);
+                default -> "공식 상품정보에는 “%s”가 명시되어 있으나 세부 기준이 공개되어 있지 않습니다. 해당 조건은 금융기관 확인이 필요합니다."
+                        .formatted(excerpt);
+            };
+        }
         return switch (language) {
             case "en" -> "The official information states “%s”, but the detailed criteria are not public. The bank must confirm the result for visa %s."
                     .formatted(excerpt, visaType);

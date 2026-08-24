@@ -13,13 +13,18 @@ dependencies = [
   "pydantic>=2.10,<3.0",
   "pydantic-settings>=2.7,<3.0",
   "chromadb>=0.6,<1.0",
-  "httpx>=0.28,<1.0"
+  "httpx>=0.28,<1.0",
+  "pypdf>=5.1,<6.0",
+  "openai>=1.60,<3.0"
 ]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.3,<9.0",
   "ruff>=0.9,<1.0"
+]
+semantic = [
+  "sentence-transformers>=3.3,<4.0"
 ]
 
 [tool.setuptools.packages.find]
@@ -31,4 +36,3 @@ testpaths = ["tests"]
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-

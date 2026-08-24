@@ -51,7 +51,8 @@ test("Season 3 language, purpose, readiness, dynamic fields, and access flow", a
   await page.getByLabel("Desired Monthly Amount").fill("200000");
   await page.getByRole("button", { name: "Save and run pre-check" }).click();
   await expect(page.getByText("How you can access this service")).toBeVisible();
-  await expect(page.getByText("ACCESS_READY_BRANCH_ONLY")).toBeVisible();
+  await expect(page.getByText("Branch access confirmed")).toBeVisible();
+  await expect(page.getByText("ACCESS_READY_BRANCH_ONLY")).toHaveCount(0);
 });
 
 test("Season 3 mobile landing and profile have no horizontal overflow", async ({ page }) => {

@@ -98,7 +98,8 @@ public class EligibilityService {
                 case EXTERNAL_CHECK -> external.add(detail(rule, "EXTERNAL_CHECK",
                         messages.external(rule.getDescription()), null, rule.getRuleValue(), true));
                 case UNKNOWN -> unknown.add(detail(rule, "UNKNOWN_CONDITION",
-                        messages.unknown(rule.getSourceExcerpt(), profile.getVisaType()), profile.getVisaType(),
+                        messages.unknown(rule.getRuleKey(), rule.getSourceExcerpt(), profile.getVisaType()),
+                        profile.getVisaType(),
                         rule.getRuleValue(), rule.isMandatory()));
                 case HARD -> evaluateHardRule(rule, profile, today, passed, failed, unknown, insufficient, messages);
             }

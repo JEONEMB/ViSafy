@@ -81,4 +81,21 @@ class SourceDocumentServiceTest {
         service.changeLifecycle(1L, SourceLifecycleStatus.EXPIRED);
         assertThat(source.getLifecycleStatus()).isEqualTo(SourceLifecycleStatus.EXPIRED);
     }
+
+    @Test
+    void changedSnapshotMarksPreviouslyApprovedSourceForReview() {
+        SourceDocument previous = new SourceDocument("Bank", SourceType.PRODUCT_PAGE, "Product",
+                "https://www.kbstar.com/product", "old text", "a".repeat(64), null, null, "ko");
+        previous.review(com.visafy.common.domain.ReviewStatus.APPROVED, "reviewer");
+        when(repository.findFirstBySourceUrlOrderByRetrievedAtDesc("https://www.kbstar.com/product"))
+                .thenReturn(Optional.of(previous));
+        when(repository.save(any(SourceDocument.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        SourceDocument replacement = service.create("Bank", SourceType.PRODUCT_PAGE, "Product",
+                "https://www.kbstar.com/product", "changed text", null, null, "ko");
+
+        assertThat(previous.getReviewStatus()).isEqualTo(com.visafy.common.domain.ReviewStatus.NEED_REVIEW);
+        assertThat(previous.getReviewedBy()).isEqualTo("content-change-detector");
+        assertThat(replacement.getReviewStatus()).isEqualTo(com.visafy.common.domain.ReviewStatus.PENDING);
+    }
 }
