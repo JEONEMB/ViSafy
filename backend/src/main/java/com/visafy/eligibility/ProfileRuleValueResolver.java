@@ -13,12 +13,13 @@ final class ProfileRuleValueResolver {
 
     static ResolvedValue resolve(String ruleKey, TempProfile profile, LocalDate today) {
         return switch (ruleKey.toUpperCase(Locale.ROOT)) {
-            case "AGE" -> number(Period.between(profile.getBirthDate(), today).getYears());
+            case "AGE" -> profile.getBirthDate() == null ? number(null)
+                    : number(Period.between(profile.getBirthDate(), today).getYears());
             case "VISA_TYPE" -> string(profile.getVisaType());
-            case "VISA_REMAINING_MONTH" -> number(Math.max(0,
+            case "VISA_REMAINING_MONTH" -> profile.getVisaExpiry() == null ? number(null) : number(Math.max(0,
                     ChronoUnit.MONTHS.between(today, profile.getVisaExpiry())));
-            case "RESIDENCY_MONTH", "RESIDENCE_MONTHS" -> number(Math.max(0,
-                    ChronoUnit.MONTHS.between(profile.getResidencyStartDate(), today)));
+            case "RESIDENCY_MONTH", "RESIDENCE_MONTHS" -> profile.getResidencyStartDate() == null ? number(null)
+                    : number(Math.max(0, ChronoUnit.MONTHS.between(profile.getResidencyStartDate(), today)));
             case "DOMESTIC_INCOME_MONTH", "EMPLOYMENT_DURATION_MONTHS", "EMPLOYMENT_MONTHS" ->
                     number(profile.getEmploymentDurationMonths());
             case "MONTHLY_INCOME" -> number(profile.getMonthlyIncome());
@@ -35,6 +36,14 @@ final class ProfileRuleValueResolver {
                     ? null : profile.getResidentStatus().name());
             case "HAS_EXISTING_PRODUCT_ACCOUNT" -> bool(profile.getHasExistingProductAccount());
             case "DESIRED_MONTHLY_AMOUNT" -> number(profile.getDesiredMonthlyAmount());
+            case "HAS_RESIDENCE_CARD" -> bool(profile.getHasResidenceCard());
+            case "HAS_PASSPORT" -> bool(profile.getHasPassport());
+            case "HAS_DOMESTIC_PHONE" -> bool(profile.getHasDomesticPhone());
+            case "CAN_DOMESTIC_PHONE_VERIFY" -> bool(profile.getCanDomesticPhoneVerify());
+            case "HAS_KOREAN_BANK_ACCOUNT" -> bool(profile.getHasKoreanBankAccount());
+            case "HAS_KOREAN_CREDIT_HISTORY" -> bool(profile.getHasKoreanCreditHistory());
+            case "PREFERRED_CHANNEL" -> string(profile.getPreferredChannel());
+            case "REMITTANCE_COUNTRY" -> string(profile.getRemittanceCountry());
             default -> ResolvedValue.unsupported();
         };
     }

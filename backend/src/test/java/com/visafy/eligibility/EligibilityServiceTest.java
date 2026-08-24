@@ -2,8 +2,11 @@ package com.visafy.eligibility;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.visafy.access.AccessAssessment;
+import com.visafy.access.AccessAssessmentService;
 import com.visafy.common.domain.ReviewStatus;
 import com.visafy.product.FinancialProduct;
 import com.visafy.product.FinancialProductRepository;
@@ -36,6 +39,7 @@ class EligibilityServiceTest {
     @Mock FinancialProductRepository productRepository;
     @Mock ProductRuleRepository ruleRepository;
     @Mock RuleCandidateRepository candidateRepository;
+    @Mock AccessAssessmentService accessAssessmentService;
 
     private SourceDocument source;
     private FinancialProduct product;
@@ -48,7 +52,8 @@ class EligibilityServiceTest {
         product = product(source);
         profile = profile("en");
         service = new EligibilityService(profileService, productRepository, ruleRepository,
-                candidateRepository, new ObjectMapper());
+                candidateRepository, accessAssessmentService, new ObjectMapper());
+        lenient().when(accessAssessmentService.assess(profile, product)).thenReturn(AccessAssessment.unknown());
         when(profileService.getBySessionId("session")).thenAnswer(ignored -> profile);
         when(productRepository.findOneById(1L)).thenReturn(Optional.of(product));
         when(candidateRepository.findByProductCodeOrderByCreatedAtDesc("DEMO")).thenReturn(List.of());
@@ -157,6 +162,18 @@ class EligibilityServiceTest {
     }
 
     @Test
+    void missingMandatoryProfileValueUsesSpecificationReasonCode() {
+        when(ruleRepository.findByProductIdAndActiveTrueOrderByRuleKeyAsc(1L)).thenReturn(List.of(
+                rule("HAS_BANK_ACCOUNT", RuleOperator.EQ, "true", RuleLevel.HARD, true)));
+
+        EligibilityResult result = service.precheck("session", 1L);
+
+        assertThat(result.status()).isEqualTo(EligibilityStatus.INSUFFICIENT_INFORMATION);
+        assertThat(result.insufficientReasons()).extracting(EligibilityResult.RuleDetail::messageCode)
+                .contains("MISSING_REQUIRED_PROFILE_FIELD");
+    }
+
+    @Test
     void expiredOnlyRuleIsExcludedAndProductBecomesSourceInsufficient() {
         ProductRule expiredVisaRule = rule("VISA_TYPE", RuleOperator.IN, "[\"F-5\"]",
                 RuleLevel.HARD, true, null, LocalDate.now().minusDays(1));
@@ -168,7 +185,7 @@ class EligibilityServiceTest {
         assertThat(result.status()).isEqualTo(EligibilityStatus.INSUFFICIENT_INFORMATION);
         assertThat(result.passedRules()).isEmpty();
         assertThat(result.insufficientReasons()).extracting(EligibilityResult.RuleDetail::messageCode)
-                .contains("SOURCE_INSUFFICIENT");
+                .contains("EXPIRED_RULE", "SOURCE_INSUFFICIENT");
     }
 
     @Test
@@ -181,7 +198,7 @@ class EligibilityServiceTest {
 
         assertThat(result.status()).isEqualTo(EligibilityStatus.INSUFFICIENT_INFORMATION);
         assertThat(result.insufficientReasons()).extracting(EligibilityResult.RuleDetail::messageCode)
-                .contains("SOURCE_NOT_EFFECTIVE");
+                .contains("SOURCE_INSUFFICIENT");
     }
 
     private ProductRule rule(String key, RuleOperator operator, String value, RuleLevel level, boolean mandatory) {

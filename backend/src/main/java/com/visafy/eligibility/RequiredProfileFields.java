@@ -30,6 +30,14 @@ public final class RequiredProfileFields {
             Map.entry("RESIDENT_STATUS", "residentStatus"),
             Map.entry("HAS_EXISTING_PRODUCT_ACCOUNT", "hasExistingProductAccount"),
             Map.entry("DESIRED_MONTHLY_AMOUNT", "desiredMonthlyAmount")
+            ,Map.entry("HAS_RESIDENCE_CARD", "hasResidenceCard")
+            ,Map.entry("HAS_PASSPORT", "hasPassport")
+            ,Map.entry("HAS_DOMESTIC_PHONE", "hasDomesticPhone")
+            ,Map.entry("CAN_DOMESTIC_PHONE_VERIFY", "canDomesticPhoneVerify")
+            ,Map.entry("HAS_KOREAN_BANK_ACCOUNT", "hasKoreanBankAccount")
+            ,Map.entry("HAS_KOREAN_CREDIT_HISTORY", "hasKoreanCreditHistory")
+            ,Map.entry("PREFERRED_CHANNEL", "preferredChannel")
+            ,Map.entry("REMITTANCE_COUNTRY", "remittanceCountry")
     );
 
     private RequiredProfileFields() {

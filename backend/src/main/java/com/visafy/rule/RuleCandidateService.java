@@ -136,6 +136,10 @@ public class RuleCandidateService {
     }
 
     private void approveWithConflictCheck(RuleCandidate candidate, String reviewer) {
+        if (violatesRealNameForeignerGuardrail(candidate)) {
+            candidate.requireReview(reviewer);
+            return;
+        }
         candidate.approve(reviewer);
         List<RuleCandidate> approved = repository.findByProductCodeAndRuleKeyAndReviewStatusAndIdNot(
                 candidate.getProductCode(), candidate.getRuleKey(), ReviewStatus.APPROVED, candidate.getId());
@@ -154,6 +158,16 @@ public class RuleCandidateService {
                         existingBefore, RuleChangeHistory.snapshot(existing)));
             });
         }
+    }
+
+    private boolean violatesRealNameForeignerGuardrail(RuleCandidate candidate) {
+        String key = candidate.getRuleKey().toUpperCase(java.util.Locale.ROOT);
+        if (!key.equals("FOREIGNER_ALLOWED") && !key.equals("IS_FOREIGNER")) return false;
+        String evidence = candidate.getSourceExcerpt().toUpperCase(java.util.Locale.ROOT);
+        boolean assertsAllowed = candidate.getRuleValue().equalsIgnoreCase("true")
+                || candidate.getRuleValue().equalsIgnoreCase("\"true\"");
+        return assertsAllowed && (evidence.contains("실명의 개인") || evidence.contains("REAL-NAME INDIVIDUAL"))
+                && !evidence.contains("외국인") && !evidence.contains("FOREIGNER");
     }
 
     private boolean isCurrentlyEffective(RuleCandidate candidate) {

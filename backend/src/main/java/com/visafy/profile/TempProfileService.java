@@ -74,16 +74,16 @@ public class TempProfileService {
         LocalDate today = LocalDate.now();
         SensitiveDataGuard.rejectProhibitedValues(data.nationality(), data.visaType(), data.occupation(),
                 data.employmentType(), data.financialPurpose(), data.housingType(), data.preferredBank());
-        if (!visaCatalog.supports(data.visaType())) {
+        if (data.visaType() != null && !visaCatalog.supports(data.visaType())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported visa type");
         }
-        if (!data.birthDate().isBefore(today)) {
+        if (data.birthDate() != null && !data.birthDate().isBefore(today)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "birthDate must be in the past");
         }
-        if (data.visaExpiry().isBefore(today)) {
+        if (data.visaExpiry() != null && data.visaExpiry().isBefore(today)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "visaExpiry must not be in the past");
         }
-        if (data.residencyStartDate().isAfter(today)) {
+        if (data.residencyStartDate() != null && data.residencyStartDate().isAfter(today)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "residencyStartDate must not be in the future");
         }
     }

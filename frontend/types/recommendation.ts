@@ -1,5 +1,5 @@
 import type { EligibilityResult, EligibilityStatus } from "./eligibility";
-import type { FinancialPurpose, ProductType } from "./product";
+import type { FinancialPurpose, ProductAudience, ProductCategory, ProductType } from "./product";
 
 export type RecommendationItem = {
   productId: number;
@@ -7,7 +7,11 @@ export type RecommendationItem = {
   productName: string;
   productType: ProductType;
   financialPurpose: FinancialPurpose;
+  productAudience: ProductAudience;
+  productCategory: ProductCategory;
   targetSummary: string;
+  requiredDocuments: string;
+  applicationMethod: string;
   informationBaseDate: string;
   eligibilityStatus: EligibilityStatus;
   confirmedPublicConditions: number;

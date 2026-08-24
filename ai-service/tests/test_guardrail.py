@@ -42,6 +42,13 @@ def test_answer_keeps_eligibility_result_separate_from_official_evidence() -> No
     assert "공식 근거" in answer
     assert DISCLAIMERS["ko"] in answer
     assert "ELIGIBILITY_RESULT_IMMUTABLE" in GUARDRAILS
+    assert "NO_FOREIGNER_INELIGIBILITY_INFERENCE" in GUARDRAILS
+    assert "NO_REAL_NAME_FOREIGNER_ACCESS_INFERENCE" in GUARDRAILS
+    assert "NO_UNSOURCED_VISA_RULE" in GUARDRAILS
+    assert "NO_UNSOURCED_CHANNEL_AVAILABILITY" in GUARDRAILS
+    assert "NO_APPROVAL_PROBABILITY" in GUARDRAILS
+    assert "NO_CREDIT_SCORE_INFERENCE" in GUARDRAILS
+    assert "NO_INTERNAL_REVIEW_INFERENCE" in GUARDRAILS
 
 
 def test_no_evidence_uses_fixed_safe_fallback_and_full_disclaimer() -> None:

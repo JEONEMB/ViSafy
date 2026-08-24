@@ -23,6 +23,8 @@ backend/.settings/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+ai-service/build/
+ai-service/*.egg-info/
 .ruff_cache/
 .mypy_cache/
 .venv/

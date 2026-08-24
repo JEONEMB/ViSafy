@@ -8,6 +8,13 @@ GUARDRAILS = [
     "STRUCTURED_VISA_CODE_ONLY",
     "UNKNOWN_REQUIRES_CONFIRMATION",
     "LLM_HAS_NO_ELIGIBILITY_DECISION_AUTHORITY",
+    "NO_FOREIGNER_INELIGIBILITY_INFERENCE",
+    "NO_REAL_NAME_FOREIGNER_ACCESS_INFERENCE",
+    "NO_UNSOURCED_VISA_RULE",
+    "NO_UNSOURCED_CHANNEL_AVAILABILITY",
+    "NO_APPROVAL_PROBABILITY",
+    "NO_CREDIT_SCORE_INFERENCE",
+    "NO_INTERNAL_REVIEW_INFERENCE",
 ]
 
 
@@ -150,31 +157,52 @@ class ExplanationBuilder:
                 self._condition_label(condition.key, request.language) for condition in conditions
             )
         )
+        korean_profile = self._profile_sentence(request, "ko")
         korean = (
-            f"안녕하세요. 현재 {request.visa_type} 체류자격이며 비자 잔여기간은 "
-            f"{request.visa_remaining_months}개월, 국내 체류기간은 {request.residency_months}개월입니다. "
-            f"{request.product_name} 상품의 {korean_keys} 조건에 대해 공개정보만으로 확인하기 어려운 부분이 있습니다. "
-            "현재 체류자격으로 신청할 수 있는지와 추가 심사 조건 및 필요한 서류를 확인 부탁드립니다."
+            f"안녕하세요.{korean_profile} {request.product_name} 상품의 {korean_keys} 조건에 대해 "
+            "공개정보만으로 확인하기 어려운 부분이 있습니다. 신청 가능 여부와 공식적으로 확인할 "
+            "추가 조건 및 필요한 서류를 확인 부탁드립니다."
         )
         if request.language == "en":
+            profile_sentence = self._profile_sentence(request, "en")
             localized = (
-                f"Hello. My current status of stay is {request.visa_type}. I have "
-                f"{request.visa_remaining_months} months remaining on my visa and have resided in Korea for "
-                f"{request.residency_months} months. Some {localized_keys} conditions for {request.product_name} are not "
-                "fully available in the public information. Please confirm whether I may apply with my current "
-                "status of stay, any additional review conditions, and the required documents."
+                f"Hello.{profile_sentence} Some {localized_keys} conditions for {request.product_name} are not "
+                "fully available in the public information. Please confirm whether I may apply, the official "
+                "additional conditions to check, and the required documents."
             )
         elif request.language == "vi":
+            profile_sentence = self._profile_sentence(request, "vi")
             localized = (
-                f"Xin chào. Tư cách lưu trú hiện tại của tôi là {request.visa_type}, thời hạn visa còn "
-                f"{request.visa_remaining_months} tháng và tôi đã cư trú tại Hàn Quốc trong "
-                f"{request.residency_months} tháng. Một số điều kiện {localized_keys} của sản phẩm {request.product_name} "
-                "chưa được công khai đầy đủ. Vui lòng xác nhận tôi có thể đăng ký với tư cách lưu trú hiện tại hay "
-                "không, các điều kiện thẩm định bổ sung và giấy tờ cần thiết."
+                f"Xin chào.{profile_sentence} Một số điều kiện {localized_keys} của sản phẩm {request.product_name} "
+                "chưa được công khai đầy đủ. Vui lòng xác nhận tôi có thể đăng ký hay không, các điều kiện chính thức "
+                "cần kiểm tra thêm và giấy tờ cần thiết."
             )
         else:
             localized = korean
-        return BankInquiry(korean=korean, localized=localized, language=request.language)
+        confirmation_items = list(
+            dict.fromkeys(
+                self._condition_label(condition.key, request.language) for condition in conditions
+            )
+        )
+        return BankInquiry(
+            korean=korean,
+            localized=localized,
+            language=request.language,
+            confirmationItems=confirmation_items,
+        )
+
+    def _profile_sentence(self, request: ExplanationRequest, language: str) -> str:
+        facts: list[str] = []
+        if request.visa_type is not None:
+            facts.append({"ko": f"현재 체류자격은 {request.visa_type}입니다", "en": f"My current status of stay is {request.visa_type}", "vi": f"Tư cách lưu trú hiện tại của tôi là {request.visa_type}"}[language])
+        if request.visa_remaining_months is not None:
+            facts.append({"ko": f"비자 잔여기간은 {request.visa_remaining_months}개월입니다", "en": f"I have {request.visa_remaining_months} months remaining on my visa", "vi": f"Thời hạn visa của tôi còn {request.visa_remaining_months} tháng"}[language])
+        if request.residency_months is not None:
+            facts.append({"ko": f"국내 체류기간은 {request.residency_months}개월입니다", "en": f"I have resided in Korea for {request.residency_months} months", "vi": f"Tôi đã cư trú tại Hàn Quốc trong {request.residency_months} tháng"}[language])
+        if not facts:
+            return ""
+        separator = " " if language == "ko" else "; "
+        return " " + separator.join(facts) + "."
 
     def _condition_label(self, key: str, language: str) -> str:
         labels = {
@@ -192,6 +220,16 @@ class ExplanationBuilder:
                 "ko": "은행 내부 신용평가",
                 "en": "bank internal credit review",
                 "vi": "đánh giá tín dụng nội bộ của ngân hàng",
+            },
+            "REAL_NAME_VERIFICATION": {
+                "ko": "실명확인 가능 여부",
+                "en": "real-name verification availability",
+                "vi": "khả năng xác minh danh tính thực",
+            },
+            "FX_BANK_AND_E9_ENTRY_CHECK": {
+                "ko": "외국환은행 지정 및 E-9 입국 확인",
+                "en": "foreign-exchange bank designation and E-9 entry verification",
+                "vi": "xác nhận ngân hàng ngoại hối được chỉ định và nhập cảnh E-9",
             },
         }
         normalized_language = language if language in {"ko", "en", "vi"} else "ko"

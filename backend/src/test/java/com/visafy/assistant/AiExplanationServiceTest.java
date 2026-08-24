@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.visafy.assistant.AiExplanationClient.BankInquiry;
+import com.visafy.assistant.AiExplanationClient.ConditionInput;
 import com.visafy.assistant.AiExplanationClient.ExplanationRequest;
 import com.visafy.assistant.AiExplanationClient.ExplanationResponse;
 import com.visafy.common.domain.ReviewStatus;
@@ -49,12 +50,12 @@ class AiExplanationServiceTest {
         profile = profile();
         product = product();
         service = new AiExplanationService(profileService, productRepository, eligibilityService, aiClient);
-        when(profileService.getBySessionId("session-uuid")).thenReturn(profile);
         when(productRepository.findOneById(10L)).thenReturn(Optional.of(product));
     }
 
     @Test
     void sendsOnlyStructuredProfileValuesAndAuthoritativeEligibilityStatus() {
+        when(profileService.getBySessionId("session-uuid")).thenReturn(profile);
         RuleDetail passed = detail("VISA_TYPE", "VISA_TYPE_PASS");
         RuleDetail external = detail("GUARANTEE", "EXTERNAL_CHECK");
         RuleDetail unknown = detail("VISA_DETAIL", "UNKNOWN");
@@ -63,7 +64,7 @@ class AiExplanationServiceTest {
                 "Not final approval");
         when(eligibilityService.precheck(profile, product)).thenReturn(eligibility);
         ExplanationResponse aiResponse = new ExplanationResponse("설명", "면책", List.of(),
-                new BankInquiry("한국어 문의", "English inquiry", "en"),
+                new BankInquiry("한국어 문의", "English inquiry", "en", List.of("보증 확인")),
                 List.of("STRUCTURED_NUMBERS_ONLY"));
         when(aiClient.explain(any())).thenReturn(aiResponse);
 
@@ -76,15 +77,42 @@ class AiExplanationServiceTest {
         assertThat(request.visaType()).isEqualTo("E-9");
         assertThat(request.visaRemainingMonths()).isEqualTo(14);
         assertThat(request.residencyMonths()).isEqualTo(24);
-        assertThat(request.termKeys()).contains("STATUS_OF_STAY", "PROOF_OF_INCOME",
-                "GUARANTEE_INSURANCE_CERTIFICATE");
+        assertThat(request.termKeys()).contains("STATUS_OF_STAY", "GUARANTEE_INSURANCE_CERTIFICATE")
+                .doesNotContain("PROOF_OF_INCOME");
+        assertThat(request.ruleDetails()).extracting(ConditionInput::key)
+                .containsExactly("VISA_TYPE", "GUARANTEE", "VISA_DETAIL");
+        assertThat(request.ruleDetails().getFirst().sourceExcerpt()).isEqualTo("official excerpt");
         assertThat(result.facts().visaType()).isEqualTo("E-9");
         assertThat(result.inquiry().korean()).isEqualTo("한국어 문의");
     }
 
+    @Test
+    void generalProductWithoutVisaRuleDoesNotRequireOrInventVisaFacts() {
+        TempProfile minimalProfile = new TempProfile("general-session");
+        minimalProfile.update(new ProfileData("VN", null, null, null, null, null, null, null,
+                null, "SAVE_MONEY", "en", false, null, null, null));
+        when(profileService.getBySessionId("general-session")).thenReturn(minimalProfile);
+        RuleDetail channel = detail("MOBILE_CHANNEL", "EXTERNAL_CHECK");
+        EligibilityResult eligibility = new EligibilityResult(EligibilityStatus.NEED_BANK_CONFIRMATION,
+                10L, List.of(), List.of(), List.of(channel), List.of(), List.of(), "Not final approval");
+        when(eligibilityService.precheck(minimalProfile, product)).thenReturn(eligibility);
+        when(aiClient.explain(any())).thenReturn(new ExplanationResponse("explanation", "disclaimer",
+                List.of(), null, List.of("NO_UNSOURCED_VISA_RULE")));
+
+        AiExplanationService.ExplanationResult result = service.explain("general-session", 10L);
+
+        ArgumentCaptor<ExplanationRequest> captor = ArgumentCaptor.forClass(ExplanationRequest.class);
+        verify(aiClient).explain(captor.capture());
+        assertThat(captor.getValue().visaType()).isNull();
+        assertThat(captor.getValue().visaRemainingMonths()).isNull();
+        assertThat(captor.getValue().residencyMonths()).isNull();
+        assertThat(captor.getValue().termKeys()).doesNotContain("STATUS_OF_STAY");
+        assertThat(result.facts().visaType()).isNull();
+    }
+
     private static RuleDetail detail(String key, String code) {
-        return new RuleDetail(null, key, code, code, null, null, true, false,
-                null, null, null);
+        return new RuleDetail(null, key, code, code, "actual", "expected", true, false,
+                "official excerpt", "p.3", "https://www.kbstar.com/source");
     }
 
     private static TempProfile profile() {

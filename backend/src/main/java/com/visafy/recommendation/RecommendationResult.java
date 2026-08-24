@@ -4,6 +4,8 @@ import com.visafy.eligibility.EligibilityResult;
 import com.visafy.eligibility.EligibilityStatus;
 import com.visafy.product.FinancialPurpose;
 import com.visafy.product.ProductType;
+import com.visafy.product.ProductAudience;
+import com.visafy.product.ProductCategory;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,7 +20,11 @@ public record RecommendationResult(
             String productName,
             ProductType productType,
             FinancialPurpose financialPurpose,
+            ProductAudience productAudience,
+            ProductCategory productCategory,
             String targetSummary,
+            String requiredDocuments,
+            String applicationMethod,
             LocalDate informationBaseDate,
             EligibilityStatus eligibilityStatus,
             int confirmedPublicConditions,

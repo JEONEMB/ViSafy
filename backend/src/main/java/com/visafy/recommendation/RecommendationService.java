@@ -7,6 +7,7 @@ import com.visafy.product.FinancialProductRepository;
 import com.visafy.profile.TempProfile;
 import com.visafy.profile.TempProfileService;
 import com.visafy.recommendation.RecommendationResult.RecommendationItem;
+import com.visafy.journey.FinancialPurposeCode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -61,10 +62,12 @@ public class RecommendationService {
         int totalHard = passed + eligibility.failedRules().size();
         int additionalChecks = eligibility.externalChecks().size() + eligibility.unknownRules().size();
         boolean purposeMatched = product.getFinancialPurpose().name()
-                .equalsIgnoreCase(profile.getFinancialPurpose());
+                .equalsIgnoreCase(FinancialPurposeCode.from(profile.getFinancialPurpose()).productPurpose());
         int preferredMatches = preferredBankMatches(profile, product) ? 1 : 0;
         return new RecommendationItem(product.getId(), product.getInstitution(), product.getProductName(),
-                product.getProductType(), product.getFinancialPurpose(), product.getTargetSummary(),
+                product.getProductType(), product.getFinancialPurpose(), product.getProductAudience(),
+                product.getProductCategory(), product.getTargetSummary(), product.getRequiredDocuments(),
+                product.getApplicationMethod(),
                 product.getInformationBaseDate(), eligibility.status(), passed, totalHard, additionalChecks,
                 eligibility.unknownRules().size(), purposeMatched, preferredMatches, eligibility);
     }

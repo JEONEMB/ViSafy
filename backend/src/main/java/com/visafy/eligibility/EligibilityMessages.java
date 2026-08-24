@@ -51,33 +51,30 @@ final class EligibilityMessages {
         return switch (language) {
             case "en" -> switch (code) {
                 case SOURCE_INSUFFICIENT -> "The product exists, but approved official eligibility sources are insufficient for an automated pre-check.";
-                case MISSING_PROFILE_INPUT -> "Profile input required for %s is missing.".formatted(label(key));
+                case MISSING_REQUIRED_PROFILE_FIELD -> "Profile input required for %s is missing.".formatted(label(key));
                 case SOURCE_CONFLICT -> "Official sources conflict for rule %s.".formatted(key);
-                case SOURCE_NOT_EFFECTIVE -> "The official source for %s is not currently approved or effective.".formatted(key);
                 case RULE_REVIEW_INCOMPLETE -> "Rule review is not complete for %s.".formatted(key);
-                case INSUFFICIENT_RULES -> "Required approved eligibility rules are unavailable.";
                 case UNSUPPORTED_RULE_KEY -> "Rule %s cannot yet be evaluated by the engine.".formatted(key);
                 case INVALID_RULE_VALUE -> "The configured value for rule %s is invalid.".formatted(key);
+                case EXPIRED_RULE -> "Rule %s has expired and must be reviewed again.".formatted(key);
             };
             case "vi" -> switch (code) {
                 case SOURCE_INSUFFICIENT -> "Sản phẩm có tồn tại, nhưng chưa đủ nguồn điều kiện chính thức đã duyệt để kiểm tra tự động.";
-                case MISSING_PROFILE_INPUT -> "Thiếu thông tin hồ sơ cần thiết cho %s.".formatted(label(key));
+                case MISSING_REQUIRED_PROFILE_FIELD -> "Thiếu thông tin hồ sơ cần thiết cho %s.".formatted(label(key));
                 case SOURCE_CONFLICT -> "Các nguồn chính thức mâu thuẫn đối với quy tắc %s.".formatted(key);
-                case SOURCE_NOT_EFFECTIVE -> "Nguồn chính thức cho %s hiện không được duyệt hoặc không còn hiệu lực.".formatted(key);
                 case RULE_REVIEW_INCOMPLETE -> "Việc kiểm duyệt quy tắc %s chưa hoàn tất.".formatted(key);
-                case INSUFFICIENT_RULES -> "Không có đủ quy tắc điều kiện bắt buộc đã được duyệt.";
                 case UNSUPPORTED_RULE_KEY -> "Hệ thống chưa thể đánh giá quy tắc %s.".formatted(key);
                 case INVALID_RULE_VALUE -> "Giá trị cấu hình của quy tắc %s không hợp lệ.".formatted(key);
+                case EXPIRED_RULE -> "Quy tắc %s đã hết hiệu lực và cần được kiểm duyệt lại.".formatted(key);
             };
             default -> switch (code) {
                 case SOURCE_INSUFFICIENT -> "상품 존재는 확인됐지만 승인된 공식 가입조건 Source가 부족하여 자동 진단할 수 없습니다.";
-                case MISSING_PROFILE_INPUT -> "%s 판정에 필요한 프로필 입력이 없습니다.".formatted(label(key));
+                case MISSING_REQUIRED_PROFILE_FIELD -> "%s 판정에 필요한 필수 프로필 입력이 없습니다.".formatted(label(key));
                 case SOURCE_CONFLICT -> "%s Rule의 공식 Source 조건이 서로 충돌합니다.".formatted(key);
-                case SOURCE_NOT_EFFECTIVE -> "%s의 공식 Source가 현재 승인 또는 유효 상태가 아닙니다.".formatted(key);
                 case RULE_REVIEW_INCOMPLETE -> "%s Rule 검수가 완료되지 않았습니다.".formatted(key);
-                case INSUFFICIENT_RULES -> "필수 승인 가입조건 Rule이 부족하여 진단할 수 없습니다.";
                 case UNSUPPORTED_RULE_KEY -> "%s Rule은 현재 엔진에서 평가할 수 없습니다.".formatted(key);
                 case INVALID_RULE_VALUE -> "%s Rule에 설정된 값의 형식이 올바르지 않습니다.".formatted(key);
+                case EXPIRED_RULE -> "%s Rule이 만료되어 다시 검수해야 합니다.".formatted(key);
             };
         };
     }
@@ -105,7 +102,7 @@ final class EligibilityMessages {
         return switch (language) {
             case "en" -> "This is a preliminary check based only on public conditions, not final approval. The bank makes the final decision.";
             case "vi" -> "Đây chỉ là kiểm tra sơ bộ dựa trên điều kiện công khai, không phải phê duyệt cuối cùng. Ngân hàng đưa ra quyết định cuối cùng.";
-            default -> "공개된 조건을 기반으로 한 사전 확인이며 최종 가입승인이 아닙니다. 최종 결정은 은행 심사에서 이루어집니다.";
+            default -> "본 결과는 입력된 정보와 공개된 공식 금융정보를 기반으로 한 사전자격 안내이며 실제 가입 여부와 한도·금리는 금융기관의 최종 심사 결과에 따라 달라질 수 있습니다.";
         };
     }
 

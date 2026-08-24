@@ -1,5 +1,6 @@
 package com.visafy.eligibility;
 
+import com.visafy.access.AccessStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,6 +27,10 @@ public class PrecheckResultEntity {
     private Long productId;
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 40)
     private EligibilityStatus status;
+    @Enumerated(EnumType.STRING) @Column(nullable = false, length = 40)
+    private AccessStatus accessStatus;
+    @Column(columnDefinition = "LONGTEXT")
+    private String accessAssessmentJson;
     @Column(nullable = false)
     private LocalDate informationBaseDate;
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -43,10 +48,12 @@ public class PrecheckResultEntity {
 
     PrecheckResultEntity(String id, String profileSessionHash, Long profileId, Long productId,
                          EligibilityStatus status, LocalDate informationBaseDate, String disclaimer,
-                         String requiredFields, Instant createdAt, Instant expiresAt) {
+                         String requiredFields, AccessStatus accessStatus, String accessAssessmentJson,
+                         Instant createdAt, Instant expiresAt) {
         this.id = id; this.profileSessionHash = profileSessionHash; this.profileId = profileId;
         this.productId = productId; this.status = status; this.informationBaseDate = informationBaseDate;
         this.disclaimer = disclaimer; this.requiredFields = requiredFields;
+        this.accessStatus = accessStatus; this.accessAssessmentJson = accessAssessmentJson;
         this.createdAt = createdAt; this.expiresAt = expiresAt;
     }
 
@@ -55,6 +62,8 @@ public class PrecheckResultEntity {
     public String getProfileSessionHash() { return profileSessionHash; }
     public Long getProductId() { return productId; }
     public EligibilityStatus getStatus() { return status; }
+    public AccessStatus getAccessStatus() { return accessStatus; }
+    public String getAccessAssessmentJson() { return accessAssessmentJson; }
     public LocalDate getInformationBaseDate() { return informationBaseDate; }
     public String getDisclaimer() { return disclaimer; }
     public String getRequiredFields() { return requiredFields; }

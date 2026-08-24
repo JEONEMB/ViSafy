@@ -20,21 +20,21 @@ public class TempProfile {
     private String sessionId;
     @Column(nullable = false, length = 80)
     private String nationality;
-    @Column(nullable = false)
+    @Column
     private LocalDate birthDate;
-    @Column(nullable = false, length = 10)
+    @Column(length = 10)
     private String visaType;
-    @Column(nullable = false)
+    @Column
     private LocalDate visaExpiry;
-    @Column(nullable = false)
+    @Column
     private LocalDate residencyStartDate;
-    @Column(nullable = false, length = 120)
+    @Column(length = 120)
     private String occupation;
-    @Column(nullable = false, length = 80)
+    @Column(length = 80)
     private String employmentType;
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(precision = 15, scale = 2)
     private BigDecimal monthlyIncome;
-    @Column(nullable = false)
+    @Column
     private Integer employmentDurationMonths;
     @Column(nullable = false, length = 120)
     private String financialPurpose;
@@ -53,6 +53,16 @@ public class TempProfile {
     private Boolean hasExistingProductAccount;
     @Column(precision = 15, scale = 2)
     private BigDecimal desiredMonthlyAmount;
+    private Boolean hasResidenceCard;
+    private Boolean hasPassport;
+    private Boolean hasDomesticPhone;
+    private Boolean canDomesticPhoneVerify;
+    private Boolean hasKoreanBankAccount;
+    private Boolean hasKoreanCreditHistory;
+    @Column(length = 40)
+    private String preferredChannel;
+    @Column(length = 80)
+    private String remittanceCountry;
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
     @Column(nullable = false)
@@ -81,6 +91,12 @@ public class TempProfile {
         residentStatus = data.residentStatus();
         hasExistingProductAccount = data.hasExistingProductAccount();
         desiredMonthlyAmount = data.desiredMonthlyAmount();
+        hasResidenceCard = data.hasResidenceCard(); hasPassport = data.hasPassport();
+        hasDomesticPhone = data.hasDomesticPhone(); canDomesticPhoneVerify = data.canDomesticPhoneVerify();
+        hasKoreanBankAccount = data.hasKoreanBankAccount() == null ? data.hasBankAccount() : data.hasKoreanBankAccount();
+        hasBankAccount = hasKoreanBankAccount;
+        hasKoreanCreditHistory = data.hasKoreanCreditHistory();
+        preferredChannel = data.preferredChannel(); remittanceCountry = data.remittanceCountry();
         updatedAt = Instant.now();
         expiresAt = updatedAt.plusSeconds(24 * 60 * 60);
     }
@@ -90,7 +106,23 @@ public class TempProfile {
                               BigDecimal monthlyIncome, Integer employmentDurationMonths, String financialPurpose,
                               String language, Boolean hasBankAccount, String housingType,
                               BigDecimal desiredAmount, String preferredBank, ResidentStatus residentStatus,
-                              Boolean hasExistingProductAccount, BigDecimal desiredMonthlyAmount) {
+                              Boolean hasExistingProductAccount, BigDecimal desiredMonthlyAmount,
+                              Boolean hasResidenceCard, Boolean hasPassport, Boolean hasDomesticPhone,
+                              Boolean canDomesticPhoneVerify, Boolean hasKoreanBankAccount,
+                              Boolean hasKoreanCreditHistory, String preferredChannel,
+                              String remittanceCountry) {
+        public ProfileData(String nationality, LocalDate birthDate, String visaType, LocalDate visaExpiry,
+                           LocalDate residencyStartDate, String occupation, String employmentType,
+                           BigDecimal monthlyIncome, Integer employmentDurationMonths, String financialPurpose,
+                           String language, Boolean hasBankAccount, String housingType, BigDecimal desiredAmount,
+                           String preferredBank, ResidentStatus residentStatus, Boolean hasExistingProductAccount,
+                           BigDecimal desiredMonthlyAmount) {
+            this(nationality, birthDate, visaType, visaExpiry, residencyStartDate, occupation, employmentType,
+                    monthlyIncome, employmentDurationMonths, financialPurpose, language, hasBankAccount,
+                    housingType, desiredAmount, preferredBank, residentStatus, hasExistingProductAccount,
+                    desiredMonthlyAmount, null, null, null, null, hasBankAccount, null, null, null);
+        }
+
         public ProfileData(String nationality, LocalDate birthDate, String visaType, LocalDate visaExpiry,
                            LocalDate residencyStartDate, String occupation, String employmentType,
                            BigDecimal monthlyIncome, Integer employmentDurationMonths, String financialPurpose,
@@ -98,7 +130,8 @@ public class TempProfile {
                            BigDecimal desiredAmount, String preferredBank) {
             this(nationality, birthDate, visaType, visaExpiry, residencyStartDate, occupation, employmentType,
                     monthlyIncome, employmentDurationMonths, financialPurpose, language, hasBankAccount,
-                    housingType, desiredAmount, preferredBank, null, null, null);
+                    housingType, desiredAmount, preferredBank, null, null, null,
+                    null, null, null, null, hasBankAccount, null, null, null);
         }
     }
 
@@ -122,5 +155,13 @@ public class TempProfile {
     public ResidentStatus getResidentStatus() { return residentStatus; }
     public Boolean getHasExistingProductAccount() { return hasExistingProductAccount; }
     public BigDecimal getDesiredMonthlyAmount() { return desiredMonthlyAmount; }
+    public Boolean getHasResidenceCard() { return hasResidenceCard; }
+    public Boolean getHasPassport() { return hasPassport; }
+    public Boolean getHasDomesticPhone() { return hasDomesticPhone; }
+    public Boolean getCanDomesticPhoneVerify() { return canDomesticPhoneVerify; }
+    public Boolean getHasKoreanBankAccount() { return hasKoreanBankAccount == null ? hasBankAccount : hasKoreanBankAccount; }
+    public Boolean getHasKoreanCreditHistory() { return hasKoreanCreditHistory; }
+    public String getPreferredChannel() { return preferredChannel; }
+    public String getRemittanceCountry() { return remittanceCountry; }
     public Instant getExpiresAt() { return expiresAt; }
 }

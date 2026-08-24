@@ -1,6 +1,8 @@
-export type ProductType = "CHECKING_ACCOUNT" | "SAVINGS" | "LOAN" | "CARD" | "INVESTMENT";
+export type ProductType = "CHECKING_ACCOUNT" | "SAVINGS" | "LOAN" | "CARD" | "INVESTMENT" | "REMITTANCE";
 export type FinancialPurpose = "ACCOUNT" | "SAVINGS" | "LOAN" | "CARD" | "INVESTMENT";
 export type DiagnosisStatus = "READY" | "PARTIAL" | "NOT_READY";
+export type ProductAudience = "GENERAL" | "FOREIGNER_SPECIALIZED" | "POLICY";
+export type ProductCategory = "DEMAND_DEPOSIT" | "SAVINGS" | "TIME_DEPOSIT" | "DEBIT_CARD" | "CREDIT_CARD" | "PERSONAL_LOAN" | "HOUSING_LOAN" | "REMITTANCE" | "SECURITIES" | "POLICY_FINANCE";
 
 export type ProductRule = {
   id: number;
@@ -41,6 +43,8 @@ export type FinancialProduct = {
   productName: string;
   productType: ProductType;
   financialPurpose: FinancialPurpose;
+  productAudience: ProductAudience;
+  productCategory: ProductCategory;
   description: string;
   targetSummary: string;
   active: boolean;
@@ -57,6 +61,7 @@ export type FinancialProduct = {
   updatedAt: string;
   rules: ProductRule[];
   requiredFields: string[];
+  dataPackage: { productPage: boolean; termsOrDescription: boolean; hardRuleEvidence: boolean; identityEvidence: boolean; channelEvidence: boolean; documentEvidence: boolean; applicationStepEvidence: boolean; informationBaseDate: boolean; missingItems: string[]; complete: boolean };
   diagnosisReasonCode: "APPROVED_HARD_RULES_AVAILABLE" | "ADDITIONAL_CONFIRMATION_REQUIRED" | "SOURCE_INSUFFICIENT";
 };
 

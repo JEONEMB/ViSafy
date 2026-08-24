@@ -33,6 +33,12 @@ public class FinancialProduct {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
     private FinancialPurpose financialPurpose;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    private ProductAudience productAudience;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    private ProductCategory productCategory;
     @Lob @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
     @Lob @Column(nullable = false, columnDefinition = "TEXT")
@@ -67,12 +73,27 @@ public class FinancialProduct {
                             SourceDocument sourceDocument, boolean active, boolean foreignerTarget,
                             LocalDate informationBaseDate, String publicConditions, String additionalConditions,
                             String requiredDocuments, String applicationMethod) {
+        this(productCode, institution, productName, productType, financialPurpose,
+                foreignerTarget ? ProductAudience.FOREIGNER_SPECIALIZED : ProductAudience.GENERAL,
+                defaultCategory(productType), description, targetSummary, sourceDocument, active,
+                foreignerTarget, informationBaseDate, publicConditions, additionalConditions,
+                requiredDocuments, applicationMethod);
+    }
+
+    public FinancialProduct(String productCode, String institution, String productName, ProductType productType,
+                            FinancialPurpose financialPurpose, ProductAudience productAudience,
+                            ProductCategory productCategory, String description, String targetSummary,
+                            SourceDocument sourceDocument, boolean active, boolean foreignerTarget,
+                            LocalDate informationBaseDate, String publicConditions, String additionalConditions,
+                            String requiredDocuments, String applicationMethod) {
         Instant now = Instant.now();
         this.productCode = productCode;
         this.institution = institution;
         this.productName = productName;
         this.productType = productType;
         this.financialPurpose = financialPurpose;
+        this.productAudience = productAudience;
+        this.productCategory = productCategory;
         this.description = description;
         this.targetSummary = targetSummary;
         this.sourceDocument = sourceDocument;
@@ -100,6 +121,24 @@ public class FinancialProduct {
         this.applicationMethod = applicationMethod; this.updatedAt = Instant.now();
     }
 
+    public void updateClassification(ProductAudience audience, ProductCategory category) {
+        this.productAudience = audience == null
+                ? (foreignerTarget ? ProductAudience.FOREIGNER_SPECIALIZED : ProductAudience.GENERAL) : audience;
+        this.productCategory = category == null ? defaultCategory(productType) : category;
+        this.updatedAt = Instant.now();
+    }
+
+    private static ProductCategory defaultCategory(ProductType type) {
+        return switch (type) {
+            case CHECKING_ACCOUNT -> ProductCategory.DEMAND_DEPOSIT;
+            case SAVINGS -> ProductCategory.SAVINGS;
+            case LOAN -> ProductCategory.PERSONAL_LOAN;
+            case CARD -> ProductCategory.DEBIT_CARD;
+            case INVESTMENT -> ProductCategory.SECURITIES;
+            case REMITTANCE -> ProductCategory.REMITTANCE;
+        };
+    }
+
     public void deactivate() { this.active = false; this.updatedAt = Instant.now(); }
 
     public Long getId() { return id; }
@@ -108,6 +147,8 @@ public class FinancialProduct {
     public String getProductName() { return productName; }
     public ProductType getProductType() { return productType; }
     public FinancialPurpose getFinancialPurpose() { return financialPurpose; }
+    public ProductAudience getProductAudience() { return productAudience; }
+    public ProductCategory getProductCategory() { return productCategory; }
     public String getDescription() { return description; }
     public String getTargetSummary() { return targetSummary; }
     public SourceDocument getSourceDocument() { return sourceDocument; }

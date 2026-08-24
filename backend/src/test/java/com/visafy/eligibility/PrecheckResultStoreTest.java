@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.visafy.eligibility.EligibilityResult.RuleDetail;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.visafy.profile.TempProfile;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -18,7 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 class PrecheckResultStoreTest {
     private final PrecheckResultRepository repository = mock(PrecheckResultRepository.class);
-    private final PrecheckResultStore store = new PrecheckResultStore(repository);
+    private final PrecheckResultStore store = new PrecheckResultStore(repository, new ObjectMapper());
     private PrecheckResultEntity saved;
 
     @BeforeEach
@@ -36,7 +37,7 @@ class PrecheckResultStoreTest {
         when(profile.getExpiresAt()).thenReturn(Instant.now().plusSeconds(3600));
         RuleDetail passed = detail(10L, "AGE", "RULE_PASS");
         RuleDetail external = detail(11L, "GUARANTEE", "EXTERNAL_CHECK");
-        RuleDetail insufficient = detail(null, "PRODUCT_SOURCE", "SOURCE_NOT_EFFECTIVE");
+        RuleDetail insufficient = detail(null, "PRODUCT_SOURCE", "SOURCE_INSUFFICIENT");
         EligibilityResult input = new EligibilityResult(EligibilityStatus.INSUFFICIENT_INFORMATION, 3L,
                 List.of(passed), List.of(), List.of(external), List.of(), List.of(insufficient), "not final");
 

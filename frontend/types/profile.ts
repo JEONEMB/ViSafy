@@ -10,14 +10,14 @@ export type TempProfile = {
   id: number;
   sessionId: string;
   nationality: string;
-  birthDate: string;
-  visaType: string;
-  visaExpiry: string;
-  residencyStartDate: string;
-  occupation: string;
-  employmentType: string;
-  monthlyIncome: number;
-  employmentDurationMonths: number;
+  birthDate: string | null;
+  visaType: string | null;
+  visaExpiry: string | null;
+  residencyStartDate: string | null;
+  occupation: string | null;
+  employmentType: string | null;
+  monthlyIncome: number | null;
+  employmentDurationMonths: number | null;
   financialPurpose: string;
   language: string;
   hasBankAccount?: boolean | null;
@@ -27,6 +27,14 @@ export type TempProfile = {
   residentStatus?: "RESIDENT" | "NON_RESIDENT" | "UNKNOWN" | null;
   hasExistingProductAccount?: boolean | null;
   desiredMonthlyAmount?: number | null;
+  hasResidenceCard?: boolean | null;
+  hasPassport?: boolean | null;
+  hasDomesticPhone?: boolean | null;
+  canDomesticPhoneVerify?: boolean | null;
+  hasKoreanBankAccount?: boolean | null;
+  hasKoreanCreditHistory?: boolean | null;
+  preferredChannel?: string | null;
+  remittanceCountry?: string | null;
   expiresAt: string;
 };
 

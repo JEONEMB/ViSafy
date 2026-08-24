@@ -1,7 +1,7 @@
 import pytest
 
 from app.explain.builder import ExplanationBuilder
-from app.explain.models import ExplanationRequest
+from app.explain.models import ConditionInput, ExplanationRequest
 from app.guardrail.answer_builder import DISCLAIMERS
 
 
@@ -18,6 +18,17 @@ def request(language: str = "ko", status: str = "NEED_BANK_CONFIRMATION") -> Exp
         failedCount=0,
         externalConditions=[{"key": "GUARANTEE", "messageCode": "EXTERNAL_CHECK"}],
         unknownConditions=[{"key": "VISA_DETAIL", "messageCode": "UNKNOWN"}],
+        ruleDetails=[
+            {
+                "key": "VISA_TYPE",
+                "messageCode": "RULE_PASSED",
+                "actualValue": "E-9",
+                "expectedValue": '["E-9"]',
+                "sourceExcerpt": "E-9 체류자격",
+                "sourceLocator": "p.3",
+                "sourceUrl": "https://official.example/product",
+            }
+        ],
         termKeys=["STATUS_OF_STAY", "PROOF_OF_INCOME", "GUARANTEE_INSURANCE_CERTIFICATE"],
     )
 
@@ -31,6 +42,7 @@ def test_explanation_and_inquiry_preserve_structured_numbers_and_visa(language: 
     assert "14" in result.inquiry.localized
     assert "24" in result.inquiry.localized
     assert result.inquiry.korean.startswith("안녕하세요")
+    assert result.inquiry.confirmation_items
     assert len(result.easy_terms) == 3
     assert "NO_APPROVAL_GUARANTEE" in result.guardrails_applied
 
@@ -45,3 +57,21 @@ def test_met_result_never_claims_the_user_can_enroll_and_needs_no_inquiry() -> N
     assert "가입할 수 있습니다" not in result.explanation
     assert result.disclaimer == DISCLAIMERS["ko"]
     assert result.inquiry is None
+
+
+def test_general_product_without_visa_rule_never_invents_visa_sentence() -> None:
+    payload = request(language="en")
+    payload.visa_type = None
+    payload.visa_remaining_months = None
+    payload.residency_months = None
+    payload.external_conditions = [ConditionInput(key="MOBILE_CHANNEL", messageCode="EXTERNAL_CHECK")]
+    payload.unknown_conditions = []
+    payload.term_keys = []
+
+    result = ExplanationBuilder().build(payload)
+
+    assert result.inquiry is not None
+    assert "None" not in result.inquiry.localized
+    assert "visa" not in result.inquiry.localized.lower()
+    assert "status of stay" not in result.inquiry.localized.lower()
+    assert "NO_UNSOURCED_VISA_RULE" in result.guardrails_applied

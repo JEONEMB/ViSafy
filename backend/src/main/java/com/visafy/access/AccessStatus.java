@@ -1,0 +1,10 @@
+package com.visafy.access;
+
+public enum AccessStatus {
+    ACCESS_READY,
+    ACCESS_READY_BRANCH_ONLY,
+    ACCESS_READY_ONLINE,
+    ACCESS_ADDITIONAL_DOCUMENTS,
+    ACCESS_NEED_CONFIRMATION,
+    ACCESS_UNKNOWN
+}

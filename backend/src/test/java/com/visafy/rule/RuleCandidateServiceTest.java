@@ -84,6 +84,23 @@ class RuleCandidateServiceTest {
         assertThat(minimum.getReviewStatus()).isEqualTo(ReviewStatus.APPROVED);
     }
 
+    @Test
+    void realNameIndividualAloneCannotApproveForeignerAllowedRule() {
+        SourceDocument source = new SourceDocument("Demo Bank", SourceType.TERMS, "Official terms",
+                "https://bank.example/terms", "snapshot", "c".repeat(64), null, null, "ko");
+        source.review(ReviewStatus.APPROVED);
+        RuleCandidate candidate = new RuleCandidate(source, "DEMO", "FOREIGNER_ALLOWED", RuleOperator.EQ,
+                "true", RuleLevel.HARD, true, "가입대상: 실명의 개인", "가입대상", null, null,
+                "Foreign customer availability", new BigDecimal("0.90"));
+        when(repository.findById(4L)).thenReturn(Optional.of(candidate));
+        RuleCandidateService service = new RuleCandidateService(repository, sourceService, productRuleService,
+                historyRepository);
+
+        service.review(4L, ReviewAction.APPROVE, null, null, null);
+
+        assertThat(candidate.getReviewStatus()).isEqualTo(ReviewStatus.NEED_REVIEW);
+    }
+
     private RuleCandidate candidate(SourceDocument source, String value) {
         return candidate(source, RuleOperator.GTE, value);
     }

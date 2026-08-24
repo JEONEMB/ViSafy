@@ -45,15 +45,17 @@ public class AiExplanationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         EligibilityResult eligibility = eligibilityService.precheck(profile, product);
         LocalDate today = LocalDate.now();
-        long visaRemainingMonths = Math.max(0, ChronoUnit.MONTHS.between(today, profile.getVisaExpiry()));
-        long residencyMonths = Math.max(0, ChronoUnit.MONTHS.between(profile.getResidencyStartDate(), today));
+        Long visaRemainingMonths = profile.getVisaExpiry() == null ? null
+                : Math.max(0, ChronoUnit.MONTHS.between(today, profile.getVisaExpiry()));
+        Long residencyMonths = profile.getResidencyStartDate() == null ? null
+                : Math.max(0, ChronoUnit.MONTHS.between(profile.getResidencyStartDate(), today));
 
         ExplanationRequest request = new ExplanationRequest(
                 eligibility.status().name(), normalizeLanguage(profile.getLanguage()), product.getProductName(),
                 product.getInstitution(), profile.getVisaType(), visaRemainingMonths, residencyMonths,
                 eligibility.passedRules().size(), eligibility.failedRules().size(),
                 conditions(eligibility.externalChecks()), conditions(eligibility.unknownRules()),
-                termKeys(eligibility));
+                allConditions(eligibility), termKeys(eligibility));
         ExplanationResponse response = aiClient.explain(request);
         StructuredFacts facts = new StructuredFacts(profile.getVisaType(), visaRemainingMonths, residencyMonths,
                 eligibility.passedRules().size(), eligibility.failedRules().size(),
@@ -63,19 +65,30 @@ public class AiExplanationService {
     }
 
     private List<ConditionInput> conditions(List<RuleDetail> details) {
-        return details.stream().map(detail -> new ConditionInput(detail.key(), detail.messageCode())).toList();
+        return details.stream().map(detail -> new ConditionInput(
+                detail.key(), detail.messageCode(), detail.actualValue(), detail.expectedValue(),
+                detail.sourceExcerpt(), detail.sourceLocator(), detail.sourceUrl())).toList();
+    }
+
+    private List<ConditionInput> allConditions(EligibilityResult eligibility) {
+        return Stream.of(eligibility.passedRules(), eligibility.failedRules(), eligibility.externalChecks(),
+                        eligibility.unknownRules(), eligibility.insufficientReasons())
+                .flatMap(List::stream)
+                .map(detail -> new ConditionInput(detail.key(), detail.messageCode(), detail.actualValue(),
+                        detail.expectedValue(), detail.sourceExcerpt(), detail.sourceLocator(), detail.sourceUrl()))
+                .toList();
     }
 
     private List<String> termKeys(EligibilityResult eligibility) {
         Set<String> terms = new LinkedHashSet<>();
-        terms.add("STATUS_OF_STAY");
-        terms.add("PROOF_OF_INCOME");
         Stream.of(eligibility.passedRules(), eligibility.failedRules(), eligibility.externalChecks(),
                         eligibility.unknownRules(), eligibility.insufficientReasons())
                 .flatMap(List::stream)
                 .map(RuleDetail::key)
                 .map(key -> key == null ? "" : key.toUpperCase(Locale.ROOT))
                 .forEach(key -> {
+                    if (key.contains("VISA") || key.contains("STATUS_OF_STAY")) terms.add("STATUS_OF_STAY");
+                    if (key.contains("INCOME") || key.contains("EMPLOYMENT")) terms.add("PROOF_OF_INCOME");
                     if (key.contains("GUARANTEE")) terms.add("GUARANTEE_INSURANCE_CERTIFICATE");
                     if (key.contains("CREDIT") || key.contains("BANK_REVIEW")) {
                         terms.add("INTERNAL_CREDIT_REVIEW");
@@ -92,7 +105,7 @@ public class AiExplanationService {
     }
 
     public record StructuredFacts(
-            String visaType, long visaRemainingMonths, long residencyMonths, int passedCount,
+            String visaType, Long visaRemainingMonths, Long residencyMonths, int passedCount,
             int failedCount, int externalCheckCount, int unknownCount
     ) {}
     public record ExplanationResult(

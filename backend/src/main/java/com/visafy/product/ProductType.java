@@ -5,5 +5,6 @@ public enum ProductType {
     SAVINGS,
     LOAN,
     CARD,
-    INVESTMENT
+    INVESTMENT,
+    REMITTANCE
 }

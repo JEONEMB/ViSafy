@@ -1,9 +1,9 @@
 import type { EligibilityStatus } from "./eligibility";
 
 export type StructuredExplanationFacts = {
-  visaType: string;
-  visaRemainingMonths: number;
-  residencyMonths: number;
+  visaType: string | null;
+  visaRemainingMonths: number | null;
+  residencyMonths: number | null;
   passedCount: number;
   failedCount: number;
   externalCheckCount: number;
@@ -21,6 +21,7 @@ export type BankInquiry = {
   korean: string;
   localized: string;
   language: "ko" | "en" | "vi";
+  confirmationItems: string[];
 };
 
 export type AiExplanation = {

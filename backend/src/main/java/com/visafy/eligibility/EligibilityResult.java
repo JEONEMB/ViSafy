@@ -1,5 +1,6 @@
 package com.visafy.eligibility;
 
+import com.visafy.access.AccessAssessment;
 import java.util.List;
 
 public record EligibilityResult(
@@ -11,6 +12,7 @@ public record EligibilityResult(
         List<RuleDetail> unknownRules,
         List<RuleDetail> insufficientReasons,
         List<String> requiredFields,
+        AccessAssessment accessAssessment,
         String disclaimer
 ) {
     public EligibilityResult(EligibilityStatus status, Long productId, List<RuleDetail> passedRules,
@@ -18,7 +20,15 @@ public record EligibilityResult(
                              List<RuleDetail> unknownRules, List<RuleDetail> insufficientReasons,
                              String disclaimer) {
         this(status, productId, passedRules, failedRules, externalChecks, unknownRules,
-                insufficientReasons, List.of(), disclaimer);
+                insufficientReasons, List.of(), AccessAssessment.unknown(), disclaimer);
+    }
+
+    public EligibilityResult(EligibilityStatus status, Long productId, List<RuleDetail> passedRules,
+                             List<RuleDetail> failedRules, List<RuleDetail> externalChecks,
+                             List<RuleDetail> unknownRules, List<RuleDetail> insufficientReasons,
+                             List<String> requiredFields, String disclaimer) {
+        this(status, productId, passedRules, failedRules, externalChecks, unknownRules,
+                insufficientReasons, requiredFields, AccessAssessment.unknown(), disclaimer);
     }
     public record RuleDetail(
             Long ruleId,

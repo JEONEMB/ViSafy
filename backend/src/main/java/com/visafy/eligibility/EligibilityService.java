@@ -1,6 +1,7 @@
 package com.visafy.eligibility;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.visafy.access.AccessAssessmentService;
 import com.visafy.common.domain.ReviewStatus;
 import com.visafy.eligibility.EligibilityResult.RuleDetail;
 import com.visafy.product.FinancialProduct;
@@ -28,15 +29,17 @@ public class EligibilityService {
     private final FinancialProductRepository productRepository;
     private final ProductRuleRepository ruleRepository;
     private final RuleCandidateRepository candidateRepository;
+    private final AccessAssessmentService accessAssessmentService;
     private final RuleEvaluator evaluator;
 
     public EligibilityService(TempProfileService profileService, FinancialProductRepository productRepository,
                               ProductRuleRepository ruleRepository, RuleCandidateRepository candidateRepository,
-                              ObjectMapper objectMapper) {
+                              AccessAssessmentService accessAssessmentService, ObjectMapper objectMapper) {
         this.profileService = profileService;
         this.productRepository = productRepository;
         this.ruleRepository = ruleRepository;
         this.candidateRepository = candidateRepository;
+        this.accessAssessmentService = accessAssessmentService;
         this.evaluator = new RuleEvaluator(objectMapper);
     }
 
@@ -65,16 +68,19 @@ public class EligibilityService {
         Map<String, RuleDetail> insufficient = new LinkedHashMap<>();
 
         if (!product.getSourceDocument().isEffective(today)) {
-            addInsufficient(insufficient, null, "PRODUCT_SOURCE", InsufficientReasonCode.SOURCE_NOT_EFFECTIVE,
+            addInsufficient(insufficient, null, "PRODUCT_SOURCE", InsufficientReasonCode.SOURCE_INSUFFICIENT,
                     true, null, product.getSourceDocument().getSourceUrl(), messages);
         }
 
         List<ProductRule> activeRules = ruleRepository
                 .findByProductIdAndActiveTrueOrderByRuleKeyAsc(productId);
         for (ProductRule rule : activeRules) {
-            if (!rule.getSourceDocument().isEffective(today)) {
+            if (isExpired(rule.getValidTo(), today) || rule.getReviewStatus() == ReviewStatus.EXPIRED) {
+                addInsufficient(insufficient, rule, rule.getRuleKey(), InsufficientReasonCode.EXPIRED_RULE,
+                        rule.isMandatory(), rule.getSourceLocator(), rule.getSourceDocument().getSourceUrl(), messages);
+            } else if (!rule.getSourceDocument().isEffective(today)) {
                 addInsufficient(insufficient, rule, rule.getRuleKey(),
-                        InsufficientReasonCode.SOURCE_NOT_EFFECTIVE, rule.isMandatory(),
+                        InsufficientReasonCode.SOURCE_INSUFFICIENT, rule.isMandatory(),
                         rule.getSourceLocator(), rule.getSourceDocument().getSourceUrl(), messages);
             }
         }
@@ -108,7 +114,8 @@ public class EligibilityService {
 
         return new EligibilityResult(status, productId, List.copyOf(passed), List.copyOf(failed),
                 List.copyOf(external), List.copyOf(unknown), List.copyOf(insufficient.values()),
-                RequiredProfileFields.from(rules), messages.disclaimer());
+                RequiredProfileFields.from(rules), accessAssessmentService.assess(profile, product),
+                messages.disclaimer());
     }
 
     private void evaluateHardRule(ProductRule rule, TempProfile profile, LocalDate today,
@@ -123,7 +130,7 @@ public class EligibilityService {
                     messages.failed(rule.getRuleKey(), evaluation.actualValue(), rule.getRuleValue()),
                     evaluation.actualValue(), rule.getRuleValue(), true));
             case MISSING -> addInsufficient(insufficient, rule, rule.getRuleKey(),
-                    InsufficientReasonCode.MISSING_PROFILE_INPUT, rule.isMandatory(), rule.getSourceLocator(),
+                    InsufficientReasonCode.MISSING_REQUIRED_PROFILE_FIELD, rule.isMandatory(), rule.getSourceLocator(),
                     rule.getSourceDocument().getSourceUrl(), messages);
             case INVALID -> addInsufficient(insufficient, rule, rule.getRuleKey(),
                     InsufficientReasonCode.INVALID_RULE_VALUE, rule.isMandatory(), rule.getSourceLocator(),
@@ -143,8 +150,15 @@ public class EligibilityService {
 
     private void inspectCandidateState(FinancialProduct product, LocalDate today,
                                        Map<String, RuleDetail> insufficient, EligibilityMessages messages) {
-        List<RuleCandidate> candidates = candidateRepository
-                .findByProductCodeOrderByCreatedAtDesc(product.getProductCode()).stream()
+        List<RuleCandidate> allCandidates = candidateRepository
+                .findByProductCodeOrderByCreatedAtDesc(product.getProductCode());
+        allCandidates.stream()
+                .filter(candidate -> candidate.getReviewStatus() == ReviewStatus.EXPIRED
+                        || isExpired(candidate.getValidTo(), today))
+                .forEach(candidate -> addInsufficient(insufficient, null, candidate.getRuleKey(),
+                        InsufficientReasonCode.EXPIRED_RULE, candidate.isMandatory(),
+                        candidate.getSourceLocator(), candidate.getSourceDocument().getSourceUrl(), messages));
+        List<RuleCandidate> candidates = allCandidates.stream()
                 .filter(candidate -> within(candidate.getValidFrom(), candidate.getValidTo(), today))
                 .filter(candidate -> within(candidate.getSourceDocument().getValidFrom(),
                         candidate.getSourceDocument().getValidTo(), today))
@@ -169,6 +183,10 @@ public class EligibilityService {
 
     private boolean within(LocalDate from, LocalDate to, LocalDate today) {
         return (from == null || !from.isAfter(today)) && (to == null || !to.isBefore(today));
+    }
+
+    private boolean isExpired(LocalDate validTo, LocalDate today) {
+        return validTo != null && validTo.isBefore(today);
     }
 
     private void addInsufficient(Map<String, RuleDetail> target, ProductRule rule, String key,

@@ -38,7 +38,8 @@ public class FinancialProductController {
                 request.productName(), request.productType(), request.financialPurpose(), request.description(),
                 request.targetSummary(), request.sourceDocumentId(), request.active(), request.foreignerTarget(),
                 request.informationBaseDate(), request.publicConditions(), request.additionalConditions(),
-                request.requiredDocuments(), request.applicationMethod());
+                request.requiredDocuments(), request.applicationMethod(), request.productAudience(),
+                request.productCategory());
         return ProductResponse.from(service.findAdmin().stream()
                 .filter(view -> view.product().getId().equals(product.getId())).findFirst().orElseThrow());
     }
@@ -53,7 +54,8 @@ public class FinancialProductController {
         service.update(id, request.institution(), request.productName(), request.productType(),
                 request.financialPurpose(), request.description(), request.targetSummary(), request.sourceDocumentId(),
                 request.active(), request.foreignerTarget(), request.informationBaseDate(), request.publicConditions(),
-                request.additionalConditions(), request.requiredDocuments(), request.applicationMethod());
+                request.additionalConditions(), request.requiredDocuments(), request.applicationMethod(),
+                request.productAudience(), request.productCategory());
         return ProductResponse.from(service.getAdmin(id));
     }
 
@@ -94,7 +96,9 @@ public class FinancialProductController {
             @NotBlank String publicConditions,
             @NotBlank String additionalConditions,
             @NotBlank String requiredDocuments,
-            @NotBlank String applicationMethod
+            @NotBlank String applicationMethod,
+            ProductAudience productAudience,
+            ProductCategory productCategory
     ) {
     }
 
@@ -104,7 +108,8 @@ public class FinancialProductController {
             @NotBlank String targetSummary, @NotNull Long sourceDocumentId, boolean active,
             boolean foreignerTarget, @NotNull LocalDate informationBaseDate,
             @NotBlank String publicConditions, @NotBlank String additionalConditions,
-            @NotBlank String requiredDocuments, @NotBlank String applicationMethod
+            @NotBlank String requiredDocuments, @NotBlank String applicationMethod,
+            ProductAudience productAudience, ProductCategory productCategory
     ) {}
 
     public record ProductRuleResponse(
@@ -138,22 +143,25 @@ public class FinancialProductController {
     public record ProductResponse(
             Long id, String productCode, String institution, String productName, ProductType productType,
             FinancialPurpose financialPurpose, String description, String targetSummary, boolean active,
+            ProductAudience productAudience, ProductCategory productCategory,
             boolean foreignerTarget, LocalDate informationBaseDate, String publicConditions,
             String additionalConditions, String requiredDocuments, String applicationMethod,
             DiagnosisStatus diagnosisStatus, Long sourceDocumentId, String sourceTitle, String sourceUrl, Instant updatedAt,
-            List<ProductRuleResponse> rules, List<String> requiredFields, String diagnosisReasonCode
+            List<ProductRuleResponse> rules, List<String> requiredFields, Season3DataPackage dataPackage,
+            String diagnosisReasonCode
     ) {
         static ProductResponse from(ProductView view) {
             FinancialProduct product = view.product();
             return new ProductResponse(product.getId(), product.getProductCode(), product.getInstitution(),
                     product.getProductName(), product.getProductType(), product.getFinancialPurpose(),
                     product.getDescription(), product.getTargetSummary(), product.isActive(),
+                    product.getProductAudience(), product.getProductCategory(),
                     product.isForeignerTarget(), product.getInformationBaseDate(), product.getPublicConditions(),
                     product.getAdditionalConditions(), product.getRequiredDocuments(),
                     product.getApplicationMethod(), view.diagnosisStatus(), product.getSourceDocument().getId(),
                     product.getSourceDocument().getTitle(), product.getSourceDocument().getSourceUrl(),
                     product.getUpdatedAt(), view.rules().stream().map(ProductRuleResponse::from).toList(),
-                    view.requiredFields(), view.diagnosisReasonCode());
+                    view.requiredFields(), view.dataPackage(), view.diagnosisReasonCode());
         }
     }
 }

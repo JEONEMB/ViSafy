@@ -69,8 +69,8 @@ docker compose down
 
 1. 메인 화면 http://localhost:3000 에 접속합니다.
 2. `한국어`, `English`, `Tiếng Việt` 중 표시 언어를 선택합니다. 국기는 언어 선택을 돕는 시각 요소이며 국적을 확정하지 않습니다.
-3. 선택하면 임시 프로필 화면으로 이동하며 공통 메뉴, 필드명, 선택지, 비자명, 예시와 안내문이 해당 언어로 바뀝니다.
-4. 선택한 언어는 브라우저에 저장되어 페이지를 다시 열어도 유지됩니다. 프로필 화면 상단의 언어 버튼으로 언제든 변경할 수 있습니다.
+3. 같은 화면에서 현재 가장 필요한 금융서비스를 선택한 뒤 **내 금융생활 시작하기**를 누릅니다.
+4. 선택한 언어와 금융목적은 브라우저에 저장되어 Profile Wizard로 이어집니다. `/profile`에서는 언어를 다시 묻지 않고 `국적 + 금융 목적` 단계부터 시작합니다.
 
 ### 2. 시스템 상태 확인
 
@@ -80,11 +80,10 @@ docker compose down
 ### 3. 임시 사용자 프로필 입력
 
 1. 상단 메뉴에서 **프로필**을 선택합니다.
-2. 한국어, English 또는 Tiếng Việt 중 사용할 언어가 맞는지 확인합니다.
-3. Profile 첫 단계에서 실제 국적을 표시 언어와 별도로 선택합니다. 이후 생년월일, 지원 비자, 체류기간, 직업, 소득과 금융 목적을 입력합니다. 언어를 변경해도 국적은 변경되지 않습니다.
-4. 날짜는 선택한 언어에 맞는 `연도·월·일`, `Month·Day·Year`, `Ngày·Tháng·Năm` 순서와 표기로 입력합니다.
-5. **저장 후 금융상품 보기**를 누릅니다.
-6. 프로필이 저장되면 금융상품 목록으로 자동 이동합니다.
+2. Landing에서 선택한 언어와 금융목적이 유지되는지 확인하고 실제 국적을 별도로 선택합니다.
+3. 체류카드·여권·국내 휴대전화·본인인증·국내 입출금계좌·신용이력은 번호가 아니라 보유 여부만 선택합니다.
+4. **내게 필요한 금융서비스 보기**를 누르면 금융상품 목록과 9단계 Financial Journey로 이동합니다.
+5. 비자·체류·직업·소득은 모든 사용자에게 처음부터 묻지 않습니다. 상품 상세에서 승인 Eligibility Rule의 `requiredFields`에 포함된 항목만 추가로 요청합니다.
 
 프로필은 24시간 후 만료됩니다. 주민등록번호, 여권번호, 외국인등록번호, 계좌번호는 입력하거나 저장하지 않습니다.
 
@@ -189,6 +188,8 @@ P1 운영 보완으로 관리자 Source 화면에서 `ACTIVE`, `NEED_REVIEW`, `S
 
 - `PUBLIC_CONDITIONS_NOT_MET`: 명시적인 HARD Rule FAIL이 하나 이상 있음
 - `INSUFFICIENT_INFORMATION`: FAIL은 없지만 필수입력, 검수, Source 또는 필수 Rule이 부족함
+
+정보 부족 사유는 `SOURCE_INSUFFICIENT`, `SOURCE_CONFLICT`, `RULE_REVIEW_INCOMPLETE`, `MISSING_REQUIRED_PROFILE_FIELD`, `UNSUPPORTED_RULE_KEY`, `INVALID_RULE_VALUE`, `EXPIRED_RULE`로 구조화해 반환합니다. 명시적인 HARD FAIL이 있으면 다른 정보 부족 사유보다 `PUBLIC_CONDITIONS_NOT_MET`을 우선합니다.
 - `NEED_BANK_CONFIRMATION`: FAIL과 정보부족은 없지만 EXTERNAL_CHECK 또는 필수 UNKNOWN이 있음
 - `PUBLIC_CONDITIONS_MET`: 적용 가능한 HARD Rule이 모두 통과하고 중요한 불확실 조건이 없음
 
@@ -211,6 +212,10 @@ P1 운영 보완으로 관리자 Source 화면에서 `ACTIVE`, `NEED_REVIEW`, `S
 ### 9. 공식 금융문서 RAG
 
 RAG 색인과 답변은 `APPROVED` 상태이며 현재 유효한 공식 Source만 사용합니다. 블로그·커뮤니티·광고성 제3자 URL은 AI Service의 도메인 허용 목록에서 거부됩니다.
+
+사용자 화면에서는 `Rule Engine = 결정론적 판정`, `RAG = 공식 근거 검색`, `AI = 쉬운 설명·번역·은행 문의문`의 역할을 분리해 표시합니다. AI 설명에는 Eligibility 상태와 구조화 Rule Detail 및 연결된 공식 Evidence만 전달하며, UNKNOWN 또는 EXTERNAL_CHECK가 있을 때만 확인 항목과 한국어·선택 언어 문의문을 생성합니다.
+
+AI와 RAG는 외국인이라는 이유만으로 미가입을 추정하거나, `실명의 개인` 문구만으로 외국인 이용 가능을 확정하지 않습니다. 공식 Rule이 없는 Visa 제한과 비대면 채널, 승인확률, 신용등급, 은행 내부심사 기준도 생성하지 않습니다. 일반상품에 Visa Rule이 없으면 AI 요청·쉬운 용어·문의문에도 Visa 값을 주입하지 않습니다.
 
 1. http://localhost:3000/admin/sources 에서 Source Snapshot과 문서 언어를 등록하고 승인합니다.
 2. 승인 Source를 금융상품 또는 PRODUCT_RULE에 연결합니다.
@@ -398,6 +403,32 @@ DB 초안과 현재 구현의 대응 관계는 다음과 같습니다.
 - `PRECHECK_RESULT`에는 세션 원문 대신 SHA-256 해시, profile/product, 상태, 정보 기준일과 만료시각을 저장합니다. 조건별 결과는 `PRECHECK_RULE_RESULT`에 `PASS`, `FAIL`, `EXTERNAL_CHECK`, `UNKNOWN`, `NOT_APPLICABLE`로 정규화합니다.
 - 추천 Snapshot만 JSON으로 24시간 이내 보관하며, 프로필 원문은 복제하지 않습니다.
 
+## Season 3: Eligibility, Access, Financial Journey
+
+- 기존 `EligibilityStatus`는 공개 가입조건 판정에만 사용합니다.
+- `accessAssessment.status`는 신분확인·영업점·모바일 이용 가능성을 별도로 표시합니다. 가능한 값은 `ACCESS_READY`, `ACCESS_READY_BRANCH_ONLY`, `ACCESS_READY_ONLINE`, `ACCESS_ADDITIONAL_DOCUMENTS`, `ACCESS_NEED_CONFIRMATION`, `ACCESS_UNKNOWN`입니다.
+- 상품 설명의 `실명의 개인` 문구만으로 `FOREIGNER_ALLOWED=true`를 승인하지 않습니다. 외국인 이용 근거나 신분확인·채널 근거가 없으면 `ACCESS_UNKNOWN`으로 유지합니다.
+- 금융목적은 `OPEN_ACCOUNT`, `RECEIVE_SALARY`, `SAVE_MONEY`, `SEND_MONEY_HOME`, `GET_DEBIT_CARD`, `GET_CREDIT_CARD`, `GET_LOAN`, `RENT_HOUSING`, `INVEST`, `BUILD_CREDIT`을 지원합니다. 기존 목적 코드는 호환 변환합니다.
+- 프로필에는 신분증 번호를 저장하지 않고 체류카드·여권·국내 휴대전화·본인인증·국내계좌·신용이력의 보유 여부만 선택적으로 저장합니다.
+- 상품 목록의 Financial Journey는 신분확인부터 투자까지 9단계를 표시합니다. 예를 들어 국내계좌가 없는 `SAVE_MONEY` 사용자는 적금보다 국내 입출금계좌 확인을 먼저 안내받습니다.
+- Landing과 Profile Wizard는 `언어 → 국적·금융목적 → 한국 금융 준비상태 → 상품별 동적입력 → 이용 가능한 금융서비스`의 5단계 흐름을 사용합니다. 언어와 금융목적은 Landing에서 한 번만 선택하며 Profile에서는 중복 언어 선택 없이 STEP 2부터 시작합니다. 초기 프로필에서는 모든 비자·소득 정보를 강제하지 않고, 선택한 상품의 승인 Rule에서 계산된 `requiredFields`만 상세 화면에서 추가로 요청합니다.
+- 상품은 `productAudience`(`GENERAL`, `FOREIGNER_SPECIALIZED`, `POLICY`)와 `productCategory`로 구분합니다. 상품 카드에는 공개조건 준비 상태와 함께 신분확인·가입채널·준비서류의 공식 근거 보유 여부를 별도로 표시합니다. 채널 근거가 하나 있다고 영업점과 모바일을 모두 가능하다고 추론하지 않습니다.
+
+### Season 3 READY 데이터 Gate
+
+Season 3의 `READY`는 상품 페이지와 약관만 존재한다고 충족되지 않습니다. 다음 패키지가 모두 확인되어야 합니다.
+
+```text
+상품 기본정보 + 공식 상품페이지 + 상품설명서/약관
++ 승인 HARD Rule Evidence + 외국인 신분확인 Evidence
++ 가입채널 Evidence + 필요서류 Evidence + 신청절차 Evidence
++ 정보 기준일
+```
+
+현재 저장된 기존 상품은 이 강화된 Gate로 다시 계산합니다. 부족한 공식 자료가 있는 상품은 의도적으로 `PARTIAL` 또는 `NOT_READY`로 표시하며, 임의의 Demo 근거로 `READY` 수를 채우지 않습니다. Season 3 목표인 READY 8개(입출금 2, 일반 예·적금 3, 외국인 특화 2, 해외송금 1, 대출 1 중 중복 허용)와 은행 3곳 이상을 달성하려면 각 상품의 공식 Source 패키지를 관리자 화면에서 등록·승인해야 합니다.
+
+고정 Demo A~E의 입력·기대결과·자동검증 위치는 [`docs/season3-demo-scenarios.md`](docs/season3-demo-scenarios.md)에 기록합니다.
+
 ## 주요 API
 
 ```text
@@ -415,6 +446,7 @@ POST /api/profiles
 GET  /api/profiles/{id}
 PUT  /api/profiles/{id}
 GET  /api/visas
+GET  /api/financial-journey?profileSessionId={uuid}
 GET  /api/admin/auth/check
 POST /api/admin/products
 GET  /api/admin/products

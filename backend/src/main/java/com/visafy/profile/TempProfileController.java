@@ -51,14 +51,14 @@ public class TempProfileController {
 
     public record ProfileRequest(
             @NotBlank String nationality,
-            @NotNull LocalDate birthDate,
-            @NotBlank String visaType,
-            @NotNull LocalDate visaExpiry,
-            @NotNull LocalDate residencyStartDate,
-            @NotBlank String occupation,
-            @NotBlank String employmentType,
-            @NotNull @DecimalMin("0.0") BigDecimal monthlyIncome,
-            @NotNull @Min(0) Integer employmentDurationMonths,
+            LocalDate birthDate,
+            String visaType,
+            LocalDate visaExpiry,
+            LocalDate residencyStartDate,
+            String occupation,
+            String employmentType,
+            @DecimalMin("0.0") BigDecimal monthlyIncome,
+            @Min(0) Integer employmentDurationMonths,
             @NotBlank String financialPurpose,
             @NotBlank @Pattern(regexp = "ko|en|vi") String language,
             Boolean hasBankAccount,
@@ -67,14 +67,26 @@ public class TempProfileController {
             String preferredBank,
             ResidentStatus residentStatus,
             Boolean hasExistingProductAccount,
-            @DecimalMin("0.0") BigDecimal desiredMonthlyAmount
+            @DecimalMin("0.0") BigDecimal desiredMonthlyAmount,
+            Boolean hasResidenceCard,
+            Boolean hasPassport,
+            Boolean hasDomesticPhone,
+            Boolean canDomesticPhoneVerify,
+            Boolean hasKoreanBankAccount,
+            Boolean hasKoreanCreditHistory,
+            String preferredChannel,
+            String remittanceCountry
     ) {
         ProfileData toData() {
-            return new ProfileData(nationality.strip(), birthDate, visaType, visaExpiry, residencyStartDate,
-                    occupation.strip(), employmentType.strip(), monthlyIncome, employmentDurationMonths,
+            return new ProfileData(nationality.strip(), birthDate, clean(visaType), visaExpiry, residencyStartDate,
+                    clean(occupation), clean(employmentType), monthlyIncome, employmentDurationMonths,
                     financialPurpose.strip(), language, hasBankAccount, housingType, desiredAmount, preferredBank,
-                    residentStatus, hasExistingProductAccount, desiredMonthlyAmount);
+                    residentStatus, hasExistingProductAccount, desiredMonthlyAmount, hasResidenceCard, hasPassport,
+                    hasDomesticPhone, canDomesticPhoneVerify, hasKoreanBankAccount, hasKoreanCreditHistory,
+                    preferredChannel, remittanceCountry);
         }
+
+        private String clean(String value) { return value == null || value.isBlank() ? null : value.strip(); }
     }
 
     public record ProfileResponse(
@@ -83,6 +95,9 @@ public class TempProfileController {
             BigDecimal monthlyIncome, Integer employmentDurationMonths, String financialPurpose, String language,
             Boolean hasBankAccount, String housingType, BigDecimal desiredAmount, String preferredBank,
             ResidentStatus residentStatus, Boolean hasExistingProductAccount, BigDecimal desiredMonthlyAmount,
+            Boolean hasResidenceCard, Boolean hasPassport, Boolean hasDomesticPhone,
+            Boolean canDomesticPhoneVerify, Boolean hasKoreanBankAccount, Boolean hasKoreanCreditHistory,
+            String preferredChannel, String remittanceCountry,
             Instant expiresAt
     ) {
         static ProfileResponse from(TempProfile profile) {
@@ -92,7 +107,11 @@ public class TempProfileController {
                     profile.getMonthlyIncome(), profile.getEmploymentDurationMonths(), profile.getFinancialPurpose(),
                     profile.getLanguage(), profile.getHasBankAccount(), profile.getHousingType(),
                     profile.getDesiredAmount(), profile.getPreferredBank(), profile.getResidentStatus(),
-                    profile.getHasExistingProductAccount(), profile.getDesiredMonthlyAmount(), profile.getExpiresAt());
+                    profile.getHasExistingProductAccount(), profile.getDesiredMonthlyAmount(),
+                    profile.getHasResidenceCard(), profile.getHasPassport(), profile.getHasDomesticPhone(),
+                    profile.getCanDomesticPhoneVerify(), profile.getHasKoreanBankAccount(),
+                    profile.getHasKoreanCreditHistory(), profile.getPreferredChannel(),
+                    profile.getRemittanceCountry(), profile.getExpiresAt());
         }
     }
 }

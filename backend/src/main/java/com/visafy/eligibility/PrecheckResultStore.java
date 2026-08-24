@@ -1,5 +1,8 @@
 package com.visafy.eligibility;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.visafy.access.AccessAssessment;
 import com.visafy.eligibility.EligibilityResult.RuleDetail;
 import com.visafy.execution.ApiExecutionHistoryService;
 import com.visafy.profile.TempProfile;
@@ -18,7 +21,11 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class PrecheckResultStore {
     private final PrecheckResultRepository repository;
-    public PrecheckResultStore(PrecheckResultRepository repository) { this.repository = repository; }
+    private final ObjectMapper objectMapper;
+    public PrecheckResultStore(PrecheckResultRepository repository, ObjectMapper objectMapper) {
+        this.repository = repository;
+        this.objectMapper = objectMapper;
+    }
 
     @Transactional
     public StoredPrecheck save(String sessionId, TempProfile profile, EligibilityResult result,
@@ -27,7 +34,8 @@ public class PrecheckResultStore {
         PrecheckResultEntity entity = new PrecheckResultEntity(UUID.randomUUID().toString(),
                 ApiExecutionHistoryService.hashSessionId(sessionId), profile.getId(), result.productId(),
                 result.status(), informationBaseDate, result.disclaimer(),
-                String.join(",", result.requiredFields()), now, expiresAt);
+                String.join(",", result.requiredFields()), result.accessAssessment().status(),
+                writeAccess(result.accessAssessment()), now, expiresAt);
         add(entity, PrecheckRuleOutcome.PASS, result.passedRules());
         add(entity, PrecheckRuleOutcome.FAIL, result.failedRules());
         add(entity, PrecheckRuleOutcome.EXTERNAL_CHECK, result.externalChecks());
@@ -57,9 +65,21 @@ public class PrecheckResultStore {
         List<String> requiredFields = entity.getRequiredFields() == null || entity.getRequiredFields().isBlank()
                 ? List.of() : List.of(entity.getRequiredFields().split(","));
         EligibilityResult result = new EligibilityResult(entity.getStatus(), entity.getProductId(), pass, fail,
-                external, unknown, insufficient, requiredFields, entity.getDisclaimer());
+                external, unknown, insufficient, requiredFields, readAccess(entity), entity.getDisclaimer());
         return new StoredPrecheck(entity.getId(), result, entity.getInformationBaseDate(), entity.getCreatedAt(), entity.getExpiresAt());
     }
     public record StoredPrecheck(String id, EligibilityResult result, LocalDate informationBaseDate,
                                  Instant createdAt, Instant expiresAt) {}
+
+    private String writeAccess(AccessAssessment access) {
+        try { return objectMapper.writeValueAsString(access); }
+        catch (JsonProcessingException exception) { throw new IllegalStateException("Access assessment serialization failed", exception); }
+    }
+
+    private AccessAssessment readAccess(PrecheckResultEntity entity) {
+        if (entity.getAccessAssessmentJson() == null || entity.getAccessAssessmentJson().isBlank())
+            return AccessAssessment.unknown();
+        try { return objectMapper.readValue(entity.getAccessAssessmentJson(), AccessAssessment.class); }
+        catch (JsonProcessingException exception) { return AccessAssessment.unknown(); }
+    }
 }
