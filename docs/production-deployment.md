@@ -1,4 +1,4 @@
-# ViSafy HTTPS 운영 배포
+# SSAFIN HTTPS 운영 배포
 
 ## 결정사항
 

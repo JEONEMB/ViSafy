@@ -113,7 +113,7 @@ public class AiExplanationService {
 
     private String normalizeLanguage(String language) {
         return switch (language == null ? "ko" : language.toLowerCase(Locale.ROOT)) {
-            case "en", "vi" -> language.toLowerCase(Locale.ROOT);
+            case "en", "vi", "zh", "ja", "th" -> language.toLowerCase(Locale.ROOT);
             default -> "ko";
         };
     }

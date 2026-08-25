@@ -34,7 +34,7 @@ class RetrievalResponse(BaseModel):
 class RagAnswerRequest(RetrievalRequest):
     eligibility_status: str = Field(alias="eligibilityStatus", min_length=1, max_length=80)
     rule_result: str = Field(alias="ruleResult", min_length=1, max_length=2000)
-    language: str = Field(default="ko", pattern="^(ko|en|vi)$")
+    language: str = Field(default="ko", pattern="^(ko|en|vi|zh|ja|th)$")
 
 
 class RagAnswerResponse(BaseModel):

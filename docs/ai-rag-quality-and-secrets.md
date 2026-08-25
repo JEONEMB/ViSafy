@@ -5,9 +5,9 @@
 
 ## 1. 현재 구현
 
-- 기본 `EMBEDDING_PROVIDER=hash`: 외부 Key 없이 동작하는 384차원 기준선
-- 선택 `EMBEDDING_PROVIDER=sentence_transformers`: 로컬 다국어 Semantic Embedding Adapter
-- 선택 모델 기본값: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
+- 기본 `EMBEDDING_PROVIDER=fastembed`: Key 없이 동작하는 ONNX 기반 로컬 다국어 Semantic Embedding
+- 비교용 `EMBEDDING_PROVIDER=hash`: 384차원 오프라인 회귀 기준선
+- 기본 모델: `intfloat/multilingual-e5-small`
 - 상품 ID·승인 상태·유효기간·공식 도메인 필터 유지
 - 한국어·영어·베트남어 Top-K 비교 평가기
 - Top-K 포함률, 인용 정확성, 핵심 수치 무결성, 무근거 답변 차단률, 타 상품 혼입률 측정
@@ -22,18 +22,18 @@
 
 ## 2. 실행
 
-기본 Hash 기준선:
+Hash 기준선을 별도로 측정할 때:
 
 ```bash
 cd ai-service
 python scripts/evaluate_rag.py --dataset evaluation/rag_eval_dataset.json
 ```
 
-로컬 Semantic 모델은 선택 설치입니다. 기본 Docker Image에는 큰 ML Runtime과 모델을 포함하지 않습니다.
+Docker Image는 Semantic 의존성을 기본 설치합니다. 로컬 Python 환경에서 직접 실행할 때는 다음과 같이 설치합니다.
 
 ```bash
 pip install ".[semantic]"
-set EMBEDDING_PROVIDER=sentence_transformers
+set EMBEDDING_PROVIDER=fastembed
 python scripts/evaluate_rag.py --dataset evaluation/rag_eval_dataset.json
 ```
 

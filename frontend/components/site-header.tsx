@@ -18,8 +18,8 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-line bg-surface/95">
       <nav className="mx-auto flex max-w-page flex-wrap items-center gap-1 px-5 py-2 sm:px-6 lg:px-8" aria-label="Primary navigation">
         <Link className="mr-auto inline-flex min-h-11 items-center gap-2 rounded-control pr-3 text-lg font-bold tracking-tight text-ink" href="/">
-          <span className="flex h-8 w-8 items-center justify-center rounded-control bg-ink text-sm text-white" aria-hidden>V</span>
-          ViSafy
+          <span className="flex h-8 w-8 items-center justify-center rounded-control bg-ink text-sm text-white" aria-hidden>S</span>
+          SSAFIN
         </Link>
         <Link aria-current={pathname.startsWith("/products") ? "page" : undefined} className={navLink("/products")} href="/products">{text.nav.products}</Link>
         <Link aria-current={pathname === "/profile" ? "page" : undefined} className={navLink("/profile")} href="/profile">{text.nav.profile}</Link>

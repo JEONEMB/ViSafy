@@ -1,6 +1,6 @@
-# ViSafy Season 3 MVP 완료 로드맵
+# SSAFIN Season 3 MVP 완료 로드맵
 
-> 작성 기준: 2026-08-24  
+> 작성 기준: 2026-08-25
 > 목적: Season 3 최종 완료조건 15개를 모두 충족하고 2026 금융 AI Challenge 제출 가능한 상태로 만들기
 
 ## 1. 현재 상태
@@ -14,13 +14,13 @@
 실행 데이터 기준:
 
 ```text
-전체 상품: 7개
+활성 상품: 11개
 기관: 3곳
-GENERAL: 0개
-FOREIGNER_SPECIALIZED: 7개
-Season 3 READY: 0개
-Season 3 PARTIAL: 6개
-완성된 Season 3 Source 패키지: 0개
+GENERAL: 5개
+FOREIGNER_SPECIALIZED: 6개
+Season 3 READY: 8개
+Season 3 PARTIAL: 3개
+완성된 Season 3 Source 패키지: 8개
 ```
 
 현재 가장 큰 문제는 기능 부족보다 실제 일반상품과 Access Evidence 부족이다.
@@ -36,10 +36,10 @@ Season 3 PARTIAL: 6개
 - [x] 일반 입출금계좌 2개 조사 후보 선정
 - [x] 일반 예·적금 3개 조사 후보 선정
 - [x] 신한·하나·KB 3개 금융기관 후보 확보
-- [ ] 각 상품을 `productAudience=GENERAL`로 등록
-- [ ] 상품 Category 등록
-- [ ] 상품 금융목적 연결
-- [ ] 일반상품과 외국인 특화상품이 상품 목록에 함께 표시되는지 확인
+- [x] 각 상품을 `productAudience=GENERAL`로 등록
+- [x] 상품 Category 등록
+- [x] 상품 금융목적 연결
+- [x] 일반상품과 외국인 특화상품이 상품 목록에 함께 표시되는지 확인
 
 상품별 필수 자료:
 
@@ -65,16 +65,16 @@ Season 3 PARTIAL: 6개
 
 담당: 사용자 자료 수집 + 관리자 승인
 
-- [ ] 상품페이지 Evidence 등록
-- [ ] 상품설명서·약관 Evidence 등록
-- [ ] 승인 HARD Rule Evidence 연결
-- [ ] 외국인 신분확인 Evidence 연결
-- [ ] Channel Evidence 연결
-- [ ] 필요서류 Evidence 연결
-- [ ] 신청절차 Evidence 연결
-- [ ] 정보 기준일과 최근 검증일 입력
-- [ ] Source Snapshot과 `contentHash` 확인
-- [ ] Source와 Rule을 관리자 화면에서 승인
+- [x] 상품페이지 Evidence 등록
+- [x] 상품설명서·약관 Evidence 등록
+- [x] 승인 HARD Rule Evidence 연결
+- [x] 외국인 신분확인 Evidence 연결
+- [x] Channel Evidence 연결
+- [x] 필요서류 Evidence 연결
+- [x] 신청절차 Evidence 연결
+- [x] 정보 기준일과 최근 검증일 입력
+- [x] Source Snapshot과 `contentHash` 확인
+- [x] Source와 Rule 승인 기록 저장
 
 목표:
 
@@ -149,7 +149,7 @@ Identity / Branch / Mobile 상태가 각각 표시됨
 
 > 외국인이라고 외국인 전용상품만 이용하는 것은 아닙니다.
 
-> ViSafy는 가입 승인을 예측하지 않고, 공개조건과 이용 경로를 공식 근거로 설명합니다.
+> SSAFIN은 가입 승인을 예측하지 않고, 공개조건과 이용 경로를 공식 근거로 설명합니다.
 
 ### P0-6. 실제 AI 연결 또는 표현 조정
 
@@ -358,8 +358,8 @@ ANTHROPIC_API_KEY + ANTHROPIC_MODEL
 
 - [ ] 일반상품이 실제 추천 결과에 포함됨
 - [ ] GENERAL과 FOREIGNER_SPECIALIZED를 함께 비교 가능
-- [ ] Season 3 READY 8개 이상
-- [ ] 완성된 Source 패키지 8개 이상
+- [x] Season 3 READY 8개 이상
+- [x] 완성된 Source 패키지 8개 이상
 - [ ] Demo A~E가 실제 공식 상품으로 재현됨
 - [ ] Identity·Branch·Mobile Evidence 표시
 - [ ] Visa Rule이 없는 상품에서 Visa 입력·설명 없음
@@ -375,8 +375,8 @@ ANTHROPIC_API_KEY + ANTHROPIC_MODEL
 
 실제 LLM 또는 검증된 AI Retrieval이 연결된 뒤 다음 문구를 사용한다.
 
-> ViSafy는 공식 금융정보와 사람이 검수한 Rule을 기반으로 국내 체류 외국인이 이용할 수 있는 일반·외국인 특화 금융서비스와 신분확인·채널·필요서류·다음 행동을 설명하는 AI 금융 정착 Agent다.
+> SSAFIN은 공식 금융정보와 사람이 검수한 Rule을 기반으로 국내 체류 외국인이 이용할 수 있는 일반·외국인 특화 금융서비스와 신분확인·채널·필요서류·다음 행동을 설명하는 AI 금융 정착 Agent다.
 
 그전에는 다음 표현이 더 정확하다.
 
-> ViSafy는 공식 Source 기반 Rule Engine과 RAG 구조를 갖춘 외국인 금융 정착 Agent MVP다.
+> SSAFIN은 공식 Source 기반 Rule Engine과 RAG 구조를 갖춘 외국인 금융 정착 Agent MVP다.

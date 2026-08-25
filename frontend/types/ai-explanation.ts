@@ -20,7 +20,7 @@ export type EasyTerm = {
 export type BankInquiry = {
   korean: string;
   localized: string;
-  language: "ko" | "en" | "vi";
+  language: "ko" | "en" | "vi" | "zh" | "ja" | "th";
   confirmationItems: string[];
 };
 

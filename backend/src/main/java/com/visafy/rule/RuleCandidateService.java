@@ -10,7 +10,9 @@ import java.time.LocalDate;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.server.ResponseStatusException;
+import com.visafy.rag.RagIndexRefreshRequested;
 
 @Service
 public class RuleCandidateService {
@@ -18,14 +20,17 @@ public class RuleCandidateService {
     private final SourceDocumentService sourceService;
     private final ProductRuleService productRuleService;
     private final RuleChangeHistoryRepository historyRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public RuleCandidateService(RuleCandidateRepository repository, SourceDocumentService sourceService,
                                 ProductRuleService productRuleService,
-                                RuleChangeHistoryRepository historyRepository) {
+                                RuleChangeHistoryRepository historyRepository,
+                                ApplicationEventPublisher eventPublisher) {
         this.repository = repository;
         this.sourceService = sourceService;
         this.productRuleService = productRuleService;
         this.historyRepository = historyRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -99,6 +104,7 @@ public class RuleCandidateService {
             candidate.expire();
             productRuleService.synchronize(candidate);
             saveHistory(candidate, action, reviewer, before);
+            eventPublisher.publishEvent(new RagIndexRefreshRequested("rule-review-" + id));
             return candidate;
         }
         if ((action == ReviewAction.APPROVE || action == ReviewAction.APPROVE_WITH_CHANGES
@@ -118,6 +124,7 @@ public class RuleCandidateService {
         }
         productRuleService.synchronize(candidate);
         saveHistory(candidate, action, reviewer, before);
+        eventPublisher.publishEvent(new RagIndexRefreshRequested("rule-review-" + id));
         return candidate;
     }
 

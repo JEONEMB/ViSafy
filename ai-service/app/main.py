@@ -11,7 +11,7 @@ from app.config import settings
 
 def create_app() -> FastAPI:
     application = FastAPI(
-        title="ViSafy AI Service",
+        title="SSAFIN AI Service",
         description="RAG, explanation, translation, and guardrail service",
         version="0.1.0",
     )

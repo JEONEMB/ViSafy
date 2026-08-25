@@ -44,7 +44,7 @@ class OfficialDocumentStore:
                 ids=ids,
                 documents=chunks,
                 metadatas=metadatas,
-                embeddings=[self.embedding.embed(chunk) for chunk in chunks],
+                embeddings=[self.embedding.embed_document(chunk) for chunk in chunks],
             )
             indexed_documents += 1
             indexed_chunks += len(chunks)
@@ -59,7 +59,7 @@ class OfficialDocumentStore:
         today_ordinal = date.today().toordinal()
         combined_query = f"Rule {rule_key}. {query}"
         result = collection.query(
-            query_embeddings=[self.embedding.embed(combined_query)],
+            query_embeddings=[self.embedding.embed_query(combined_query)],
             where={
                 "$and": [
                     {"product_id": product_id},

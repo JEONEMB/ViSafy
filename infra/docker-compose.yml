@@ -22,16 +22,13 @@ services:
   ai-service:
     build:
       context: ../ai-service
+    env_file:
+      - path: ../.env
+        required: false
     environment:
       APP_ENVIRONMENT: local
-      LLM_API_KEY: ${LLM_API_KEY:-}
-      LLM_MODEL: ${LLM_MODEL:-}
-      LLM_PROVIDER: ${LLM_PROVIDER:-none}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.6-terra}
-      OPENAI_REASONING_EFFORT: ${OPENAI_REASONING_EFFORT:-medium}
-      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-hash}
-      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-fastembed}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-intfloat/multilingual-e5-small}
       EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-384}
       EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
       OCR_PROVIDER: ${OCR_PROVIDER:-none}
@@ -44,6 +41,7 @@ services:
       - "8000:8000"
     volumes:
       - chroma-data:/data/chroma
+      - embedding-model-cache:/root/.cache/huggingface
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 5s
@@ -93,3 +91,4 @@ services:
 volumes:
   mysql-data:
   chroma-data:
+  embedding-model-cache:

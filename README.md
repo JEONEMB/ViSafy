@@ -1,4 +1,4 @@
-# Visa-aware Financial Agent
+# SSAFIN — Official-source Financial Settlement Agent
 
 공식 금융 Source와 사람이 검수한 Rule을 기반으로 외국인 사용자의 금융상품 사전자격을 안내하기 위한 MVP 모노레포입니다.
 
@@ -11,7 +11,7 @@
 - DATA-004 Source 및 Rule Human Verification
 - DATA-005 공식 자료 간 Rule conflict 감지
 - DATA-006 유효기간, 최근 검증일, Source 링크 및 상태 표시
-- FR-101 한국어·영어·베트남어 언어 선택과 브라우저 저장
+- FR-101 한국어·영어·베트남어·중국어·일본어·태국어 선택과 브라우저 저장
 - FR-102 24시간 임시 금융 프로필
 - FR-103 지원 비자 선택(D-2, D-4, E-7, E-9, F-2, F-5, F-6)
 - FR-201 승인된 공식 Source 기반 금융상품 등록
@@ -65,10 +65,92 @@ docker compose down
 
 ## How To Use
 
+### 가장 빠른 실행 순서
+
+#### 1. 서비스를 실행합니다
+
+프로젝트 루트에서 다음 명령을 실행합니다.
+
+```powershell
+Copy-Item .env.example .env
+docker compose up --build --detach --wait
+```
+
+OpenAI 설명 기능을 사용하려면 Git에 포함되지 않는 `.env`에 다음 값을 설정한 뒤 `docker compose up -d --force-recreate ai-service`를 실행합니다.
+
+```text
+LLM_PROVIDER=openai
+OPENAI_API_KEY=발급받은_Project_API_Key
+OPENAI_MODEL=사용 가능한 Responses_API_모델_ID
+OPENAI_REASONING_EFFORT=medium
+```
+
+API Key가 없거나 OpenAI 호출이 실패해도 사전자격 진단과 공식 근거 검색은 계속 작동하며, 쉬운 설명과 문의문은 검증된 다국어 템플릿으로 자동 전환됩니다.
+
+#### 2. 언어와 금융 목적을 선택합니다
+
+1. http://localhost:3000 을 엽니다.
+2. `한국어`, `English`, `Tiếng Việt`, `中文`, `日本語`, `ไทย` 중 사용할 언어를 선택합니다.
+3. 지금 필요한 금융서비스를 선택합니다. 같은 항목을 한 번 더 누르면 선택이 해제됩니다.
+4. **내 금융생활 시작하기**를 누릅니다.
+
+언어 카드는 화면 언어만 변경하며 국적을 자동으로 결정하지 않습니다.
+
+#### 3. 임시 금융 프로필을 저장합니다
+
+1. 실제 국적과 현재 금융 준비상태를 입력합니다.
+2. 외국인등록증·여권·휴대전화·국내계좌는 번호가 아니라 보유 여부만 입력합니다.
+3. **내게 필요한 금융서비스 보기**를 누릅니다.
+
+프로필은 UUID 세션과 연결되어 24시간만 보관됩니다. 주민등록번호, 외국인등록번호 원문, 여권번호, 계좌번호와 카드번호는 수집하지 않습니다. 비자·체류·소득·재직 정보는 해당 상품의 공식 조건에 필요할 때만 추가로 요청합니다.
+
+#### 4. 추천과 금융생활 경로를 확인합니다
+
+http://localhost:3000/products 에서 다음 내용을 확인합니다.
+
+- 현재 준비상태에 따른 Financial Journey와 다음 행동
+- 일반상품과 외국인 특화상품을 함께 포함한 추천 후보
+- 확인된 공개조건 수와 금융기관에 추가 확인할 항목
+- 공식 정보가 부족하여 별도로 분류된 상품
+
+SSAFIN은 가입확률을 계산하거나 최종 승인을 보장하지 않습니다.
+
+#### 5. 상품 사전자격을 확인합니다
+
+1. 상품 카드를 선택합니다.
+2. 상품에 추가 정보가 필요하면 표시된 항목만 입력합니다.
+3. **내 프로필로 사전자격 확인**을 누릅니다.
+4. 공개조건 충족 여부, 금융기관 확인사항, 신분확인 방법, 영업점·모바일 이용방법을 확인합니다.
+5. **판단 근거 / 필요서류 / 신청 절차 / 공식 정보** 탭에서 원문과 정보 기준일을 확인합니다.
+
+공개 화면에는 내부 Rule Key, Operator와 원시 상태코드를 표시하지 않습니다. 관리용 원본 값과 검수 이력은 인증된 관리자 화면에서만 확인할 수 있습니다.
+
+#### 6. 공식 금융문서 AI를 사용합니다
+
+상품 상세의 **공식 금융문서에 질문하기**에서 검수된 조건과 질문을 선택합니다.
+
+- 승인되고 현재 유효한 해당 상품의 공식 Source만 검색합니다.
+- 다국어 Semantic Embedding으로 한국어·영어·베트남어 질문을 의미 기반 검색합니다.
+- OpenAI Responses API는 쉬운 설명, 번역, 다음 행동과 필요한 경우 은행 문의문을 생성합니다.
+- AI는 Backend의 사전자격·접근성 결과를 변경할 수 없습니다.
+- 근거가 없으면 임의의 답을 만들지 않고 금융기관 확인이 필요하다고 안내합니다.
+
+#### 7. 관리자 기능을 사용합니다
+
+1. http://localhost:3000/admin/login 에서 로그인합니다.
+2. `/admin/products`에서 상품을 등록·수정·비활성화합니다.
+3. `/admin/sources`에서 공식 Source·Snapshot을 등록하고 Rule Candidate를 검수합니다.
+4. Source 또는 Rule을 승인·수정·만료하면 트랜잭션 완료 후 RAG가 자동 재색인됩니다.
+5. 필요할 때만 관리자 화면의 **RAG 전체 재색인**을 사용합니다.
+
+서비스와 AI 상태는 http://localhost:3000/health 에서 확인할 수 있습니다. 정상 상태에서는 Backend와 AI Service가 모두 `UP`으로 표시됩니다.
+
+---
+
 ### 1. 언어 선택
 
 1. 메인 화면 http://localhost:3000 에 접속합니다.
-2. `한국어`, `English`, `Tiếng Việt` 중 표시 언어를 선택합니다. 국기는 언어 선택을 돕는 시각 요소이며 국적을 확정하지 않습니다.
+2. `한국어`, `English`, `Tiếng Việt`, `中文`, `日本語`, `ไทย` 중 표시 언어를 선택합니다. 국기는 언어 선택을 돕는 시각 요소이며 국적을 확정하지 않습니다.
 3. 같은 화면에서 현재 가장 필요한 금융서비스를 선택한 뒤 **내 금융생활 시작하기**를 누릅니다.
 4. 선택한 언어와 금융목적은 브라우저에 저장되어 Profile Wizard로 이어집니다. `/profile`에서는 언어를 다시 묻지 않고 `국적 + 금융 목적` 단계부터 시작합니다.
 
@@ -167,7 +249,7 @@ Runtime `PRODUCT_RULE`은 `product_id`, `rule_key`, `operator`, `rule_value`, `r
 | 언어와 국적 분리 | 적용 | 언어 변경 후 국적 불변 E2E 포함 |
 | Profile → 추천 → 근거 → 서류 → 절차 → 문의문 | 적용 | 고정 Demo 데이터 최종 확정 |
 | SOURCE_INSUFFICIENT Demo | 적용 | EZ Loan·SOL글로벌 전세대출 |
-| EXTERNAL_CHECK/UNKNOWN 실제 Demo | 미충족 | 직접 공식 문서가 있는 조건 확보 필요 |
+| EXTERNAL_CHECK/UNKNOWN 실제 Demo | 충족 | KB증권 강화된 고객확인 `EXTERNAL_CHECK`, Easy-One Pack 통장 온라인 신규 `UNKNOWN` |
 | 관리자/일반 사용자 접근 분리 | 적용 | 운영 관리자 비밀번호 교체 |
 | HTTPS 배포 URL | 미충족 | 제출용 Hosting과 Monitoring 구성 |
 
@@ -219,13 +301,13 @@ AI와 RAG는 외국인이라는 이유만으로 미가입을 추정하거나, `�
 
 1. http://localhost:3000/admin/sources 에서 Source Snapshot과 문서 언어를 등록하고 승인합니다.
 2. 승인 Source를 금융상품 또는 PRODUCT_RULE에 연결합니다.
-3. 관리자 화면의 **RAG 전체 재색인**을 누릅니다.
+3. Source 또는 Rule 승인 후 자동 재색인 결과를 확인합니다. 수동 복구가 필요할 때만 관리자 화면의 **RAG 전체 재색인**을 누릅니다.
 4. 임시 프로필을 저장한 뒤 상품 상세 화면의 **공식 금융문서에 질문하기**에서 Rule과 질문을 선택합니다.
 5. Eligibility 결과, 구조화된 Rule 결과, 공식 근거 문단과 Source 링크를 각각 확인합니다.
 
 전처리 순서는 `Snapshot → NFKC 정규화 및 Cleaning → 문단 기반 Chunking → Metadata → Embedding → ChromaDB`입니다. Metadata에는 `document_id`, `institution`, `document_name`, `source_type`, `source_url`, `retrieved_at`, `valid_from`, `valid_to`, `product_id`, `language`, `content_hash`, `rule_keys`를 저장합니다. 검색에는 질문과 Rule Key를 함께 사용하고 ChromaDB의 `product_id` 필터를 항상 적용하므로 다른 상품의 조건이 섞이지 않습니다.
 
-현재 MVP는 외부 API Key와 모델 다운로드 없이 재현 가능한 384차원 로컬 해시 임베딩을 사용합니다. 답변도 LLM의 자유 생성을 사용하지 않고 검색 문단과 Eligibility Engine의 확정 결과를 조합하는 추출형 방식입니다. 따라서 실행 환경과 관계없이 다음 가드레일을 지킵니다.
+현재 Docker 환경은 ONNX 기반 FastEmbed와 `intfloat/multilingual-e5-small`을 기본으로 사용해 한국어·영어·베트남어 질의를 의미 기반으로 검색합니다. 384차원 로컬 해시 임베딩은 회귀 테스트와 오프라인 기준선 용도로만 남겨두었습니다. 답변은 OpenAI 연결 여부와 관계없이 Eligibility Engine의 확정 결과를 변경할 수 없으며, API 장애 시 검증 가능한 템플릿으로 복귀합니다.
 
 - 공식 Source에 없는 조건을 생성하지 않음
 - Eligibility Engine 결과를 변경하지 않음
@@ -245,7 +327,7 @@ AI와 RAG는 외국인이라는 이유만으로 미가입을 추정하거나, `�
 - AI-203: `체류자격 (Status of Stay)`, `소득증빙 (Proof of Income)`, `보증보험증권`과 은행 내부 신용평가를 쉬운 말로 설명
 - AI-204: EXTERNAL_CHECK 또는 UNKNOWN이 있을 때 한국어 은행 문의문과 선택 언어 번역을 함께 생성하며 화면에서 복사 가능
 
-문의문에 사용되는 비자코드, 비자 잔여 개월, 국내 체류 개월은 Backend가 날짜로 계산한 값만 사용합니다. AI 설명이 일시적으로 실패해도 Eligibility Engine 결과는 그대로 유지되며 최종 가입이나 승인을 보장하지 않습니다. 현재 설명과 문의문은 외부 LLM 없이 검증 가능한 다국어 템플릿으로 생성합니다.
+문의문에 사용되는 비자코드, 비자 잔여 개월, 국내 체류 개월은 Backend가 날짜로 계산한 값만 사용합니다. AI 설명이 일시적으로 실패해도 Eligibility Engine 결과는 그대로 유지되며 최종 가입이나 승인을 보장하지 않습니다. `LLM_PROVIDER=openai`이면 OpenAI Responses API를 사용하고, Key 누락·호출 실패·구조화 출력 또는 숫자 무결성 검증 실패 시 검증 가능한 다국어 템플릿으로 자동 복귀합니다.
 
 ### 11. 필요서류 체크리스트와 신청절차
 
@@ -335,7 +417,7 @@ docker run --rm --ipc=host -e E2E_BASE_URL=http://host.docker.internal:3000 -v "
 
 **P1 · 검색 품질 고도화**
 
-- [ ] 현재 384차원 로컬 해시 임베딩을 한국어·영어·베트남어 금융문서용 다국어 Embedding 모델과 비교 평가
+- [x] 다국어 Semantic Embedding을 기본 검색 Provider로 적용하고 384차원 해시 모델은 비교 기준선으로 유지
 - [ ] 상품 ID 필터에 Rule Key, 문서 언어, 유효기간 필터를 추가 적용할지 평가
 - [ ] Chunk 크기·Overlap·Top-K를 실제 질의 세트로 튜닝
 - [ ] 정답 Source 포함 여부, 다른 상품 혼입 여부, 검색 순위 등을 측정하는 Retrieval 평가 데이터셋 구축
@@ -343,13 +425,13 @@ docker run --rm --ipc=host -e E2E_BASE_URL=http://host.docker.internal:3000 -v "
 
 **P2 · LLM 답변 및 운영 기능**
 
-- [ ] LLM 기반 자연어 답변을 연결할 경우 `LLM_API_KEY`, `LLM_MODEL`을 Secret으로 설정하고 현재 추출형 답변을 안전한 Fallback으로 유지
-- [ ] LLM 입력에는 검색된 공식 문서, 구조화 Rule 결과, Eligibility 상태만 전달하고 숫자·비자코드·금액 보존 테스트 추가
-- [ ] Prompt Injection, 근거 없는 조건 생성, Source 인용 오류를 검증하는 Guardrail/Evaluation 세트 구축
+- [x] OpenAI Responses API를 선택형으로 연결하고 검증 가능한 템플릿을 안전한 Fallback으로 유지
+- [x] LLM 입력을 검색된 공식 문서, 구조화 조건과 사전자격·접근성 결과로 제한하고 숫자·비자코드 보존 검증 적용
+- [x] 한국어 Prompt Injection과 내부 상태코드 노출을 차단하는 Guardrail 회귀 테스트 구축
 - [ ] 관리자 화면에 색인 실행 이력, 성공·실패 문서, Chunk 수, 마지막 색인 시각 및 재시도 기능 추가
 - [ ] 색인·검색·답변의 지연시간, 오류율과 감사 로그를 개인정보 없이 관측할 수 있도록 구성
 
-외부 LLM이나 유료 Embedding 서비스를 연결하기 전까지 `LLM_API_KEY`와 `LLM_MODEL`은 비워 두어도 됩니다. 현재 MVP 실행에 필요한 별도 외부 API Key는 없으며, `RAG_INTERNAL_TOKEN`은 외부 API Key가 아니라 Backend와 AI Service 사이의 내부 인증용 비밀값입니다.
+OpenAI 없이도 핵심 Rule Engine·Access Model·RAG와 템플릿 설명은 실행할 수 있습니다. OpenAI 설명을 사용할 때만 `OPENAI_API_KEY`와 사용 가능한 모델 ID가 필요합니다. `RAG_INTERNAL_TOKEN`은 외부 API Key가 아니라 Backend와 AI Service 사이의 내부 인증용 비밀값입니다.
 
 ## 관리자 계정 설정
 
@@ -433,17 +515,17 @@ Season 3의 `READY`는 상품 페이지와 약관만 존재한다고 충족되�
 
 두 시즌의 `READY`는 기준이 다릅니다. Season 2의 `READY 5개`는 승인된 Eligibility Rule과 공식 Source를 이용해 공개조건을 평가할 수 있다는 뜻입니다. Season 3의 `READY`는 여기에 외국인 신분확인, 영업점·모바일 채널, 필요서류, 신청절차 Evidence까지 모두 갖춘 상품만 의미합니다.
 
-2026-08-24 실행 데이터 측정값은 다음과 같습니다.
+2026-08-25 실행 데이터 측정값은 다음과 같습니다.
 
 | 항목 | 현재 값 |
 | --- | ---: |
-| 전체 상품 | 12개 |
+| 활성 상품 | 11개 |
 | 금융기관 | 3곳 |
 | `GENERAL` | 5개 |
-| `FOREIGNER_SPECIALIZED` | 7개 |
-| Season 3 `READY` | 5개 |
+| `FOREIGNER_SPECIALIZED` | 6개 |
+| Season 3 `READY` | 8개 |
 | Season 3 `PARTIAL` | 기존 상품은 근거 보강 상태에 따라 별도 표시 |
-| 완성된 Season 3 Source 패키지 | 5개 |
+| 완성된 Season 3 Source 패키지 | 8개 |
 
 따라서 Season 2 Rule Engine의 동작 여부와 Season 3 제출 데이터의 완성도를 혼동해서는 안 됩니다. 일반상품과 Access Evidence는 [`docs/season3-data-collection-prompts.md`](docs/season3-data-collection-prompts.md)의 프롬프트로 조사한 뒤 반드시 사람이 공식 원문을 다시 확인하고 관리자 화면에서 승인해야 합니다.
 
@@ -458,7 +540,7 @@ Season 3의 `READY`는 상품 페이지와 약관만 존재한다고 충족되�
 
 ### 현재 AI 구성
 
-OpenAI Responses API Adapter가 선택형으로 연결되어 있습니다. `LLM_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6-terra`, `OPENAI_REASONING_EFFORT=medium`을 배포환경 Secret으로 설정하면 승인된 공식 RAG Context, Eligibility Result, Access Result, Rule Detail을 이용해 쉬운 설명·다음 행동·필요 시 은행 문의문을 생성합니다. Key 누락·API 장애·구조화 출력 오류·숫자 또는 Visa 코드 무결성 위반 시 검증 가능한 템플릿으로 자동 복귀합니다. LLM 출력 스키마에는 상태 필드가 없으며 Backend가 계산한 Eligibility와 Access 판정은 응답 조립 단계에서 고정됩니다. RAG의 기본 검색은 재현 가능한 384차원 해시 임베딩이며 `sentence_transformers` Adapter로 한국어·영어·베트남어 Semantic Embedding을 비교할 수 있습니다.
+OpenAI Responses API Adapter가 선택형으로 연결되어 있습니다. `LLM_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6-terra`, `OPENAI_REASONING_EFFORT=medium`을 배포환경 Secret으로 설정하면 승인된 공식 RAG Context, Eligibility Result, Access Result, Rule Detail을 이용해 쉬운 설명·다음 행동·필요 시 은행 문의문을 생성합니다. Key 누락·API 장애·구조화 출력 오류·숫자 또는 Visa 코드 무결성 위반 시 검증 가능한 템플릿으로 자동 복귀합니다. LLM 출력 스키마에는 상태 필드가 없으며 Backend가 계산한 Eligibility와 Access 판정은 응답 조립 단계에서 고정됩니다. RAG는 ONNX 기반 다국어 FastEmbed를 기본으로 사용하며 Product Metadata Filtering과 승인·유효기간 필터를 항상 적용합니다.
 
 PDF/HTML 추출, 페이지 번호 보존, OCR 필요 페이지 표시, `contentHash` 변경 감지, PENDING Rule Candidate 추출과 RAG 평가 실행법은 [`docs/ai-rag-quality-and-secrets.md`](docs/ai-rag-quality-and-secrets.md)에 정리되어 있습니다. RAG Dataset은 Flyway V18/V19의 실제 승인 Source ID와 일반상품 5개별 질문 5개 이상으로 교체되었습니다.
 

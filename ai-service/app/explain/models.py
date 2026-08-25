@@ -59,7 +59,7 @@ class RagContextInput(BaseModel):
 class ExplanationRequest(BaseModel):
     product_id: int = Field(alias="productId", gt=0)
     eligibility_status: EligibilityStatus = Field(alias="eligibilityStatus")
-    language: Literal["ko", "en", "vi"]
+    language: Literal["ko", "en", "vi", "zh", "ja", "th"]
     product_name: str = Field(alias="productName", min_length=1, max_length=500)
     institution: str = Field(min_length=1, max_length=120)
     visa_type: str | None = Field(default=None, alias="visaType", min_length=1, max_length=10)
@@ -91,7 +91,7 @@ class EasyTerm(BaseModel):
 class BankInquiry(BaseModel):
     korean: str
     localized: str
-    language: Literal["ko", "en", "vi"]
+    language: Literal["ko", "en", "vi", "zh", "ja", "th"]
     confirmation_items: list[str] = Field(alias="confirmationItems")
 
     model_config = {"populate_by_name": True}

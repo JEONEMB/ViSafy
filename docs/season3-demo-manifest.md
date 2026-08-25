@@ -1,4 +1,4 @@
-# ViSafy Season 3 고정 Demo A~E
+# SSAFIN Season 3 고정 Demo A~E
 
 > 고정 기준일: 2026-08-24  
 > 전제: 빈 DB에서 Flyway V1~V19 적용  

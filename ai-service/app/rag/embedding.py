@@ -10,7 +10,9 @@ from app.config import Settings
 class EmbeddingProvider(Protocol):
     dimensions: int
 
-    def embed(self, text: str) -> list[float]: ...
+    def embed_document(self, text: str) -> list[float]: ...
+
+    def embed_query(self, text: str) -> list[float]: ...
 
 
 class LocalHashEmbedding:
@@ -33,33 +35,55 @@ class LocalHashEmbedding:
         norm = math.sqrt(sum(value * value for value in vector))
         return [value / norm for value in vector] if norm else vector
 
+    def embed_document(self, text: str) -> list[float]:
+        return self.embed(text)
 
-class SentenceTransformerEmbedding:
-    """Optional local multilingual semantic embedding.
+    def embed_query(self, text: str) -> list[float]:
+        return self.embed(text)
 
-    The heavy model dependency is deliberately optional so the key-free MVP keeps
-    working offline with the hash baseline.
-    """
 
-    def __init__(self, model_name: str) -> None:
+class FastEmbedMultilingualEmbedding:
+    """CPU-friendly multilingual E5 embeddings backed by ONNX Runtime."""
+
+    def __init__(self, model_name: str, dimensions: int = 384) -> None:
         try:
-            from sentence_transformers import SentenceTransformer
+            from fastembed import TextEmbedding
+            from fastembed.common.model_description import ModelSource, PoolingType
         except ImportError as exception:
             raise RuntimeError(
-                "EMBEDDING_PROVIDER=sentence_transformers requires the semantic optional dependency"
+                "EMBEDDING_PROVIDER=fastembed requires the semantic optional dependency"
             ) from exception
-        self._model = SentenceTransformer(model_name)
-        self.dimensions = int(self._model.get_sentence_embedding_dimension())
 
-    def embed(self, text: str) -> list[float]:
-        vector = self._model.encode(text, normalize_embeddings=True)
+        supported = {item["model"] for item in TextEmbedding.list_supported_models()}
+        if model_name not in supported:
+            TextEmbedding.add_custom_model(
+                model=model_name,
+                pooling=PoolingType.MEAN,
+                normalization=True,
+                sources=ModelSource(hf=model_name),
+                dim=dimensions,
+                model_file="onnx/model.onnx",
+            )
+        self._model = TextEmbedding(model_name=model_name)
+        self.dimensions = dimensions
+
+    def _embed(self, text: str) -> list[float]:
+        vector = next(iter(self._model.embed([text])))
         return [float(value) for value in vector]
+
+    def embed_document(self, text: str) -> list[float]:
+        return self._embed(f"passage: {text}")
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._embed(f"query: {text}")
 
 
 def create_embedding_provider(settings: Settings) -> EmbeddingProvider:
     provider = settings.embedding_provider.strip().lower()
     if provider == "hash":
         return LocalHashEmbedding(settings.embedding_dimensions)
-    if provider == "sentence_transformers":
-        return SentenceTransformerEmbedding(settings.embedding_model)
+    if provider == "fastembed":
+        return FastEmbedMultilingualEmbedding(
+            settings.embedding_model, settings.embedding_dimensions
+        )
     raise ValueError(f"Unsupported embedding provider: {settings.embedding_provider}")

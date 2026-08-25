@@ -10,9 +10,8 @@ public class OpenApiConfig {
     @Bean
     OpenAPI visafyOpenApi() {
         return new OpenAPI().info(new Info()
-                .title("ViSafy API")
+                .title("SSAFIN API")
                 .version("0.1.0")
                 .description("Visa-aware Financial Agent backend API"));
     }
 }
-

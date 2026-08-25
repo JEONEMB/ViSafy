@@ -42,7 +42,7 @@ def request(language: str = "ko", status: str = "NEED_BANK_CONFIRMATION") -> Exp
     )
 
 
-@pytest.mark.parametrize("language", ["ko", "en", "vi"])
+@pytest.mark.parametrize("language", ["ko", "en", "vi", "zh", "ja", "th"])
 def test_explanation_and_inquiry_preserve_structured_numbers_and_visa(language: str) -> None:
     result = ExplanationBuilder().build(request(language))
 

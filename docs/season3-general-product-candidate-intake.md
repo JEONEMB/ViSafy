@@ -16,9 +16,9 @@
 | 하나은행 | 급여하나 월복리 적금 | `SAVINGS` | `SAVINGS` | 우선 조사 | 불가 |
 | KB국민은행 | KB Star 정기예금 | `SAVINGS` | `TIME_DEPOSIT` | 보완 후 재검토 | 불가 |
 
-현재 5개 상품 모두 `productAudience=GENERAL` 후보로 적합하다. 다만 ViSafy의 Source 필수값인 직접 공식 URL, Snapshot, `contentHash`, Source 상태와 유효기간이 없어 아직 DB에 등록하지 않는다.
+현재 5개 상품 모두 `productAudience=GENERAL` 후보로 적합하다. 다만 SSAFIN의 Source 필수값인 직접 공식 URL, Snapshot, `contentHash`, Source 상태와 유효기간이 없어 아직 DB에 등록하지 않는다.
 
-`READY_CANDIDATE`는 조사 우선순위일 뿐 ViSafy의 `READY` 상태가 아니다. 특히 `실명의 개인` 원문만으로 외국인의 가입 가능성을 확정하지 않는다.
+`READY_CANDIDATE`는 조사 우선순위일 뿐 SSAFIN의 `READY` 상태가 아니다. 특히 `실명의 개인` 원문만으로 외국인의 가입 가능성을 확정하지 않는다.
 
 ## 2. 입력값 정규화
 
@@ -125,7 +125,7 @@ INVESTMENT
 아래 프롬프트를 상품별로 한 번씩 실행한다.
 
 ```text
-ViSafy에 등록할 [기관]의 [상품명] 공식 Source를 보완 조사하라.
+SSAFIN에 등록할 [기관]의 [상품명] 공식 Source를 보완 조사하라.
 
 현재 확보한 정보:
 [현재 JSON 전체를 붙여 넣기]

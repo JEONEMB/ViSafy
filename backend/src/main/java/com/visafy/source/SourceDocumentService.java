@@ -12,17 +12,22 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.server.ResponseStatusException;
 import com.visafy.common.domain.ReviewStatus;
+import com.visafy.rag.RagIndexRefreshRequested;
 
 @Service
 public class SourceDocumentService {
     private final SourceDocumentRepository repository;
     private final List<String> allowedDomains;
+    private final ApplicationEventPublisher eventPublisher;
 
     public SourceDocumentService(SourceDocumentRepository repository,
-                                 @Value("${app.source.allowed-domains}") String allowedDomains) {
+                                 @Value("${app.source.allowed-domains}") String allowedDomains,
+                                 ApplicationEventPublisher eventPublisher) {
         this.repository = repository;
+        this.eventPublisher = eventPublisher;
         this.allowedDomains = Arrays.stream(allowedDomains.split(","))
                 .map(String::trim).map(String::toLowerCase).filter(value -> !value.isBlank()).toList();
     }
@@ -90,6 +95,7 @@ public class SourceDocumentService {
         } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage());
         }
+        eventPublisher.publishEvent(new RagIndexRefreshRequested("source-review-" + id));
         return source;
     }
 
@@ -102,6 +108,7 @@ public class SourceDocumentService {
         SourceDocument source = get(id);
         source.updateMetadata(institution.strip(), sourceType, title.strip(), sourceUrl.strip(),
                 informationBaseDate, validFrom, validTo, language);
+        eventPublisher.publishEvent(new RagIndexRefreshRequested("source-update-" + id));
         return source;
     }
 
@@ -110,6 +117,7 @@ public class SourceDocumentService {
         SourceDocument source = get(id);
         if (status == SourceLifecycleStatus.EXPIRED) {
             source.markExpired();
+            eventPublisher.publishEvent(new RagIndexRefreshRequested("source-lifecycle-" + id));
             return source;
         }
         if (source.getValidTo() != null && source.getValidTo().isBefore(LocalDate.now())) {
@@ -121,6 +129,7 @@ public class SourceDocumentService {
         else if (status == SourceLifecycleStatus.SUPERSEDED) source.review(ReviewStatus.SUPERSEDED);
         else if (status == SourceLifecycleStatus.UNKNOWN) source.review(ReviewStatus.UNKNOWN);
         else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported source lifecycle status");
+        eventPublisher.publishEvent(new RagIndexRefreshRequested("source-lifecycle-" + id));
         return source;
     }
 

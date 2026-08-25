@@ -7,7 +7,7 @@ from app.rag.store import OfficialDocumentStore
 
 
 def test_evaluator_measures_recall_integrity_blocking_and_product_isolation(tmp_path) -> None:
-    settings = Settings(vector_db_path=str(tmp_path), rag_collection_name="evaluation", allowed_source_domains="kbstar.com")
+    settings = Settings(vector_db_path=str(tmp_path), rag_collection_name="evaluation", allowed_source_domains="kbstar.com", embedding_provider="hash")
     store = OfficialDocumentStore(settings)
     store.sync([OfficialDocument(
         documentId=1, institution="KB", documentName="Guide", sourceType="PRODUCT_DESCRIPTION",

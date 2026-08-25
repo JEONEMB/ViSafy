@@ -5,8 +5,8 @@ import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ViSafy",
-  description: "Visa-aware Financial Agent",
+  title: "SSAFIN",
+  description: "Official-source financial settlement agent for foreign residents in Korea",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

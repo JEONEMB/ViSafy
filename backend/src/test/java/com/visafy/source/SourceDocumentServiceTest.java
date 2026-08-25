@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -22,7 +23,7 @@ class SourceDocumentServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new SourceDocumentService(repository, "fss.or.kr,kbstar.com");
+        service = new SourceDocumentService(repository, "fss.or.kr,kbstar.com", mock(org.springframework.context.ApplicationEventPublisher.class));
     }
 
     @Test

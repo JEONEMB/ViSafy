@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.mock;
 import org.mockito.ArgumentCaptor;
 
 import com.visafy.common.domain.ReviewStatus;
@@ -48,7 +49,7 @@ class RuleCandidateServiceTest {
                 .thenReturn(List.of(existing));
 
         RuleCandidateService service = new RuleCandidateService(repository, sourceService, productRuleService,
-                historyRepository);
+                historyRepository, mock(org.springframework.context.ApplicationEventPublisher.class));
         service.review(2L, ReviewAction.APPROVE, null, null, null);
 
         assertThat(incoming.getReviewStatus()).isEqualTo(ReviewStatus.NEED_REVIEW);
@@ -77,7 +78,7 @@ class RuleCandidateServiceTest {
                 .thenReturn(List.of(minimum));
 
         RuleCandidateService service = new RuleCandidateService(repository, sourceService, productRuleService,
-                historyRepository);
+                historyRepository, mock(org.springframework.context.ApplicationEventPublisher.class));
         service.review(3L, ReviewAction.APPROVE, null, null, null);
 
         assertThat(maximum.getReviewStatus()).isEqualTo(ReviewStatus.APPROVED);
@@ -94,7 +95,7 @@ class RuleCandidateServiceTest {
                 "Foreign customer availability", new BigDecimal("0.90"));
         when(repository.findById(4L)).thenReturn(Optional.of(candidate));
         RuleCandidateService service = new RuleCandidateService(repository, sourceService, productRuleService,
-                historyRepository);
+                historyRepository, mock(org.springframework.context.ApplicationEventPublisher.class));
 
         service.review(4L, ReviewAction.APPROVE, null, null, null);
 

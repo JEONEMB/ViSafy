@@ -8,6 +8,7 @@ final class EligibilityMessages {
     EligibilityMessages(String language) {
         this.language = switch (language == null ? "ko" : language.toLowerCase(Locale.ROOT)) {
             case "en", "vi" -> language.toLowerCase(Locale.ROOT);
+            case "zh", "ja", "th" -> "en";
             default -> "ko";
         };
     }

@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     rag_collection_name: str = "official_financial_documents"
     rag_chunk_size: int = 900
     rag_chunk_overlap: int = 150
-    embedding_provider: str = "hash"
-    embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    embedding_provider: str = "fastembed"
+    embedding_model: str = "intfloat/multilingual-e5-small"
     embedding_dimensions: int = 384
     embedding_api_key: str = ""
     ocr_provider: str = "none"

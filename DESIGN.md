@@ -1,4 +1,4 @@
-# ViSafy Design System
+# SSAFIN Design System
 
 > Version: 1.0
 > Updated: 2026-08-20
@@ -6,7 +6,7 @@
 
 ## 1. Purpose
 
-이 문서는 새로운 UI를 임의로 생성하기 위한 무드보드가 아니다. Codex와 개발자가 ViSafy의 기존 기능을 보존하면서 화면 전체를 일관된 금융 서비스 경험으로 개선하기 위한 실행 기준이다.
+이 문서는 새로운 UI를 임의로 생성하기 위한 무드보드가 아니다. Codex와 개발자가 SSAFIN의 기존 기능을 보존하면서 화면 전체를 일관된 금융 서비스 경험으로 개선하기 위한 실행 기준이다.
 
 UI 작업자는 디자인 취향보다 다음 우선순위를 따른다.
 
@@ -20,7 +20,7 @@ UI 작업자는 디자인 취향보다 다음 우선순위를 따른다.
 
 ### Brand statement
 
-> ViSafy helps foreign residents understand how far their profile meets publicly verified Korean financial product conditions.
+> SSAFIN helps foreign residents understand how far their profile meets publicly verified Korean financial product conditions.
 
 ### Visual keywords
 
@@ -39,7 +39,7 @@ UI 작업자는 디자인 취향보다 다음 우선순위를 따른다.
 - **Stripe 30%**: 정교한 간격, 선명한 타이포그래피 위계, 구조화된 데이터 표현, 절제된 프리미엄 감각
 - **한국 은행 UX 20%**: 익숙한 입력 양식, 보수적인 상태 표현, 명시적인 라벨·기준일·공식 출처·유의사항
 
-Wise 또는 Stripe의 로고, 고유 일러스트, 레이아웃, 색상 조합을 그대로 복제하지 않는다. ViSafy의 금융 사전자격 진단 목적에 맞게 원칙만 적용한다.
+Wise 또는 Stripe의 로고, 고유 일러스트, 레이아웃, 색상 조합을 그대로 복제하지 않는다. SSAFIN의 금융 사전자격 진단 목적에 맞게 원칙만 적용한다.
 
 ## 3. Non-regression contract
 
@@ -429,4 +429,4 @@ box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 - [getdesign.md](https://getdesign.md/)가 제안하는 DESIGN.md의 목적처럼, 이 문서는 색상·타입·간격·컴포넌트와 그 이유를 반복 사용 가능한 기준으로 제공한다.
 - [Wise design analysis](https://getdesign.md/wise/design-md)는 친근하고 명확한 fintech 방향의 참고자료다.
 - [Stripe design analysis](https://getdesign.md/stripe/design-md)는 정교한 위계와 premium fintech 표현의 참고자료다.
-- 이 문서는 위 서비스를 모방하거나 제휴를 나타내지 않으며, 공개적으로 관찰 가능한 디자인 원칙을 ViSafy 목적에 맞게 재해석한다.
+- 이 문서는 위 서비스를 모방하거나 제휴를 나타내지 않으며, 공개적으로 관찰 가능한 디자인 원칙을 SSAFIN 목적에 맞게 재해석한다.

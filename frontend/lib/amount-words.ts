@@ -6,7 +6,8 @@ export function digitsOnly(value: string, maxLength = 15) {
 
 export function formatGroupedDigits(value: string, locale: Locale) {
   if (!value) return "";
-  return new Intl.NumberFormat(locale === "ko" ? "ko-KR" : locale === "vi" ? "vi-VN" : "en-US", {
+  const numberLocale = { ko: "ko-KR", en: "en-US", vi: "vi-VN", zh: "zh-CN", ja: "ja-JP", th: "th-TH" }[locale];
+  return new Intl.NumberFormat(numberLocale, {
     maximumFractionDigits: 0,
   }).format(Number(value));
 }
@@ -17,6 +18,9 @@ export function amountInWords(value: string, locale: Locale) {
   if (!Number.isSafeInteger(amount) || amount < 0) return "";
   if (locale === "en") return `${englishInteger(amount)} Korean won`;
   if (locale === "vi") return `${vietnameseInteger(amount)} won Hàn Quốc`;
+  if (locale === "zh") return `${formatGroupedDigits(value, locale)} 韩元`;
+  if (locale === "ja") return `${formatGroupedDigits(value, locale)}韓国ウォン`;
+  if (locale === "th") return `${formatGroupedDigits(value, locale)} วอนเกาหลี`;
   return `${koreanInteger(amount)} 원`;
 }
 

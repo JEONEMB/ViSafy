@@ -40,6 +40,7 @@ def test_retrieval_never_mixes_other_product_metadata(tmp_path) -> None:
         allowed_source_domains="kbstar.com",
         rag_chunk_size=250,
         rag_chunk_overlap=40,
+        embedding_provider="hash",
     )
     store = OfficialDocumentStore(settings)
     store.sync(
@@ -61,6 +62,7 @@ def test105_expected_document_is_in_top_k_for_product_scoped_query(tmp_path) -> 
         vector_db_path=str(tmp_path),
         rag_collection_name="test_top_k_documents",
         allowed_source_domains="kbstar.com",
+        embedding_provider="hash",
         rag_chunk_size=250,
         rag_chunk_overlap=40,
     )
@@ -90,6 +92,7 @@ def test_unapproved_domain_is_rejected_before_collection_reset(tmp_path) -> None
         vector_db_path=str(tmp_path),
         rag_collection_name="test_documents",
         allowed_source_domains="kbstar.com",
+        embedding_provider="hash",
     )
     store = OfficialDocumentStore(settings)
 
@@ -102,6 +105,7 @@ def test_expired_or_not_yet_valid_source_cannot_be_indexed(tmp_path) -> None:
         vector_db_path=str(tmp_path),
         rag_collection_name="test_documents",
         allowed_source_domains="kbstar.com",
+        embedding_provider="hash",
     )
     store = OfficialDocumentStore(settings)
 

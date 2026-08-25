@@ -104,6 +104,7 @@ class ExplanationBuilder:
     def _next_actions(self, request: ExplanationRequest) -> list[str]:
         status = request.eligibility_status
         access = request.access_result
+        template_language = self._template_language(request.language)
         actions = {
             "ko": {
                 "failed": "충족하지 못한 공개조건과 공식 근거를 먼저 확인하세요.",
@@ -129,7 +130,7 @@ class ExplanationBuilder:
                 "branch": "Ưu tiên kiểm tra kênh tại quầy đã xác nhận hỗ trợ khách hàng nước ngoài.",
                 "online": "Hãy xác nhận lại khả năng sử dụng trên ứng dụng hoặc trực tuyến qua kênh chính thức.",
             },
-        }[request.language]
+        }[template_language]
         primary = {
             "PUBLIC_CONDITIONS_NOT_MET": actions["failed"],
             "INSUFFICIENT_INFORMATION": actions["insufficient"],
@@ -145,7 +146,7 @@ class ExplanationBuilder:
 
     def _explanation(self, request: ExplanationRequest) -> str:
         status = request.eligibility_status
-        language = request.language
+        language = self._template_language(request.language)
         if language == "en":
             messages = {
                 "PUBLIC_CONDITIONS_MET": f"Based on your information, all {request.passed_count} evaluated public conditions were met. The result may still change after the bank's internal review and additional checks.",
@@ -171,7 +172,7 @@ class ExplanationBuilder:
         return messages[status]
 
     def _terms(self, request: ExplanationRequest) -> list[EasyTerm]:
-        language = request.language
+        language = self._template_language(request.language)
         result: list[EasyTerm] = []
         for key in dict.fromkeys(request.term_keys):
             translations = GLOSSARY.get(key)
@@ -197,7 +198,7 @@ class ExplanationBuilder:
         )
         localized_keys = ", ".join(
             dict.fromkeys(
-                self._condition_label(condition.key, request.language) for condition in conditions
+                self._condition_label(condition.key, self._template_language(request.language)) for condition in conditions
             )
         )
         korean_profile = self._profile_sentence(request, "ko")
@@ -206,14 +207,15 @@ class ExplanationBuilder:
             "공개정보만으로 확인하기 어려운 부분이 있습니다. 신청 가능 여부와 공식적으로 확인할 "
             "추가 조건 및 필요한 서류를 확인 부탁드립니다."
         )
-        if request.language == "en":
+        template_language = self._template_language(request.language)
+        if template_language == "en":
             profile_sentence = self._profile_sentence(request, "en")
             localized = (
                 f"Hello.{profile_sentence} Some {localized_keys} conditions for {request.product_name} are not "
                 "fully available in the public information. Please confirm whether I may apply, the official "
                 "additional conditions to check, and the required documents."
             )
-        elif request.language == "vi":
+        elif template_language == "vi":
             profile_sentence = self._profile_sentence(request, "vi")
             localized = (
                 f"Xin chào.{profile_sentence} Một số điều kiện {localized_keys} của sản phẩm {request.product_name} "
@@ -224,7 +226,7 @@ class ExplanationBuilder:
             localized = korean
         confirmation_items = list(
             dict.fromkeys(
-                self._condition_label(condition.key, request.language) for condition in conditions
+                self._condition_label(condition.key, template_language) for condition in conditions
             )
         )
         return BankInquiry(
@@ -279,4 +281,7 @@ class ExplanationBuilder:
         return labels.get(key, {}).get(normalized_language, key)
 
     def _disclaimer(self, language: str) -> str:
-        return DISCLAIMERS.get(language, DISCLAIMERS["ko"])
+        return DISCLAIMERS.get(self._template_language(language), DISCLAIMERS["en"])
+
+    def _template_language(self, language: str) -> str:
+        return language if language in {"ko", "en", "vi"} else "en"

@@ -5,6 +5,6 @@ import vi from "@/locales/vi/common.json";
 
 export function createI18n(language = process.env.NEXT_PUBLIC_DEFAULT_LANGUAGE ?? "ko") {
   const instance = createInstance();
-  void instance.init({ lng: language, fallbackLng: "ko", resources: { ko: { translation: ko }, en: { translation: en }, vi: { translation: vi } } });
+  void instance.init({ lng: language, fallbackLng: "en", resources: { ko: { translation: ko }, en: { translation: en }, vi: { translation: vi }, zh: { translation: en }, ja: { translation: en }, th: { translation: en } } });
   return instance;
 }

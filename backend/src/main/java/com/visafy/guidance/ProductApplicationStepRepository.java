@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ProductApplicationStepRepository extends JpaRepository<ProductApplicationStep, Long> {
     boolean existsByProductIdAndStepOrder(Long productId, int stepOrder);
 
+    @EntityGraph(attributePaths = {"product", "sourceDocument"})
+    List<ProductApplicationStep> findAllByActiveTrue();
+
     @EntityGraph(attributePaths = {"sourceDocument"})
     List<ProductApplicationStep> findByProductIdAndActiveTrueOrderByStepOrderAsc(Long productId);
 }

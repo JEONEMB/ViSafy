@@ -57,10 +57,11 @@ def test104_and_test110_multilingual_outputs_preserve_structured_values_and_sour
     }
 
     for answer in answers.values():
-        assert "NEED_BANK_CONFIRMATION" in answer
-        assert "E-9" in answer
+        assert "NEED_BANK_CONFIRMATION" not in answer
+        assert "VISA_TYPE" not in answer
+        assert "E-9" not in answer
         assert "3" in answer
-        assert "3000000" in answer
+        assert "3000000" not in answer
         assert source_title in answer
 
     numeric_tokens = {

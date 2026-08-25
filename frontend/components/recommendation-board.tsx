@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
+import { toLegacyLocale } from "@/i18n/config";
 import { AnalysisProgress } from "@/components/analysis-progress";
 import { getRecommendations } from "@/services/recommendation";
 import type { RecommendationItem } from "@/types/recommendation";
@@ -22,7 +23,8 @@ const dashboardCopy = {
 
 export function RecommendationBoard() {
   const { locale } = useLocale();
-  const text = copy[locale];
+  const uiLocale = toLegacyLocale(locale);
+  const text = copy[uiLocale];
   const [profileSessionId, setProfileSessionId] = useState<string | null>();
   useEffect(() => setProfileSessionId(localStorage.getItem("visafyProfileSessionId")), []);
   const recommendations = useQuery({
@@ -35,13 +37,12 @@ export function RecommendationBoard() {
     return <section className="ui-card mt-8 animate-pulse p-8" aria-label={text.loading}><div className="h-5 w-48 rounded bg-line" /><div className="mt-4 h-8 w-80 max-w-full rounded bg-surface-subtle" /></section>;
   }
   if (!profileSessionId) {
-    return <section className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-panel border border-status-info-border bg-status-info-bg p-6 sm:p-8"><div><p className="text-sm font-semibold text-status-info">{text.eyebrow}</p><h2 className="mt-2 text-2xl font-bold text-ink">{text.title}</h2><p className="mt-2 text-sm leading-6 text-muted">{text.noProfile}</p></div><Link className="ui-button ui-button-primary" href="/profile">{text.createProfile} →</Link></section>;
+    return <section className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-panel border border-status-info-border bg-status-info-bg p-6 sm:p-8"><div><h2 className="text-2xl font-bold text-ink">{text.title}</h2><p className="mt-2 text-sm leading-6 text-muted">{text.noProfile}</p></div><Link className="ui-button ui-button-primary" href="/profile">{text.createProfile} →</Link></section>;
   }
 
   return <section className="ui-panel mt-8 p-6 sm:p-8">
-    <p className="ui-eyebrow">{text.eyebrow}</p>
     <h2 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">{text.title}</h2>
-    <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">{text.description}</p>
+    <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">{uiLocale === "ko" ? "확률 점수 없이 충족한 공개조건과 추가 확인 항목으로 정렬했습니다." : uiLocale === "vi" ? "Sắp xếp theo điều kiện công khai đã đáp ứng và nội dung cần xác nhận, không dùng điểm xác suất." : "Ranked by public conditions met and checks needed, without probability scores."}</p>
     {recommendations.isLoading ? <div className="mt-8"><p className="mb-3 text-sm text-muted">{text.loading}</p><AnalysisProgress /></div> : null}
     {recommendations.isError ? <div className="ui-alert-danger mt-8 flex flex-wrap items-center justify-between gap-3"><p>{text.error}</p><Link className="ui-link" href="/profile">{text.retryProfile}</Link></div> : null}
     {recommendations.data ? <>
@@ -55,7 +56,7 @@ export function RecommendationBoard() {
 
 function RecommendationGroup({ items, title, text, additional = false }: { items: RecommendationItem[]; title: string; text: (typeof copy)[keyof typeof copy]; additional?: boolean }) {
   const { locale } = useLocale();
-  const dashboard = dashboardCopy[locale];
+  const dashboard = dashboardCopy[toLegacyLocale(locale)];
   return <section className="mt-8">
     <div className="flex items-center gap-3"><h3 className="text-xl font-bold text-ink">{title}</h3><span className="rounded-full border border-line bg-surface-subtle px-3 py-1 text-xs font-semibold text-muted">{items.length}</span></div>
     <div className="mt-4 grid gap-4 lg:grid-cols-2">{items.map((item, index) => <article className="rounded-card border border-line bg-surface p-5" key={item.productId}>

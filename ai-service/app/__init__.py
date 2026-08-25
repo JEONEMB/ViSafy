@@ -1,1 +1,1 @@
-"""ViSafy AI service."""
+"""SSAFIN AI service."""

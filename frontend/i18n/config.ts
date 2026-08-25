@@ -1,125 +1,36 @@
-export type Locale = "ko" | "en" | "vi";
+export type Locale = "ko" | "en" | "vi" | "zh" | "ja" | "th";
+export type LegacyLocale = "ko" | "en" | "vi";
 
 export const localeOptions: Array<{ locale: Locale; flag: string; language: string }> = [
   { locale: "ko", flag: "🇰🇷", language: "한국어" },
   { locale: "en", flag: "🇺🇸", language: "English" },
   { locale: "vi", flag: "🇻🇳", language: "Tiếng Việt" },
+  { locale: "zh", flag: "🇨🇳", language: "简体中文" },
+  { locale: "ja", flag: "🇯🇵", language: "日本語" },
+  { locale: "th", flag: "🇹🇭", language: "ไทย" },
 ];
 
+export function isLocale(value: string | null): value is Locale {
+  return localeOptions.some((option) => option.locale === value);
+}
+
+export function toLegacyLocale(locale: Locale): LegacyLocale {
+  return locale === "ko" || locale === "vi" ? locale : "en";
+}
+
+const sharedEnglish = {
+  nav: { products: "Products", profile: "Profile", productAdmin: "Product admin", admin: "Source · Rule review", adminLogin: "Admin", logout: "Sign out", health: "Health" },
+  landing: { eyebrow: "Financial settlement agent", title: "Official-source financial guidance", description: "Check public conditions and preparation steps.", choose: "Choose your language", hint: "Your selection is kept throughout the service." },
+  profile: {
+    eyebrow: "Temporary profile · stored for 24 hours", title: "Temporary financial profile", description: "Enter only the minimum information needed for a preliminary check.", privacy: "Do not enter an ID, passport, account, or card number. This profile expires after 24 hours.", required: "Required information", optional: "Optional information", nationality: "Nationality", nationalityExample: "e.g. Vietnamese", birthDate: "Date of birth", visaType: "Visa type", chooseVisa: "Select a visa", visaExpiry: "Visa expiry date", residencyStartDate: "Date residency in Korea began", occupation: "Occupation", occupationExample: "e.g. Software developer", employmentType: "Employment type", monthlyIncome: "Monthly income (KRW)", employmentDuration: "Employment duration (months)", financialPurpose: "Financial purpose", hasBankAccount: "I have a Korean bank account", housingType: "Housing type", housingExample: "e.g. Monthly rent", desiredAmount: "Desired amount (KRW)", preferredBank: "Preferred bank", residentStatus: "Resident status", resident: "Resident", nonResident: "Non-resident", yes: "Yes", no: "No", hasExistingProductAccount: "I already hold this product", desiredMonthlyAmount: "Desired monthly savings amount (KRW)", submit: "Save and browse products", submitting: "Saving...", saved: "Your profile has been saved.", dateParts: { year: "Year", month: "Month", day: "Day" }, dateInputHint: "Enter a date in YYYY-MM-DD format.", invalidDate: "Enter a valid date in YYYY-MM-DD format.", monthlyIncomeWords: "Amount entered", saveError: "Could not save the profile. Please check your entries.", employment: { regular: "Permanent employee", contract: "Contract employee", partTime: "Part-time", selfEmployed: "Self-employed", student: "Student" }, purpose: { account: "Checking account", savings: "Savings or deposit", loan: "Loan", card: "Card", investment: "Investment" }, visaNames: { "D-2": "Student", "D-4": "General trainee", "E-7": "Specially designated activities", "E-9": "Non-professional employment", "F-2": "Resident", "F-5": "Permanent resident", "F-6": "Marriage migrant" },
+  },
+};
+
 export const messages = {
-  ko: {
-    nav: { products: "금융상품", profile: "프로필", productAdmin: "상품 관리", admin: "Source · Rule 검수", adminLogin: "관리자", logout: "로그아웃", health: "Health" },
-    landing: {
-      eyebrow: "Visa-aware Financial Agent",
-      title: "내 조건에 맞는 금융상품을, 근거와 함께",
-      description: "공식 출처와 검수된 규칙을 기반으로 외국인 사용자의 금융상품 사전자격을 안내합니다.",
-      choose: "먼저 사용할 언어를 선택해 주세요",
-      hint: "선택한 언어는 프로필 입력과 이후 안내에 계속 적용됩니다.",
-    },
-    profile: {
-      eyebrow: "임시 프로필 · 24시간 보관",
-      title: "임시 금융 프로필",
-      description: "사전자격 진단에 필요한 최소 정보만 입력합니다.",
-      privacy: "주민등록번호, 여권번호, 외국인등록번호는 입력하지 마세요. 이 임시 프로필은 24시간 후 만료됩니다.",
-      required: "P0 필수 정보",
-      optional: "P1 선택 정보",
-      nationality: "국적", nationalityExample: "예: 베트남",
-      birthDate: "생년월일", visaType: "비자 종류", chooseVisa: "선택하세요",
-      visaExpiry: "비자 만료일", residencyStartDate: "한국 체류 시작일",
-      occupation: "직업", occupationExample: "예: 소프트웨어 개발자",
-      employmentType: "고용형태", monthlyIncome: "월 소득 (원)",
-      employmentDuration: "근속기간 (개월)", financialPurpose: "금융 목적",
-      hasBankAccount: "한국 은행계좌 보유", housingType: "주거 형태", housingExample: "예: 월세",
-      desiredAmount: "희망 금액 (원)", preferredBank: "선호 은행",
-      residentStatus: "금융상품 기준 거주자 구분", resident: "거주자", nonResident: "비거주자",
-      yes: "예", no: "아니요",
-      hasExistingProductAccount: "현재 하나더이지 적금 계좌를 보유하고 있습니다",
-      desiredMonthlyAmount: "월 적금 납입 희망액 (원)",
-      submit: "저장 후 금융상품 보기", submitting: "저장 중...", saved: "프로필이 저장되었습니다.",
-      dateParts: { year: "연도", month: "월", day: "일" },
-      dateInputHint: "숫자 8자리를 입력하세요. 예: 1995-01-31",
-      invalidDate: "유효한 날짜를 YYYY-MM-DD 형식으로 입력해 주세요.",
-      monthlyIncomeWords: "입력 금액",
-      saveError: "프로필을 저장하지 못했습니다. 입력값을 확인해 주세요.",
-      employment: { regular: "정규직", contract: "계약직", partTime: "시간제", selfEmployed: "자영업", student: "학생" },
-      purpose: { account: "입출금 계좌", savings: "예·적금", loan: "대출", card: "카드", investment: "투자" },
-      visaNames: { "D-2": "유학", "D-4": "일반연수", "E-7": "특정활동", "E-9": "비전문취업", "F-2": "거주", "F-5": "영주", "F-6": "결혼이민" },
-    },
-  },
-  en: {
-    nav: { products: "Products", profile: "Profile", productAdmin: "Product admin", admin: "Source · Rule review", adminLogin: "Admin", logout: "Sign out", health: "Health" },
-    landing: {
-      eyebrow: "Visa-aware Financial Agent",
-      title: "Find financial products for your situation, with sources",
-      description: "We provide a preliminary eligibility check based on official sources and human-reviewed rules.",
-      choose: "Choose your language first",
-      hint: "Your selection will be used for the profile form and later guidance.",
-    },
-    profile: {
-      eyebrow: "Temporary profile · stored for 24 hours",
-      title: "Temporary financial profile",
-      description: "Enter only the minimum information needed for a preliminary check.",
-      privacy: "Do not enter a resident registration number, passport number, or alien registration number. This profile expires after 24 hours.",
-      required: "Required information (P0)", optional: "Optional information (P1)",
-      nationality: "Nationality", nationalityExample: "e.g. Vietnamese",
-      birthDate: "Date of birth", visaType: "Visa type", chooseVisa: "Select a visa",
-      visaExpiry: "Visa expiry date", residencyStartDate: "Date residency in Korea began",
-      occupation: "Occupation", occupationExample: "e.g. Software developer",
-      employmentType: "Employment type", monthlyIncome: "Monthly income (KRW)",
-      employmentDuration: "Employment duration (months)", financialPurpose: "Financial purpose",
-      hasBankAccount: "I have a Korean bank account", housingType: "Housing type", housingExample: "e.g. Monthly rent",
-      desiredAmount: "Desired amount (KRW)", preferredBank: "Preferred bank",
-      residentStatus: "Resident/non-resident status for financial products", resident: "Resident", nonResident: "Non-resident",
-      yes: "Yes", no: "No",
-      hasExistingProductAccount: "I already hold a Hana Easy Savings account",
-      desiredMonthlyAmount: "Desired monthly savings amount (KRW)",
-      submit: "Save and browse products", submitting: "Saving...", saved: "Your profile has been saved.",
-      dateParts: { year: "Year", month: "Month", day: "Day" },
-      dateInputHint: "Enter 8 digits. Example: 1995-01-31",
-      invalidDate: "Enter a valid date in YYYY-MM-DD format.",
-      monthlyIncomeWords: "Amount entered",
-      saveError: "Could not save the profile. Please check your entries.",
-      employment: { regular: "Permanent employee", contract: "Contract employee", partTime: "Part-time", selfEmployed: "Self-employed", student: "Student" },
-      purpose: { account: "Checking account", savings: "Savings or deposit", loan: "Loan", card: "Card", investment: "Investment" },
-      visaNames: { "D-2": "Student", "D-4": "General trainee", "E-7": "Specially designated activities", "E-9": "Non-professional employment", "F-2": "Resident", "F-5": "Permanent resident", "F-6": "Marriage migrant" },
-    },
-  },
-  vi: {
-    nav: { products: "Sản phẩm", profile: "Hồ sơ", productAdmin: "Quản lý sản phẩm", admin: "Kiểm duyệt nguồn · quy tắc", adminLogin: "Quản trị", logout: "Đăng xuất", health: "Trạng thái" },
-    landing: {
-      eyebrow: "Trợ lý tài chính theo loại visa",
-      title: "Tìm sản phẩm tài chính phù hợp với điều kiện của bạn, kèm căn cứ",
-      description: "Chúng tôi cung cấp kiểm tra điều kiện sơ bộ dựa trên nguồn chính thức và quy tắc đã được con người kiểm duyệt.",
-      choose: "Trước tiên, hãy chọn ngôn ngữ",
-      hint: "Ngôn ngữ đã chọn sẽ được dùng cho hồ sơ và các hướng dẫn tiếp theo.",
-    },
-    profile: {
-      eyebrow: "Hồ sơ tạm thời · lưu trong 24 giờ",
-      title: "Hồ sơ tài chính tạm thời",
-      description: "Chỉ nhập thông tin tối thiểu cần thiết để kiểm tra điều kiện sơ bộ.",
-      privacy: "Không nhập số đăng ký cư trú, số hộ chiếu hoặc số đăng ký người nước ngoài. Hồ sơ này sẽ hết hạn sau 24 giờ.",
-      required: "Thông tin bắt buộc (P0)", optional: "Thông tin tùy chọn (P1)",
-      nationality: "Quốc tịch", nationalityExample: "Ví dụ: Việt Nam",
-      birthDate: "Ngày sinh", visaType: "Loại visa", chooseVisa: "Chọn visa",
-      visaExpiry: "Ngày hết hạn visa", residencyStartDate: "Ngày bắt đầu cư trú tại Hàn Quốc",
-      occupation: "Nghề nghiệp", occupationExample: "Ví dụ: Lập trình viên phần mềm",
-      employmentType: "Hình thức việc làm", monthlyIncome: "Thu nhập hàng tháng (KRW)",
-      employmentDuration: "Thời gian làm việc (tháng)", financialPurpose: "Mục đích tài chính",
-      hasBankAccount: "Có tài khoản ngân hàng tại Hàn Quốc", housingType: "Hình thức nhà ở", housingExample: "Ví dụ: Thuê nhà theo tháng",
-      desiredAmount: "Số tiền mong muốn (KRW)", preferredBank: "Ngân hàng ưu tiên",
-      residentStatus: "Tình trạng cư trú đối với sản phẩm tài chính", resident: "Người cư trú", nonResident: "Người không cư trú",
-      yes: "Có", no: "Không",
-      hasExistingProductAccount: "Tôi đã có tài khoản tiết kiệm Hana Easy",
-      desiredMonthlyAmount: "Số tiền tiết kiệm mong muốn hàng tháng (KRW)",
-      submit: "Lưu và xem sản phẩm", submitting: "Đang lưu...", saved: "Hồ sơ đã được lưu.",
-      dateParts: { year: "Năm", month: "Tháng", day: "Ngày" },
-      dateInputHint: "Nhập 8 chữ số. Ví dụ: 1995-01-31",
-      invalidDate: "Nhập ngày hợp lệ theo định dạng YYYY-MM-DD.",
-      monthlyIncomeWords: "Số tiền đã nhập",
-      saveError: "Không thể lưu hồ sơ. Vui lòng kiểm tra thông tin đã nhập.",
-      employment: { regular: "Nhân viên chính thức", contract: "Nhân viên hợp đồng", partTime: "Bán thời gian", selfEmployed: "Tự kinh doanh", student: "Sinh viên" },
-      purpose: { account: "Tài khoản thanh toán", savings: "Tiết kiệm hoặc tiền gửi", loan: "Khoản vay", card: "Thẻ", investment: "Đầu tư" },
-      visaNames: { "D-2": "Du học", "D-4": "Đào tạo tổng hợp", "E-7": "Hoạt động đặc thù", "E-9": "Lao động phổ thông", "F-2": "Cư trú", "F-5": "Thường trú", "F-6": "Kết hôn di trú" },
-    },
-  },
+  ko: { ...sharedEnglish, nav: { products: "금융상품", profile: "프로필", productAdmin: "상품 관리", admin: "Source · Rule 검수", adminLogin: "관리자", logout: "로그아웃", health: "상태" } },
+  en: sharedEnglish,
+  vi: { ...sharedEnglish, nav: { products: "Sản phẩm", profile: "Hồ sơ", productAdmin: "Quản lý sản phẩm", admin: "Kiểm duyệt Source · Rule", adminLogin: "Quản trị", logout: "Đăng xuất", health: "Trạng thái" } },
+  zh: { ...sharedEnglish, nav: { products: "金融产品", profile: "个人资料", productAdmin: "产品管理", admin: "来源与规则审核", adminLogin: "管理员", logout: "退出", health: "状态" } },
+  ja: { ...sharedEnglish, nav: { products: "金融商品", profile: "プロフィール", productAdmin: "商品管理", admin: "情報源・ルール審査", adminLogin: "管理者", logout: "ログアウト", health: "状態" } },
+  th: { ...sharedEnglish, nav: { products: "ผลิตภัณฑ์การเงิน", profile: "โปรไฟล์", productAdmin: "จัดการผลิตภัณฑ์", admin: "ตรวจสอบแหล่งข้อมูลและกฎ", adminLogin: "ผู้ดูแล", logout: "ออกจากระบบ", health: "สถานะ" } },
 } as const;

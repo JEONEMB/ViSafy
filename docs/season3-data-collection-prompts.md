@@ -1,4 +1,4 @@
-# ViSafy Season 3 공식 데이터 수집 프롬프트
+# SSAFIN Season 3 공식 데이터 수집 프롬프트
 
 > 작성 기준: 2026-08-24  
 > 목적: ChatGPT, Gemini 등 브라우징 가능한 LLM을 조사 보조 도구로 사용해 Season 3 상품 후보와 공식 Evidence를 정리한다.  
@@ -77,7 +77,7 @@
 `[기관]`, `[상품명]`, `[공식 상품 URL]`을 바꿔 실행한다.
 
 ```text
-당신은 ViSafy 관리자에게 전달할 공식 금융상품 Evidence 패키지를 작성한다.
+당신은 SSAFIN 관리자에게 전달할 공식 금융상품 Evidence 패키지를 작성한다.
 
 조사 대상:
 - 기관: [기관]
@@ -150,7 +150,7 @@
 ## 4. Prompt C — Access Evidence 분류
 
 ```text
-아래 공식 원문과 URL을 ViSafy Access Model 기준으로 분류하라.
+아래 공식 원문과 URL을 SSAFIN Access Model 기준으로 분류하라.
 
 [여기에 공식 원문, 문서명, URL, 페이지/섹션을 붙여 넣기]
 
@@ -175,7 +175,7 @@
 ## 5. Prompt D — Rule Candidate 추출
 
 ```text
-아래 공식 금융문서에서 ViSafy Rule Candidate만 추출하라.
+아래 공식 금융문서에서 SSAFIN Rule Candidate만 추출하라.
 
 [공식 문서 원문과 URL, 페이지/섹션 입력]
 
@@ -252,7 +252,7 @@ Runtime Reason = SOURCE_CONFLICT
 ## 7. Prompt F — Demo A~E 후보 배치
 
 ```text
-아래는 사람이 검수한 ViSafy 상품 패키지 목록이다.
+아래는 사람이 검수한 SSAFIN 상품 패키지 목록이다.
 
 [검수된 상품별 Eligibility Rule, Access Evidence, 필요서류, 채널 상태를 붙여 넣기]
 

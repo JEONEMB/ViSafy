@@ -18,7 +18,7 @@ export function FinancialJourneyPanel() {
   useEffect(() => setSessionId(localStorage.getItem("visafyProfileSessionId")), []);
   const journey = useQuery({ queryKey: ["financial-journey", sessionId], queryFn: () => getFinancialJourney(sessionId!), enabled: Boolean(sessionId) });
   if (!sessionId || !journey.data) return null;
-  const label = locale === "ko" ? "현재 다음 행동" : locale === "en" ? "Your next action" : "Hành động tiếp theo";
+  const label = { ko: "현재 다음 행동", en: "Your next action", vi: "Hành động tiếp theo", zh: "下一步行动", ja: "次にすること", th: "ขั้นตอนถัดไป" }[locale];
   return <section className="ui-panel mt-8 p-6 sm:p-8" aria-labelledby="financial-journey-heading">
     <p className="ui-eyebrow">FINANCIAL JOURNEY</p>
     <h2 className="mt-2 text-2xl font-bold text-ink" id="financial-journey-heading">{journey.data.headline}</h2>

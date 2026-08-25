@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale } from "@/components/providers/locale-provider";
+import { toLegacyLocale } from "@/i18n/config";
 
 const copy = {
   ko: ["사용자 조건 확인", "검수된 상품조건 비교", "추가 확인 조건 탐지", "공식 근거 불러오기"],
@@ -10,7 +11,7 @@ const copy = {
 
 export function AnalysisProgress({ recommendationDone = false, evidenceRequested = false, evidenceDone = false }: { recommendationDone?: boolean; evidenceRequested?: boolean; evidenceDone?: boolean }) {
   const { locale } = useLocale();
-  const labels = copy[locale];
+  const labels = copy[toLegacyLocale(locale)];
   const states: Array<"done" | "active" | "idle"> = recommendationDone
     ? ["done", "done", "done", evidenceRequested ? (evidenceDone ? "done" : "active") : "idle"]
     : ["active", "active", "active", "idle"];

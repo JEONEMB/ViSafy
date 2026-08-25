@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { messages, type Locale } from "@/i18n/config";
+import { isLocale, messages, type Locale } from "@/i18n/config";
 
 type LocaleContextValue = {
   locale: Locale;
@@ -16,7 +16,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("visafyLocale");
-    if (saved === "ko" || saved === "en" || saved === "vi") {
+    if (isLocale(saved)) {
       updateLocale(saved);
       document.documentElement.lang = saved;
     }
