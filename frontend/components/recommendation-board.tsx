@@ -8,6 +8,7 @@ import { toLegacyLocale } from "@/i18n/config";
 import { AnalysisProgress } from "@/components/analysis-progress";
 import { getRecommendations } from "@/services/recommendation";
 import type { RecommendationItem } from "@/types/recommendation";
+import type { JourneyTarget } from "@/components/financial-journey-panel";
 
 const copy = {
   ko: { eyebrow: "FR-401 · 맞춤 추천", title: "내 공개조건 진단 결과", description: "확률 점수 없이 검수된 Rule의 통과 수와 추가 확인 항목으로 정렬했습니다.", noProfile: "임시 프로필을 저장하면 내 조건에 맞춰 상품을 정렬해 드립니다.", createProfile: "프로필 입력하기", recommended: "추천 후보", moreInfo: "추가 정보 필요", confirmed: "확인된 공개조건", additional: "추가 확인", count: "개", purpose: "금융 목적 일치", preference: "선호 은행 일치", met: "공개조건 충족", confirm: "은행 확인 필요", insufficient: "정보 추가 필요", detail: "상품 상세 및 진단", excluded: "명시적 공개조건을 충족하지 못해 추천에서 제외된 상품", empty: "현재 추천 가능한 상품이 없습니다.", loading: "상품별 공개조건을 확인하고 있습니다...", error: "추천 결과를 불러오지 못했습니다. 프로필이 만료됐다면 다시 입력해 주세요.", retryProfile: "프로필 다시 입력" },
@@ -16,12 +17,12 @@ const copy = {
 } as const;
 
 const dashboardCopy = {
-  ko: { publicTitle: "공개조건", additionalTitle: "추가 확인", evidence: "판단 근거", documents: "필요서류", inquiry: "은행에 물어보기", final: "최종 가입승인이 아닙니다.", baseDate: "정보 기준일" },
-  en: { publicTitle: "Public conditions", additionalTitle: "Additional checks", evidence: "Evidence", documents: "Documents", inquiry: "Ask the bank", final: "This is not final approval.", baseDate: "Information date" },
-  vi: { publicTitle: "Điều kiện công khai", additionalTitle: "Cần xác nhận thêm", evidence: "Căn cứ", documents: "Giấy tờ", inquiry: "Hỏi ngân hàng", final: "Đây không phải phê duyệt cuối cùng.", baseDate: "Ngày thông tin" },
+  ko: { publicTitle: "공개조건", additionalTitle: "추가 확인", evidence: "판단 근거", documents: "필요서류", inquiry: "은행에 물어보기", journey: "금융생활 여정에서 준비하기", final: "최종 가입승인이 아닙니다.", baseDate: "정보 기준일" },
+  en: { publicTitle: "Public conditions", additionalTitle: "Additional checks", evidence: "Evidence", documents: "Documents", inquiry: "Ask the bank", journey: "Prepare in my financial journey", final: "This is not final approval.", baseDate: "Information date" },
+  vi: { publicTitle: "Điều kiện công khai", additionalTitle: "Cần xác nhận thêm", evidence: "Căn cứ", documents: "Giấy tờ", inquiry: "Hỏi ngân hàng", journey: "Chuẩn bị trong hành trình tài chính", final: "Đây không phải phê duyệt cuối cùng.", baseDate: "Ngày thông tin" },
 } as const;
 
-export function RecommendationBoard() {
+export function RecommendationBoard({ onContinueJourney }: { onContinueJourney?: (focus: JourneyTarget) => void }) {
   const { locale } = useLocale();
   const uiLocale = toLegacyLocale(locale);
   const text = copy[uiLocale];
@@ -46,15 +47,15 @@ export function RecommendationBoard() {
     {recommendations.isLoading ? <div className="mt-8"><p className="mb-3 text-sm text-muted">{text.loading}</p><AnalysisProgress /></div> : null}
     {recommendations.isError ? <div className="ui-alert-danger mt-8 flex flex-wrap items-center justify-between gap-3"><p>{text.error}</p><Link className="ui-link" href="/profile">{text.retryProfile}</Link></div> : null}
     {recommendations.data ? <>
-      <RecommendationGroup items={recommendations.data.recommended} title={text.recommended} text={text} />
-      {recommendations.data.additionalInformationNeeded.length ? <RecommendationGroup items={recommendations.data.additionalInformationNeeded} title={text.moreInfo} text={text} additional /> : null}
+      <RecommendationGroup items={recommendations.data.recommended} title={text.recommended} text={text} onContinueJourney={onContinueJourney} />
+      {recommendations.data.additionalInformationNeeded.length ? <RecommendationGroup items={recommendations.data.additionalInformationNeeded} title={text.moreInfo} text={text} onContinueJourney={onContinueJourney} additional /> : null}
       {recommendations.data.recommended.length === 0 ? <p className="mt-7 rounded-card border border-dashed border-line-strong p-7 text-center text-muted">{text.empty}</p> : null}
       {recommendations.data.excludedCount > 0 ? <p className="mt-6 text-xs text-quiet">{recommendations.data.excludedCount} {text.excluded}</p> : null}
     </> : null}
   </section>;
 }
 
-function RecommendationGroup({ items, title, text, additional = false }: { items: RecommendationItem[]; title: string; text: (typeof copy)[keyof typeof copy]; additional?: boolean }) {
+function RecommendationGroup({ items, title, text, onContinueJourney, additional = false }: { items: RecommendationItem[]; title: string; text: (typeof copy)[keyof typeof copy]; onContinueJourney?: (focus: JourneyTarget) => void; additional?: boolean }) {
   const { locale } = useLocale();
   const dashboard = dashboardCopy[toLegacyLocale(locale)];
   return <section className="mt-8">
@@ -67,7 +68,17 @@ function RecommendationGroup({ items, title, text, additional = false }: { items
       <div className="mt-3 flex flex-wrap gap-2">{item.purposeMatched ? <span className="rounded-full border border-status-info-border bg-status-info-bg px-2.5 py-1 text-xs font-semibold text-status-info">✓ {text.purpose}</span> : null}{item.preferredConditionMatches > 0 ? <span className="rounded-full border border-line bg-surface-subtle px-2.5 py-1 text-xs font-semibold text-muted">✓ {text.preference}</span> : null}</div>
       {additional && item.eligibility.insufficientReasons.length ? <ul className="mt-4 space-y-1 text-xs leading-5 text-muted">{item.eligibility.insufficientReasons.slice(0, 2).map((reason, reasonIndex) => <li key={`${reason.messageCode}-${reasonIndex}`}>• {reason.message}</li>)}</ul> : null}
       <p className="mt-4 text-xs text-quiet">{dashboard.baseDate} {item.informationBaseDate} · {dashboard.final}</p>
-      <div className="mt-4 flex flex-wrap gap-2"><Link className="ui-button ui-button-primary min-h-9 px-3 py-1.5 text-xs" href={`/products/${item.productId}?tab=evidence`}>{dashboard.evidence}</Link><Link className="ui-button ui-button-secondary min-h-9 px-3 py-1.5 text-xs" href={`/products/${item.productId}?tab=documents`}>{dashboard.documents}</Link><Link className="ui-button ui-button-secondary min-h-9 px-3 py-1.5 text-xs" href={`/products/${item.productId}?tab=precheck#bank-inquiry`}>{dashboard.inquiry}</Link></div>
+      <div className="mt-4 flex flex-wrap gap-2"><button className="ui-button ui-button-primary min-h-9 px-3 py-1.5 text-xs" onClick={() => onContinueJourney?.({ code: journeyCode(item.productCategory), productId: item.productId })} type="button">{dashboard.journey} ↓</button><Link className="ui-button ui-button-secondary min-h-9 px-3 py-1.5 text-xs" href={`/products/${item.productId}?tab=evidence`}>{dashboard.evidence}</Link><Link className="ui-button ui-button-secondary min-h-9 px-3 py-1.5 text-xs" href={`/products/${item.productId}?tab=documents`}>{dashboard.documents}</Link><Link className="ui-button ui-button-secondary min-h-9 px-3 py-1.5 text-xs" href={`/products/${item.productId}?tab=precheck#bank-inquiry`}>{dashboard.inquiry}</Link></div>
     </article>)}</div>
   </section>;
+}
+
+function journeyCode(category: RecommendationItem["productCategory"]) {
+  if (category === "DEMAND_DEPOSIT") return "DEMAND_DEPOSIT_ACCOUNT";
+  if (category === "DEBIT_CARD") return "DEBIT_CARD";
+  if (category === "SAVINGS" || category === "TIME_DEPOSIT") return "SAVINGS";
+  if (category === "REMITTANCE") return "REMITTANCE";
+  if (category === "CREDIT_CARD") return "BUILD_CREDIT";
+  if (["PERSONAL_LOAN", "HOUSING_LOAN", "POLICY_FINANCE"].includes(category)) return "LOAN_AND_HOUSING";
+  return "INVESTMENT";
 }

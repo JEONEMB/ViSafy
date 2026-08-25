@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { RecommendationBoard } from "@/components/recommendation-board";
-import { FinancialJourneyPanel } from "@/components/financial-journey-panel";
+import { FinancialJourneyPanel, type JourneyFocus } from "@/components/financial-journey-panel";
 import { getProducts } from "@/services/product";
 import type { DiagnosisStatus, ProductAudience, ProductCategory, ProductFilters } from "@/types/product";
 import { toLegacyLocale, type LegacyLocale } from "@/i18n/config";
@@ -27,7 +27,9 @@ export default function ProductsPage() {
   const uiLocale = toLegacyLocale(locale);
   const text = copy[uiLocale];
   const [filters, setFilters] = useState<ProductFilters>({});
+  const [journeyFocus, setJourneyFocus] = useState<JourneyFocus>(null);
   const products = useQuery({ queryKey: ["products", filters], queryFn: () => getProducts(filters) });
+  const journeyProducts = useQuery({ queryKey: ["products", "journey-all"], queryFn: () => getProducts() });
   const setFilter = (key: keyof ProductFilters, value: string) => setFilters((current) => ({ ...current, [key]: value }));
   const statusLabel = { READY: text.ready, PARTIAL: text.partial, NOT_READY: text.notReady };
   const typeLabel = { CHECKING_ACCOUNT: text.checking, SAVINGS: text.savings, LOAN: text.loan, CARD: text.card, INVESTMENT: text.investment, REMITTANCE: uiLocale === "ko" ? "해외송금" : uiLocale === "vi" ? "Chuyển tiền" : "Remittance" };
@@ -37,8 +39,8 @@ export default function ProductsPage() {
       <h1 className="ui-page-heading mt-2">{text.title}</h1>
       <p className="mt-3 max-w-reading text-base leading-7 text-muted">{text.description}</p>
 
-      <RecommendationBoard />
-      <FinancialJourneyPanel />
+      <RecommendationBoard onContinueJourney={(focus) => setJourneyFocus({ ...focus })} />
+      <FinancialJourneyPanel focus={journeyFocus} products={journeyProducts.data} />
 
       <section className="ui-card mt-8 grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-5" aria-label="Product filters">
         <label className="ui-label">{text.purpose}<select className="ui-input text-sm" value={filters.financialPurpose ?? ""} onChange={(event) => setFilter("financialPurpose", event.target.value)}><option value="">{text.all}</option><option value="ACCOUNT">{text.account}</option><option value="SAVINGS">{text.savings}</option><option value="LOAN">{text.loan}</option><option value="CARD">{text.card}</option><option value="INVESTMENT">{text.investment}</option></select></label>

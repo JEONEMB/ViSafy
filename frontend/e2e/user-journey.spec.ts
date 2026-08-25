@@ -7,6 +7,12 @@ const dataPackage = { productPage: true, termsOrDescription: true, hardRuleEvide
 const product = { id: 10, productCode: "E2E-LOAN", institution: "KB Bank", productName: "Foreign Resident Housing Loan", productType: "LOAN", financialPurpose: "LOAN", productAudience: "FOREIGNER_SPECIALIZED", productCategory: "HOUSING_LOAN", description: "Official-source test product", targetSummary: "Housing finance", active: true, foreignerTarget: true, informationBaseDate: "2026-08-20", publicConditions: "E-9", additionalConditions: "Guarantee", requiredDocuments: "Passport and proof of income", applicationMethod: "Official branch", diagnosisStatus: "READY", sourceDocumentId: 12, sourceTitle: "KB Official Guide", sourceUrl, updatedAt: "2026-08-20T00:00:00Z", rules: [rule], requiredFields: ["visaType", "hasExistingProductAccount", "desiredMonthlyAmount"], dataPackage, diagnosisReasonCode: "APPROVED_HARD_RULES_AVAILABLE" };
 const eligibility = { status: "NEED_BANK_CONFIRMATION", productId: 10, passedRules: [{ ruleId: 101, key: "VISA_TYPE", messageCode: "RULE_PASSED", message: "Visa condition met", actualValue: "E-9", expectedValue: '["E-9"]', mandatory: true, blocking: false, sourceExcerpt: "Eligible status: E-9", sourceLocator: "p.3", sourceUrl }], failedRules: [], externalChecks: [], unknownRules: [], insufficientReasons: [], requiredFields: product.requiredFields, accessAssessment: access, disclaimer: "This is not final approval." };
 const guidance = { productId: 10, personalized: true, officialRequired: [], conditional: [], bankConfirmation: [], applicationSteps: [], excludedConditionalCount: 0, disclaimer: "Official sources only." };
+const recommendation = { productId: 10, institution: product.institution, productName: product.productName, productType: product.productType, financialPurpose: product.financialPurpose, productAudience: product.productAudience, productCategory: product.productCategory, targetSummary: product.targetSummary, requiredDocuments: product.requiredDocuments, applicationMethod: product.applicationMethod, informationBaseDate: product.informationBaseDate, eligibilityStatus: eligibility.status, confirmedPublicConditions: 1, totalPublicConditions: 1, additionalCheckCount: 1, unknownCount: 0, purposeMatched: true, preferredConditionMatches: 0, eligibility };
+const journey = { purpose: "GET_LOAN", currentStep: 2, headline: "My financial journey in Korea", nextAction: "Open an account first.", profile: { nationality: "VN", hasResidenceCard: true, hasPassport: false, hasDomesticPhone: true, canDomesticPhoneVerify: true, hasKoreanBankAccount: false, hasKoreanCreditHistory: false, remittanceCountry: null }, steps: [
+  { step: 1, code: "IDENTITY_PREPARATION", status: "COMPLETED", title: "Prepare identification", description: "Review identification." },
+  { step: 2, code: "DEMAND_DEPOSIT_ACCOUNT", status: "CURRENT", title: "Demand deposit account", description: "Review account preparation." },
+  { step: 8, code: "LOAN_AND_HOUSING", status: "UPCOMING", title: "Loans & housing", description: "Review loan preparation." },
+] };
 
 async function json(route: Route, body: unknown, status = 200) { await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) }); }
 async function mockApi(page: Page, captured: Record<string, unknown>) {
@@ -19,8 +25,8 @@ async function mockApi(page: Page, captured: Record<string, unknown>) {
     if (path === "/api/products") return json(route, [product]);
     if (path === "/api/products/10") return json(route, product);
     if (path === "/api/products/10/guidance") return json(route, guidance);
-    if (path === "/api/recommendations") return json(route, { recommended: [], additionalInformationNeeded: [], excludedCount: 0 });
-    if (path === "/api/financial-journey") return json(route, { purpose: "GET_LOAN", currentStep: 2, headline: "My financial journey in Korea", nextAction: "Open an account first.", steps: [] });
+    if (path === "/api/recommendations") return json(route, { recommended: [recommendation], additionalInformationNeeded: [], excludedCount: 0 });
+    if (path === "/api/financial-journey") return json(route, journey);
     if (path === "/api/eligibility/pre-check") return json(route, eligibility);
     if (path === "/api/ai/explanation") return json(route, { eligibilityStatus: "NEED_BANK_CONFIRMATION", accessStatus: "ACCESS_UNKNOWN", facts: { visaType: "E-9", visaRemainingMonths: 12, residencyMonths: 24, passedCount: 1, failedCount: 0, externalCheckCount: 0, unknownCount: 0 }, explanation: "Official conditions checked.", nextActions: ["Ask the bank."], disclaimer: "Not final approval.", easyTerms: [], inquiry: null, guardrailsApplied: [] });
     return json(route, { message: `Unhandled ${request.method()} ${path}` }, 500);
@@ -44,6 +50,10 @@ test("Season 3 language, purpose, readiness, dynamic fields, and access flow", a
   await page.getByRole("button", { name: "Show financial services for me" }).click();
   await expect(page).toHaveURL(/\/products$/); expect(captured.birthDate).toBeNull(); expect(captured.financialPurpose).toBe("GET_LOAN");
   await expect(page.getByText("My financial journey in Korea")).toBeVisible();
+  await page.getByRole("button", { name: /Prepare in my financial journey/ }).click();
+  await expect(page.locator("#financial-journey")).toBeInViewport();
+  await expect(page.locator("#financial-journey section[aria-live='polite']").getByRole("heading", { name: "Loans & housing" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Official institution information/ })).toHaveAttribute("href", sourceUrl);
   await page.getByRole("link", { name: /View details/ }).click();
   await page.getByRole("button", { name: "Check eligibility with my profile", exact: true }).click();
   await page.getByLabel("Visa Type").selectOption("E-9");

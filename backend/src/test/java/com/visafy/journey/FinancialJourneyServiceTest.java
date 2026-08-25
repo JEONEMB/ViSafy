@@ -25,6 +25,9 @@ class FinancialJourneyServiceTest {
 
         assertThat(result.currentStep()).isEqualTo(2);
         assertThat(result.nextAction()).contains("적금을 알아보기 전에").contains("국내 계좌");
+        assertThat(result.profile().nationality()).isNull();
+        assertThat(result.profile().hasResidenceCard()).isTrue();
+        assertThat(result.profile().hasKoreanBankAccount()).isFalse();
         assertThat(result.steps().get(1).status())
                 .isEqualTo(FinancialJourneyResult.JourneyStepStatus.CURRENT);
     }

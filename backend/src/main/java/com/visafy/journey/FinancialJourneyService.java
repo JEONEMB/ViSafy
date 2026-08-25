@@ -2,6 +2,7 @@ package com.visafy.journey;
 
 import com.visafy.journey.FinancialJourneyResult.JourneyStep;
 import com.visafy.journey.FinancialJourneyResult.JourneyStepStatus;
+import com.visafy.journey.FinancialJourneyResult.ProfileSummary;
 import com.visafy.profile.TempProfile;
 import com.visafy.profile.TempProfileService;
 import java.util.ArrayList;
@@ -40,7 +41,16 @@ public class FinancialJourneyService {
         }
         return new FinancialJourneyResult(purpose, current,
                 localized(language, "나의 한국 금융생활 여정", "My financial journey in Korea",
-                        "Hành trình tài chính của tôi tại Hàn Quốc"), nextAction, List.copyOf(steps));
+                        "Hành trình tài chính của tôi tại Hàn Quốc"), nextAction,
+                new ProfileSummary(profile.getNationality(),
+                        Boolean.TRUE.equals(profile.getHasResidenceCard()),
+                        Boolean.TRUE.equals(profile.getHasPassport()),
+                        Boolean.TRUE.equals(profile.getHasDomesticPhone()),
+                        Boolean.TRUE.equals(profile.getCanDomesticPhoneVerify()),
+                        Boolean.TRUE.equals(profile.getHasKoreanBankAccount()),
+                        Boolean.TRUE.equals(profile.getHasKoreanCreditHistory()),
+                        profile.getRemittanceCountry()),
+                List.copyOf(steps));
     }
 
     private String nextAction(String language, FinancialPurposeCode purpose, boolean identity, boolean account) {
