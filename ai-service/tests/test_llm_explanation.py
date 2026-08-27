@@ -1,4 +1,5 @@
 import json
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -9,6 +10,8 @@ from app.config import Settings
 from app.explain.builder import ExplanationBuilder
 from app.explain.llm import GeneratedExplanation, OpenAIExplanationEnhancer
 from app.explain.models import ExplanationRequest
+from app.api.explanation import _retrieve_context
+from app.rag.models import RetrievedDocument
 
 
 def request() -> ExplanationRequest:
@@ -134,3 +137,20 @@ def test_generated_text_cannot_echo_or_replace_immutable_statuses() -> None:
     })
 
     assert not OpenAIExplanationEnhancer(Settings())._generated_output_is_safe(payload, generated)
+
+
+def test_retrieved_pydantic_values_are_serialized_for_explanation_context() -> None:
+    class Store:
+        def retrieve(self, product_id, rule_key, query, top_k):
+            return [RetrievedDocument(
+                documentId=7, title="Official guide", content="Official condition",
+                sourceUrl="https://www.kbstar.com/guide", retrievedAt=datetime.now(UTC),
+                score=0.9, institution="KB", sourceType="PRODUCT_PAGE",
+                validFrom=None, validTo=None, productId=product_id, language="ko",
+            )]
+
+    context = _retrieve_context(request(), Store())
+
+    assert len(context) == 1
+    assert context[0].source_url == "https://www.kbstar.com/guide"
+    assert isinstance(context[0].retrieved_at, str)

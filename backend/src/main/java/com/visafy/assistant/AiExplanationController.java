@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -40,6 +43,12 @@ public class AiExplanationController {
     public ConsultationResponse chat(@Valid @RequestBody ChatRequest request) {
         return consultationService.ask(request.profileSessionId(), request.productId(), request.ruleKey(),
                 request.query(), request.topK() == null ? 5 : request.topK());
+    }
+
+    @GetMapping("/chat/history")
+    public List<ConsultationService.ConsultationHistoryItem> history(
+            @RequestParam @NotBlank String profileSessionId, @RequestParam @NotNull Long productId) {
+        return consultationService.history(profileSessionId, productId);
     }
 
     public record ExplanationRequest(@NotBlank String profileSessionId, @NotNull Long productId) {}

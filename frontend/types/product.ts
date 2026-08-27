@@ -54,6 +54,7 @@ export type FinancialProduct = {
   additionalConditions: string;
   requiredDocuments: string;
   applicationMethod: string;
+  officialApplicationUrl?: string | null;
   diagnosisStatus: DiagnosisStatus;
   sourceDocumentId: number;
   sourceTitle: string;
@@ -63,6 +64,7 @@ export type FinancialProduct = {
   requiredFields: string[];
   dataPackage: { productPage: boolean; termsOrDescription: boolean; hardRuleEvidence: boolean; identityEvidence: boolean; channelEvidence: boolean; documentEvidence: boolean; applicationStepEvidence: boolean; informationBaseDate: boolean; missingItems: string[]; complete: boolean };
   diagnosisReasonCode: "APPROVED_HARD_RULES_AVAILABLE" | "ADDITIONAL_CONFIRMATION_REQUIRED" | "SOURCE_INSUFFICIENT";
+  sourceTrust: { freshnessStatus: "FRESH" | "REVIEW_SOON" | "STALE"; lastVerifiedAt: string; validTo?: string | null; evidenceCoveragePercent: number; ragEligible: boolean };
 };
 
 export type ProductFilters = {

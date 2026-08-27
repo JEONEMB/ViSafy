@@ -7,6 +7,9 @@ import com.visafy.profile.TempProfile;
 import com.visafy.profile.TempProfileService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import com.visafy.execution.ApiExecutionHistoryService;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,9 +18,11 @@ public class FinancialJourneyService {
             "RECEIVE_SALARY", "DEBIT_CARD", "SAVINGS", "REMITTANCE", "BUILD_CREDIT",
             "LOAN_AND_HOUSING", "INVESTMENT");
     private final TempProfileService profileService;
+    private final FinancialJourneyProgressRepository progressRepository;
 
-    public FinancialJourneyService(TempProfileService profileService) {
+    public FinancialJourneyService(TempProfileService profileService, FinancialJourneyProgressRepository progressRepository) {
         this.profileService = profileService;
+        this.progressRepository = progressRepository;
     }
 
     public FinancialJourneyResult get(String profileSessionId) {
@@ -30,9 +35,12 @@ public class FinancialJourneyService {
         String language = profile.getLanguage();
         String nextAction = nextAction(language, purpose, identityReady, accountReady);
         List<JourneyStep> steps = new ArrayList<>();
+        Set<String> explicit = progressRepository.findByProfileSessionHashAndCompletedTrue(
+                ApiExecutionHistoryService.hashSessionId(profileSessionId.strip())).stream()
+                .map(FinancialJourneyProgress::getStepCode).collect(Collectors.toSet());
         for (int number = 1; number <= CODES.size(); number++) {
             JourneyStepStatus status;
-            if (number == 1 && identityReady || number == 2 && accountReady) status = JourneyStepStatus.COMPLETED;
+            if (explicit.contains(CODES.get(number - 1)) || number == 1 && identityReady || number == 2 && accountReady) status = JourneyStepStatus.COMPLETED;
             else if (number == current) status = JourneyStepStatus.CURRENT;
             else if (number < current) status = JourneyStepStatus.NEED_CONFIRMATION;
             else status = JourneyStepStatus.UPCOMING;
@@ -51,6 +59,17 @@ public class FinancialJourneyService {
                         Boolean.TRUE.equals(profile.getHasKoreanCreditHistory()),
                         profile.getRemittanceCountry()),
                 List.copyOf(steps));
+    }
+
+    public void updateProgress(String profileSessionId, String stepCode, boolean completed) {
+        TempProfile profile = profileService.getBySessionId(profileSessionId.strip());
+        String normalized = stepCode.strip().toUpperCase();
+        if (!CODES.contains(normalized)) throw new IllegalArgumentException("Unsupported journey step");
+        String hash = ApiExecutionHistoryService.hashSessionId(profileSessionId.strip());
+        FinancialJourneyProgress progress = progressRepository.findByProfileSessionHashAndStepCode(hash, normalized)
+                .orElseGet(() -> new FinancialJourneyProgress(hash, normalized, completed, profile.getExpiresAt()));
+        progress.update(completed, profile.getExpiresAt());
+        progressRepository.save(progress);
     }
 
     private String nextAction(String language, FinancialPurposeCode purpose, boolean identity, boolean account) {

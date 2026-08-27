@@ -23,11 +23,13 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+                    auth.requestMatchers("/api/health/**").permitAll();
                     if (adminSecurityEnabled) {
-                        auth.requestMatchers("/api/admin/**").authenticated();
+                        auth.requestMatchers("/api/admin/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                                .authenticated();
                     } else {
-                        auth.requestMatchers("/api/admin/**").permitAll();
+                        auth.requestMatchers("/api/admin/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                                .permitAll();
                     }
                     auth.anyRequest().permitAll();
                 })

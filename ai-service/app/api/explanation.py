@@ -52,6 +52,6 @@ def _retrieve_context(
     except Exception:  # noqa: BLE001 - retrieval failure must not block deterministic results
         return []
     return [
-        RagContextInput.model_validate(document.model_dump(by_alias=True))
+        RagContextInput.model_validate(document.model_dump(mode="json", by_alias=True))
         for document in list(documents.values())[:8]
     ]

@@ -12,7 +12,7 @@ export function AdminProductEditForm({ product, sources, pending, onCancel, onSa
 }) {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const data = new FormData(event.currentTarget);
-    onSave({ institution: data.get("institution"), productName: data.get("productName"), productType: data.get("productType"), financialPurpose: data.get("financialPurpose"), description: data.get("description"), targetSummary: data.get("targetSummary"), sourceDocumentId: Number(data.get("sourceDocumentId")), active: data.get("active") === "on", foreignerTarget: data.get("foreignerTarget") === "on", informationBaseDate: data.get("informationBaseDate"), publicConditions: data.get("publicConditions"), additionalConditions: data.get("additionalConditions"), requiredDocuments: data.get("requiredDocuments"), applicationMethod: data.get("applicationMethod") });
+    onSave({ institution: data.get("institution"), productName: data.get("productName"), productType: data.get("productType"), financialPurpose: data.get("financialPurpose"), description: data.get("description"), targetSummary: data.get("targetSummary"), sourceDocumentId: Number(data.get("sourceDocumentId")), active: data.get("active") === "on", foreignerTarget: data.get("foreignerTarget") === "on", informationBaseDate: data.get("informationBaseDate"), publicConditions: data.get("publicConditions"), additionalConditions: data.get("additionalConditions"), requiredDocuments: data.get("requiredDocuments"), applicationMethod: data.get("applicationMethod"), officialApplicationUrl: data.get("officialApplicationUrl") || null });
   }
   return <form className="mt-5 grid gap-4 rounded-card border border-status-info-border bg-status-info-bg p-5 sm:grid-cols-2" onSubmit={submit}>
     <label className="text-sm">기관명<input className={input} defaultValue={product.institution} name="institution" required /></label>
@@ -28,6 +28,7 @@ export function AdminProductEditForm({ product, sources, pending, onCancel, onSa
     <label className="text-sm sm:col-span-2">추가 확인조건<textarea className={input} defaultValue={product.additionalConditions} name="additionalConditions" required /></label>
     <label className="text-sm sm:col-span-2">기존 서류 안내<textarea className={input} defaultValue={product.requiredDocuments} name="requiredDocuments" required /></label>
     <label className="text-sm sm:col-span-2">기존 신청방법<textarea className={input} defaultValue={product.applicationMethod} name="applicationMethod" required /></label>
+    <label className="text-sm sm:col-span-2">공식 신청 URL<input className={input} defaultValue={product.officialApplicationUrl ?? ""} name="officialApplicationUrl" placeholder="https://..." type="url" /></label>
     <div className="flex gap-2 sm:col-span-2"><button className="ui-button ui-button-primary" disabled={pending}>{pending ? "저장 중..." : "수정 저장"}</button><button className="ui-button ui-button-secondary" onClick={onCancel} type="button">취소</button></div>
   </form>;
 }

@@ -40,6 +40,7 @@ public class FinancialProductController {
                 request.informationBaseDate(), request.publicConditions(), request.additionalConditions(),
                 request.requiredDocuments(), request.applicationMethod(), request.productAudience(),
                 request.productCategory());
+        service.updateOfficialApplicationUrl(product.getId(), request.officialApplicationUrl());
         return ProductResponse.from(service.findAdmin().stream()
                 .filter(view -> view.product().getId().equals(product.getId())).findFirst().orElseThrow());
     }
@@ -56,6 +57,7 @@ public class FinancialProductController {
                 request.active(), request.foreignerTarget(), request.informationBaseDate(), request.publicConditions(),
                 request.additionalConditions(), request.requiredDocuments(), request.applicationMethod(),
                 request.productAudience(), request.productCategory());
+        service.updateOfficialApplicationUrl(id, request.officialApplicationUrl());
         return ProductResponse.from(service.getAdmin(id));
     }
 
@@ -98,7 +100,8 @@ public class FinancialProductController {
             @NotBlank String requiredDocuments,
             @NotBlank String applicationMethod,
             ProductAudience productAudience,
-            ProductCategory productCategory
+            ProductCategory productCategory,
+            String officialApplicationUrl
     ) {
     }
 
@@ -109,7 +112,7 @@ public class FinancialProductController {
             boolean foreignerTarget, @NotNull LocalDate informationBaseDate,
             @NotBlank String publicConditions, @NotBlank String additionalConditions,
             @NotBlank String requiredDocuments, @NotBlank String applicationMethod,
-            ProductAudience productAudience, ProductCategory productCategory
+            ProductAudience productAudience, ProductCategory productCategory, String officialApplicationUrl
     ) {}
 
     public record ProductRuleResponse(
@@ -146,9 +149,10 @@ public class FinancialProductController {
             ProductAudience productAudience, ProductCategory productCategory,
             boolean foreignerTarget, LocalDate informationBaseDate, String publicConditions,
             String additionalConditions, String requiredDocuments, String applicationMethod,
+            String officialApplicationUrl,
             DiagnosisStatus diagnosisStatus, Long sourceDocumentId, String sourceTitle, String sourceUrl, Instant updatedAt,
             List<ProductRuleResponse> rules, List<String> requiredFields, Season3DataPackage dataPackage,
-            String diagnosisReasonCode
+            String diagnosisReasonCode, SourceTrustSummary sourceTrust
     ) {
         static ProductResponse from(ProductView view) {
             FinancialProduct product = view.product();
@@ -158,10 +162,28 @@ public class FinancialProductController {
                     product.getProductAudience(), product.getProductCategory(),
                     product.isForeignerTarget(), product.getInformationBaseDate(), product.getPublicConditions(),
                     product.getAdditionalConditions(), product.getRequiredDocuments(),
-                    product.getApplicationMethod(), view.diagnosisStatus(), product.getSourceDocument().getId(),
+                    product.getApplicationMethod(), product.getOfficialApplicationUrl(), view.diagnosisStatus(), product.getSourceDocument().getId(),
                     product.getSourceDocument().getTitle(), product.getSourceDocument().getSourceUrl(),
                     product.getUpdatedAt(), view.rules().stream().map(ProductRuleResponse::from).toList(),
-                    view.requiredFields(), view.dataPackage(), view.diagnosisReasonCode());
+                    view.requiredFields(), view.dataPackage(), view.diagnosisReasonCode(), SourceTrustSummary.from(view));
+        }
+    }
+
+    public record SourceTrustSummary(String freshnessStatus, Instant lastVerifiedAt, LocalDate validTo,
+                                     int evidenceCoveragePercent, boolean ragEligible) {
+        static SourceTrustSummary from(ProductView view) {
+            FinancialProduct product = view.product();
+            var source = product.getSourceDocument();
+            long age = java.time.temporal.ChronoUnit.DAYS.between(
+                    source.getLastVerifiedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate(), LocalDate.now());
+            String freshness = age <= 90 ? "FRESH" : age <= 180 ? "REVIEW_SOON" : "STALE";
+            Season3DataPackage p = view.dataPackage();
+            int present = (p.productPage() ? 1 : 0) + (p.termsOrDescription() ? 1 : 0)
+                    + (p.hardRuleEvidence() ? 1 : 0) + (p.identityEvidence() ? 1 : 0)
+                    + (p.channelEvidence() ? 1 : 0) + (p.documentEvidence() ? 1 : 0)
+                    + (p.applicationStepEvidence() ? 1 : 0) + (p.informationBaseDate() ? 1 : 0);
+            return new SourceTrustSummary(freshness, source.getLastVerifiedAt(), source.getValidTo(),
+                    present * 100 / 8, source.isEffective(LocalDate.now()));
         }
     }
 }

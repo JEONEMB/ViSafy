@@ -60,6 +60,8 @@ public class FinancialProduct {
     private String requiredDocuments;
     @Lob @Column(nullable = false, columnDefinition = "TEXT")
     private String applicationMethod;
+    @Column(length = 1000)
+    private String officialApplicationUrl;
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
     @Column(nullable = false)
@@ -128,6 +130,11 @@ public class FinancialProduct {
         this.updatedAt = Instant.now();
     }
 
+    public void updateOfficialApplicationUrl(String url) {
+        this.officialApplicationUrl = url == null || url.isBlank() ? null : url.strip();
+        this.updatedAt = Instant.now();
+    }
+
     private static ProductCategory defaultCategory(ProductType type) {
         return switch (type) {
             case CHECKING_ACCOUNT -> ProductCategory.DEMAND_DEPOSIT;
@@ -159,5 +166,6 @@ public class FinancialProduct {
     public String getAdditionalConditions() { return additionalConditions; }
     public String getRequiredDocuments() { return requiredDocuments; }
     public String getApplicationMethod() { return applicationMethod; }
+    public String getOfficialApplicationUrl() { return officialApplicationUrl; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

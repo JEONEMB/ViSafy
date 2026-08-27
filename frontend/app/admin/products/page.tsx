@@ -63,6 +63,7 @@ export default function ProductAdminPage() {
       informationBaseDate: data.get("informationBaseDate"), publicConditions: data.get("publicConditions"),
       additionalConditions: data.get("additionalConditions"), requiredDocuments: data.get("requiredDocuments"),
       applicationMethod: data.get("applicationMethod"),
+      officialApplicationUrl: data.get("officialApplicationUrl") || null,
     });
   }
 
@@ -119,6 +120,7 @@ export default function ProductAdminPage() {
         <label className="text-sm font-medium sm:col-span-2">추가 확인 조건<textarea className={inputClass} name="additionalConditions" placeholder="지점 또는 은행 확인이 필요한 항목" required /></label>
         <label className="text-sm font-medium sm:col-span-2">필요서류<textarea className={inputClass} name="requiredDocuments" placeholder="줄바꿈으로 구분" required /></label>
         <label className="text-sm font-medium sm:col-span-2">신청방법<textarea className={inputClass} name="applicationMethod" required /></label>
+        <label className="text-sm font-medium sm:col-span-2">공식 신청 URL<input className={inputClass} name="officialApplicationUrl" placeholder="https://... (공식 신청 화면이 확인된 경우만)" type="url" /></label>
         <button className="ui-button ui-button-primary w-fit" disabled={mutation.isPending || approvedSources.length === 0}>{mutation.isPending ? "등록 중..." : "상품 등록"}</button>
         {approvedSources.length === 0 ? <p className="self-center text-sm text-status-warning">먼저 Source를 승인해야 상품을 등록할 수 있습니다.</p> : null}
       </form>

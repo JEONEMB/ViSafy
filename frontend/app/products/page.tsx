@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { RecommendationBoard } from "@/components/recommendation-board";
 import { FinancialJourneyPanel, type JourneyFocus } from "@/components/financial-journey-panel";
+import { AgentWorkspace } from "@/components/agent-workspace";
 import { getProducts } from "@/services/product";
 import type { DiagnosisStatus, ProductAudience, ProductCategory, ProductFilters } from "@/types/product";
 import { toLegacyLocale, type LegacyLocale } from "@/i18n/config";
@@ -39,6 +40,7 @@ export default function ProductsPage() {
       <h1 className="ui-page-heading mt-2">{text.title}</h1>
       <p className="mt-3 max-w-reading text-base leading-7 text-muted">{text.description}</p>
 
+      <AgentWorkspace products={journeyProducts.data ?? []} />
       <RecommendationBoard onContinueJourney={(focus) => setJourneyFocus({ ...focus })} />
       <FinancialJourneyPanel focus={journeyFocus} products={journeyProducts.data} />
 

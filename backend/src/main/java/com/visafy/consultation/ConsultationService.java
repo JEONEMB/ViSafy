@@ -27,13 +27,26 @@ public class ConsultationService {
     public ConsultationResponse ask(String profileSessionId, Long productId, String ruleKey,
                                     String question, int topK) {
         TempProfile profile = profileService.getBySessionId(profileSessionId);
-        RagAnswerResponse response = ragService.answer(profileSessionId, productId, ruleKey, question, topK);
+        String hash = ApiExecutionHistoryService.hashSessionId(profileSessionId);
+        List<Consultation> recent = repository.findTop10ByProfileSessionHashAndProductIdOrderByCreatedAtDesc(hash, productId);
+        String context = recent.stream().limit(3).map(Consultation::getQuestion)
+                .map(value -> value.length() > 200 ? value.substring(0, 200) : value)
+                .reduce((left, right) -> right + " / " + left).map(value -> value + " / " + question).orElse(question);
+        RagAnswerResponse response = ragService.answer(profileSessionId, productId, ruleKey, context, topK);
         Instant now = Instant.now(); String id = UUID.randomUUID().toString();
-        repository.save(new Consultation(id, ApiExecutionHistoryService.hashSessionId(profileSessionId),
+        repository.save(new Consultation(id, hash,
                 productId, ruleKey.strip().toUpperCase(), question.strip(), response.answer(),
                 profile.getLanguage(), now, profile.getExpiresAt()));
         return new ConsultationResponse(id, response.answer(), response.eligibilityStatus(), response.ruleResult(),
                 response.documents(), response.guardrailsApplied(), profile.getLanguage(), now);
+    }
+
+    public List<ConsultationHistoryItem> history(String profileSessionId, Long productId) {
+        profileService.getBySessionId(profileSessionId.strip());
+        String hash = ApiExecutionHistoryService.hashSessionId(profileSessionId.strip());
+        List<Consultation> rows = repository.findTop10ByProfileSessionHashAndProductIdOrderByCreatedAtDesc(hash, productId);
+        return rows.reversed().stream().map(row -> new ConsultationHistoryItem(row.getId(), row.getQuestion(),
+                row.getAnswer(), row.getRuleKey(), row.getLanguage(), row.getCreatedAt())).toList();
     }
 
     public record ConsultationResponse(
@@ -41,4 +54,6 @@ public class ConsultationService {
             List<RetrievedDocument> documents, List<String> guardrailsApplied,
             String language, Instant createdAt
     ) {}
+    public record ConsultationHistoryItem(String id, String question, String answer, String ruleKey,
+                                          String language, Instant createdAt) {}
 }

@@ -33,6 +33,8 @@ public record RecommendationResult(
             int unknownCount,
             boolean purposeMatched,
             int preferredConditionMatches,
+            List<String> recommendationReasonCodes,
+            String nextPreparationField,
             EligibilityResult eligibility
     ) {
     }

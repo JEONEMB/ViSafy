@@ -19,11 +19,39 @@
 - FR-203 상품 요약·조건·서류·신청방법·공식 출처 상세 조회
 - 승인된 Rule Candidate의 `PRODUCT_RULE` 동기화와 진단 준비 상태 관리
 
+## 핵심 AI Agent 기능
+
+SSAFIN은 은행 상품을 번역하는 화면에 그치지 않고, 사용자의 현재 준비상태에서 다음 금융 행동까지 연결합니다. 판정 권한과 AI의 역할은 명확히 분리되어 있습니다.
+
+| 구성요소 | 실제 역할 | 안전 경계 |
+| --- | --- | --- |
+| Rule Engine | 검수된 공개조건과 프로필을 결정론적으로 비교 | LLM이 판정값을 생성하거나 변경할 수 없음 |
+| Access Model | 신분확인·필요서류·영업점·모바일 이용 가능성을 별도 판단 | 가입조건과 채널 접근성을 혼동하지 않음 |
+| 공식 Source RAG | 해당 상품의 승인·유효 Source만 다국어 의미 검색 | 다른 상품, 미승인·만료 Source, 비공식 도메인을 배제 |
+| OpenAI 설명 | Responses API로 쉬운 설명·다음 행동·필요 시 은행 문의문 생성 | 구조화된 판정과 숫자를 읽기 전용으로 사용하며 실패 시 템플릿으로 복귀 |
+| 상품 한정 대화 | 상품별 최근 질문 흐름을 유지하며 공식문서에 후속 질문 | 일반 투자·대출 추천 Chat으로 확장하지 않음 |
+| Agent Workspace | 추천 이유와 준비할 한 가지를 먼저 제시하고 부족한 정보를 한 번에 하나씩 질문 | 답변 후 추천·Journey를 다시 계산하며 최종 승인을 보장하지 않음 |
+
+사용자는 `프로필 → 다음 행동 → 동적 추가 질문 → 상품 추천 → 공개조건 진단 → 신분·채널 접근성 → 공식 근거 → 신청 화면`의 연속된 흐름을 이용할 수 있습니다. Source 검수일과 Evidence 연결률도 표시하며, 공식 신청 URL이 확인되지 않으면 임의 링크를 만들지 않습니다.
+
+### MVP 완료 상태
+
+로컬 핵심 기능 MVP는 완료되었습니다. Profile, Recommendation, Eligibility, Access Model, Financial Journey, 공식 Source RAG, 상품 한정 대화, OpenAI 장애 Fallback과 관리자 검수 흐름이 통합환경에서 동작하며 자동화 테스트를 통과합니다.
+
+다만 **대회 제출·운영 MVP는 아직 완료 선언 전**입니다. 다음 작업이 남아 있으므로 이번 커밋에는 `MVP complete`라는 표현을 사용하지 않습니다.
+
+- OpenAI Project의 결제·모델 권한을 활성화한 뒤 Responses API 실제 성공 응답 검증
+- 공개 서버에 배포하고 도메인·DNS·HTTPS 연결
+- 운영 DB 비밀번호, 관리자 비밀번호와 내부 토큰을 운영 Secret으로 교체
+- 공개 URL에서 전체 E2E, 공식 Source 링크와 심사 기간 가용성 최종 확인
+
+OpenAI 호출이 준비되지 않아도 Rule Engine, Access Model, RAG 검색과 검증된 템플릿 설명은 계속 동작합니다.
+
 ## 프로젝트 구성
 
 - `frontend`: Next.js, TypeScript, Tailwind CSS, TanStack Query
 - `backend`: Java 21, Spring Boot, JPA, Flyway, MySQL, OpenAPI
-- `ai-service`: Python 3.11, FastAPI, Pydantic, ChromaDB client
+- `ai-service`: Python 3.11, FastAPI, Pydantic, FastEmbed, SQLite 기반 로컬 벡터 색인
 - `data-pipeline`: Source registry, Snapshot, 검수 작업 공간
 - `infra`: Docker Compose 통합환경
 - `docs`: API, 아키텍처, 데이터 정책, 테스트 계획
@@ -114,6 +142,8 @@ http://localhost:3000/products 에서 다음 내용을 확인합니다.
 - 공식 정보가 부족하여 별도로 분류된 상품
 
 추천 카드의 **금융생활 여정에서 준비하기**를 누르면 해당 상품 유형의 Journey 단계로 자동 이동합니다. 입출금계좌·체크카드·예적금·송금·대출·투자 등 각 단계를 직접 선택할 수도 있습니다. 선택한 단계에서는 입력한 국적과 현재 신분·휴대전화·계좌 준비상태, 관련 공식 상품, 검수된 준비서류와 신청방법을 확인한 뒤 금융기관 공식 페이지를 열 수 있습니다.
+
+상품 페이지 상단의 **SSAFIN이 제안하는 다음 행동**에서는 추천 이유와 지금 준비할 한 가지를 먼저 보여줍니다. 상품 Rule에 필요한 프로필 값이 비어 있으면 한 번에 하나씩 질문하고, 답변 저장 후 추천과 Journey를 다시 계산합니다. Journey 단계의 완료 여부는 임시 프로필 만료 시각까지 저장됩니다. 같은 화면에서 상품별 공식문서 질문을 이어서 할 수 있으며 최근 대화는 상품 범위 안에서 검색 맥락으로 사용됩니다. 공식 정보 URL과 공식 신청 URL은 별도 관리하고, 확인된 신청 URL이 없으면 임의의 신청 링크를 만들지 않습니다. 최근 Source 검수일과 Evidence 연결률도 사용자에게 함께 표시합니다.
 
 SSAFIN은 가입확률을 계산하거나 최종 승인을 보장하지 않습니다.
 
@@ -307,9 +337,9 @@ AI와 RAG는 외국인이라는 이유만으로 미가입을 추정하거나, `�
 4. 임시 프로필을 저장한 뒤 상품 상세 화면의 **공식 금융문서에 질문하기**에서 Rule과 질문을 선택합니다.
 5. Eligibility 결과, 구조화된 Rule 결과, 공식 근거 문단과 Source 링크를 각각 확인합니다.
 
-전처리 순서는 `Snapshot → NFKC 정규화 및 Cleaning → 문단 기반 Chunking → Metadata → Embedding → ChromaDB`입니다. Metadata에는 `document_id`, `institution`, `document_name`, `source_type`, `source_url`, `retrieved_at`, `valid_from`, `valid_to`, `product_id`, `language`, `content_hash`, `rule_keys`를 저장합니다. 검색에는 질문과 Rule Key를 함께 사용하고 ChromaDB의 `product_id` 필터를 항상 적용하므로 다른 상품의 조건이 섞이지 않습니다.
+전처리 순서는 `Snapshot → NFKC 정규화 및 Cleaning → 문단 기반 Chunking → Metadata → Embedding → SQLite 벡터 색인`입니다. Metadata에는 `document_id`, `institution`, `document_name`, `source_type`, `source_url`, `retrieved_at`, `valid_from`, `valid_to`, `product_id`, `language`, `content_hash`, `rule_keys`를 저장합니다. 검색에는 질문과 Rule Key를 함께 사용하며 SQL Metadata Filtering과 반환 직전 검증을 함께 적용하므로 다른 상품의 조건이 섞이지 않습니다. 검색 순위는 FastEmbed 벡터의 cosine similarity로 계산합니다.
 
-현재 Docker 환경은 ONNX 기반 FastEmbed와 `intfloat/multilingual-e5-small`을 기본으로 사용해 한국어·영어·베트남어 질의를 의미 기반으로 검색합니다. 384차원 로컬 해시 임베딩은 회귀 테스트와 오프라인 기준선 용도로만 남겨두었습니다. 답변은 OpenAI 연결 여부와 관계없이 Eligibility Engine의 확정 결과를 변경할 수 없으며, API 장애 시 검증 가능한 템플릿으로 복귀합니다.
+현재 Docker 환경은 ONNX 기반 FastEmbed와 `intfloat/multilingual-e5-small`을 기본으로 사용해 다국어 질의를 의미 기반으로 검색합니다. 384차원 로컬 해시 임베딩은 회귀 테스트와 오프라인 기준선 용도로만 남겨두었습니다. 답변은 OpenAI 연결 여부와 관계없이 Eligibility Engine의 확정 결과를 변경할 수 없으며, API 장애 시 검증 가능한 템플릿으로 복귀합니다.
 
 - 공식 Source에 없는 조건을 생성하지 않음
 - Eligibility Engine 결과를 변경하지 않음
@@ -423,7 +453,7 @@ docker run --rm --ipc=host -e E2E_BASE_URL=http://host.docker.internal:3000 -v "
 - [ ] 상품 ID 필터에 Rule Key, 문서 언어, 유효기간 필터를 추가 적용할지 평가
 - [ ] Chunk 크기·Overlap·Top-K를 실제 질의 세트로 튜닝
 - [ ] 정답 Source 포함 여부, 다른 상품 혼입 여부, 검색 순위 등을 측정하는 Retrieval 평가 데이터셋 구축
-- [ ] 대량 문서 환경에서 ChromaDB 백업·복구·동시성·성능을 검증하고 필요하면 운영 Vector DB 검토
+- [ ] 대량 문서 환경에서 SQLite 벡터 색인의 백업·복구·동시성·성능을 검증하고 필요하면 운영 Vector DB 검토
 
 **P2 · LLM 답변 및 운영 기능**
 
@@ -542,7 +572,9 @@ Season 3의 `READY`는 상품 페이지와 약관만 존재한다고 충족되�
 
 ### 현재 AI 구성
 
-OpenAI Responses API Adapter가 선택형으로 연결되어 있습니다. `LLM_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6-terra`, `OPENAI_REASONING_EFFORT=medium`을 배포환경 Secret으로 설정하면 승인된 공식 RAG Context, Eligibility Result, Access Result, Rule Detail을 이용해 쉬운 설명·다음 행동·필요 시 은행 문의문을 생성합니다. Key 누락·API 장애·구조화 출력 오류·숫자 또는 Visa 코드 무결성 위반 시 검증 가능한 템플릿으로 자동 복귀합니다. LLM 출력 스키마에는 상태 필드가 없으며 Backend가 계산한 Eligibility와 Access 판정은 응답 조립 단계에서 고정됩니다. RAG는 ONNX 기반 다국어 FastEmbed를 기본으로 사용하며 Product Metadata Filtering과 승인·유효기간 필터를 항상 적용합니다.
+OpenAI Responses API Adapter가 선택형으로 연결되어 있습니다. `LLM_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6-terra`, `OPENAI_REASONING_EFFORT=medium`을 배포환경 Secret으로 설정하면 승인된 공식 RAG Context, Eligibility Result, Access Result, Rule Detail을 이용해 쉬운 설명·다음 행동·필요 시 은행 문의문을 생성합니다. Key 누락·API 장애·구조화 출력 오류·숫자 또는 Visa 코드 무결성 위반 시 검증 가능한 템플릿으로 자동 복귀합니다. LLM 출력 스키마에는 상태 필드가 없으며 Backend가 계산한 Eligibility와 Access 판정은 응답 조립 단계에서 고정됩니다. RAG는 ONNX 기반 다국어 FastEmbed와 SQLite 영속 색인을 사용하며 Product Metadata Filtering과 승인·유효기간 필터를 항상 적용합니다.
+
+현재 개발환경에서는 OpenAI 실패 시 Fallback과 판정 불변성을 검증했습니다. OpenAI 계정의 결제·크레딧 및 모델 권한이 아직 확인되지 않아 실제 Responses API 성공 생성은 제출 전 검증 항목으로 남아 있습니다.
 
 PDF/HTML 추출, 페이지 번호 보존, OCR 필요 페이지 표시, `contentHash` 변경 감지, PENDING Rule Candidate 추출과 RAG 평가 실행법은 [`docs/ai-rag-quality-and-secrets.md`](docs/ai-rag-quality-and-secrets.md)에 정리되어 있습니다. RAG Dataset은 Flyway V18/V19의 실제 승인 Source ID와 일반상품 5개별 질문 5개 이상으로 교체되었습니다.
 
@@ -577,6 +609,7 @@ GET  /api/profiles/{id}
 PUT  /api/profiles/{id}
 GET  /api/visas
 GET  /api/financial-journey?profileSessionId={uuid}
+PUT  /api/financial-journey/progress/{stepCode}
 GET  /api/admin/auth/check
 POST /api/admin/products
 GET  /api/admin/products
@@ -595,6 +628,7 @@ POST /api/ai/explanation
 POST /api/ai/explain
 POST /api/ai/inquiry-message
 POST /api/ai/chat
+GET  /api/ai/chat/history
 GET  /api/products/{id}/guidance
 POST /api/products/{id}/guidance
 GET  /api/admin/products/{id}/guidance
@@ -624,7 +658,7 @@ Official Source가 사실의 기준이며, Human Verification을 거쳐 `APPROVE
 - RAG 검색 결과가 없으면 조건을 추측하지 않고 “현재 등록된 공식 자료만으로는 해당 조건을 정확히 확인할 수 없습니다. 금융기관에 추가 확인이 필요합니다.”라는 고정 안내를 반환합니다.
 - 모든 사전자격 설명에는 실제 가입 여부와 한도·금리가 금융기관의 최종 심사에 따라 달라진다는 공통 면책문구를 한국어·영어·베트남어로 제공합니다.
 - 사용자 질문은 신뢰할 수 없는 검색 입력으로만 취급합니다. System Prompt 공개, 기존 지침 무시, Eligibility/Rule/Source 정책 변경을 요구하는 대표적인 Prompt Injection은 검색 전에 차단하며 내부 AI API는 `RAG_INTERNAL_TOKEN`으로 보호합니다.
-- Vector DB 검색은 `product_id`, `review_status=APPROVED`, 현재 유효기간을 동시에 필터링합니다. 반환 직전에도 Source URL이 `SOURCE_ALLOWED_DOMAINS`의 공식 도메인인지 다시 확인합니다.
+- 벡터 검색은 `product_id`, `review_status=APPROVED`, 현재 유효기간을 동시에 필터링합니다. 반환 직전에도 Source URL이 `SOURCE_ALLOWED_DOMAINS`의 공식 도메인인지 다시 확인합니다.
 - 임시 프로필에는 주민등록번호, 외국인등록번호, 여권번호, 계좌번호, 카드번호 필드가 없습니다. 자유입력 필드에 해당 형식의 값을 붙여 넣어도 Backend가 `400 Bad Request`로 거부합니다.
 
 운영 환경에서는 `SOURCE_ALLOWED_DOMAINS`를 실제 금융기관·공공기관 공식 도메인만으로 구성하고, Source 상태나 유효기간을 변경한 뒤 `POST /api/admin/rag/reindex`를 실행하세요.

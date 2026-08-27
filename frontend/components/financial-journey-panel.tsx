@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { nationalityName } from "@/lib/nationalities";
-import { getFinancialJourney } from "@/services/financial-journey";
+import { getFinancialJourney, updateJourneyProgress } from "@/services/financial-journey";
 import type { FinancialProduct, ProductCategory } from "@/types/product";
 
 const statusClass = {
@@ -32,6 +32,7 @@ export function FinancialJourneyPanel({ products = [], focus = null }: { product
   const text = copy[locale];
   const [sessionId, setSessionId] = useState<string | null>();
   const [selectedCode, setSelectedCode] = useState<string | null>(focus?.code ?? null);
+  const queryClient = useQueryClient();
   useEffect(() => setSessionId(localStorage.getItem("visafyProfileSessionId")), []);
   useEffect(() => {
     if (!focus?.code) return;
@@ -39,6 +40,7 @@ export function FinancialJourneyPanel({ products = [], focus = null }: { product
     window.requestAnimationFrame(() => document.getElementById("financial-journey")?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }, [focus]);
   const journey = useQuery({ queryKey: ["financial-journey", sessionId], queryFn: () => getFinancialJourney(sessionId!), enabled: Boolean(sessionId) });
+  const progress = useMutation({ mutationFn: ({ code, completed }: { code: string; completed: boolean }) => updateJourneyProgress(sessionId!, code, completed), onSuccess: (data) => queryClient.setQueryData(["financial-journey", sessionId], data) });
   const selectedStep = journey.data?.steps.find((step) => step.code === selectedCode)
     ?? journey.data?.steps.find((step) => step.status === "CURRENT")
     ?? journey.data?.steps[0];
@@ -55,7 +57,7 @@ export function FinancialJourneyPanel({ products = [], focus = null }: { product
     </ol>
 
     {selectedStep ? <section className="mt-7 rounded-panel border border-line bg-surface-subtle p-5 sm:p-6" aria-live="polite">
-      <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold text-brand">STEP {selectedStep.step}</p><h3 className="mt-1 text-xl font-bold text-ink">{selectedStep.title}</h3></div><span className="rounded-full border border-line bg-surface px-3 py-1 text-xs font-semibold text-muted">{text.country}: {nationalityName(journey.data.profile.nationality, locale)}</span></div>
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold text-brand">STEP {selectedStep.step}</p><h3 className="mt-1 text-xl font-bold text-ink">{selectedStep.title}</h3></div><div className="flex flex-wrap gap-2"><span className="rounded-full border border-line bg-surface px-3 py-1 text-xs font-semibold text-muted">{text.country}: {nationalityName(journey.data.profile.nationality, locale)}</span><button className="ui-button ui-button-secondary min-h-8 px-3 py-1 text-xs" disabled={progress.isPending} onClick={() => progress.mutate({ code: selectedStep.code, completed: selectedStep.status !== "COMPLETED" })} type="button">{selectedStep.status === "COMPLETED" ? "↩ Undo" : "✓ Complete"}</button></div></div>
       <div className="mt-5 grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
         <div className="space-y-4">
           <article className="rounded-card border border-line bg-surface p-4"><h4 className="font-bold text-ink">{text.profile}</h4><ul className="mt-3 space-y-2 text-sm">{preparations.map((item) => <li className="flex items-start justify-between gap-3" key={item.label}><span className="text-muted">{item.label}</span><strong className={item.ready ? "text-status-success" : "text-status-warning"}>{item.ready ? `✓ ${text.ready}` : `△ ${text.check}`}</strong></li>)}</ul></article>

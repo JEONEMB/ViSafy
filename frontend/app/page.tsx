@@ -33,6 +33,11 @@ export default function HomePage() {
   }, []);
 
   function choosePurpose(value: FinancialPurposeCode) {
+    if (purpose === value) {
+      setPurpose(null);
+      localStorage.removeItem("visafyFinancialPurpose");
+      return;
+    }
     setPurpose(value);
     localStorage.setItem("visafyFinancialPurpose", value);
   }

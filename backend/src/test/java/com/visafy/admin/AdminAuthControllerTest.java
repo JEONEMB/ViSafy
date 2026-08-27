@@ -27,6 +27,12 @@ class AdminAuthControllerTest {
     }
 
     @Test
+    void rejectsAnonymousOpenApiDocumentationInAdminSecuredMode() throws Exception {
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @WithMockUser
     void allowsAuthenticatedAdminRequest() throws Exception {
         mockMvc.perform(get("/api/admin/auth/check"))

@@ -10,7 +10,8 @@ import org.junit.jupiter.api.Test;
 
 class FinancialJourneyServiceTest {
     private final TempProfileService profileService = mock(TempProfileService.class);
-    private final FinancialJourneyService service = new FinancialJourneyService(profileService);
+    private final FinancialJourneyProgressRepository progressRepository = mock(FinancialJourneyProgressRepository.class);
+    private final FinancialJourneyService service = new FinancialJourneyService(profileService, progressRepository);
 
     @Test
     void savingsWithoutKoreanAccountGuidesUserToAccountFirst() {

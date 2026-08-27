@@ -20,6 +20,8 @@ export type RecommendationItem = {
   unknownCount: number;
   purposeMatched: boolean;
   preferredConditionMatches: number;
+  recommendationReasonCodes: string[];
+  nextPreparationField?: string | null;
   eligibility: EligibilityResult;
 };
 

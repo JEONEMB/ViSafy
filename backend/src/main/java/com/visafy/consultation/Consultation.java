@@ -35,5 +35,11 @@ public class Consultation {
         this.createdAt = createdAt; this.expiresAt = expiresAt;
     }
     public String getId() { return id; }
+    public String getProfileSessionHash() { return profileSessionHash; }
+    public Long getProductId() { return productId; }
+    public String getRuleKey() { return ruleKey; }
+    public String getQuestion() { return question; }
+    public String getAnswer() { return answer; }
+    public String getLanguage() { return language; }
     public Instant getCreatedAt() { return createdAt; }
 }

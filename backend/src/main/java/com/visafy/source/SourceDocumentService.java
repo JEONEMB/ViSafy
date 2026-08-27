@@ -139,7 +139,7 @@ public class SourceDocumentService {
         }
     }
 
-    private void validateOfficialUrl(String sourceUrl) {
+    public void validateOfficialUrl(String sourceUrl) {
         try {
             URI uri = URI.create(sourceUrl.strip());
             String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase();

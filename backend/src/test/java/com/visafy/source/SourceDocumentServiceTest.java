@@ -84,6 +84,18 @@ class SourceDocumentServiceTest {
     }
 
     @Test
+    void validatesOfficialApplicationUrlsWithTheSameAllowlist() {
+        service.validateOfficialUrl("https://obank.kbstar.com/apply");
+
+        assertThatThrownBy(() -> service.validateOfficialUrl("https://kbstar.com.attacker.example/apply"))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("official-domain allowlist");
+        assertThatThrownBy(() -> service.validateOfficialUrl("http://www.kbstar.com/apply"))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("official-domain allowlist");
+    }
+
+    @Test
     void changedSnapshotMarksPreviouslyApprovedSourceForReview() {
         SourceDocument previous = new SourceDocument("Bank", SourceType.PRODUCT_PAGE, "Product",
                 "https://www.kbstar.com/product", "old text", "a".repeat(64), null, null, "ko");

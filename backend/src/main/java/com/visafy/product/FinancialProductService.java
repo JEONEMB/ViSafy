@@ -122,6 +122,16 @@ public class FinancialProductService {
         return product;
     }
 
+    @Transactional
+    public FinancialProduct updateOfficialApplicationUrl(Long id, String url) {
+        FinancialProduct product = getAdminEntity(id);
+        if (url != null && !url.isBlank()) {
+            sourceService.validateOfficialUrl(url);
+        }
+        product.updateOfficialApplicationUrl(url);
+        return product;
+    }
+
     public ProductView getAdmin(Long id) { return toView(getAdminEntity(id)); }
 
     private FinancialProduct getAdminEntity(Long id) {

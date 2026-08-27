@@ -64,12 +64,45 @@ public class RecommendationService {
         boolean purposeMatched = product.getFinancialPurpose().name()
                 .equalsIgnoreCase(FinancialPurposeCode.from(profile.getFinancialPurpose()).productPurpose());
         int preferredMatches = preferredBankMatches(profile, product) ? 1 : 0;
+        List<String> reasons = new ArrayList<>();
+        if (purposeMatched) reasons.add("FINANCIAL_PURPOSE_MATCH");
+        if (passed > 0) reasons.add("PUBLIC_CONDITIONS_CONFIRMED");
+        if (eligibility.failedRules().isEmpty()) reasons.add("NO_EXPLICIT_FAILURE");
+        if (eligibility.unknownRules().isEmpty()) reasons.add("NO_UNKNOWN_CONDITION");
+        String nextField = eligibility.requiredFields().stream()
+                .filter(field -> profileValueMissing(profile, field)).findFirst().orElse(null);
         return new RecommendationItem(product.getId(), product.getInstitution(), product.getProductName(),
                 product.getProductType(), product.getFinancialPurpose(), product.getProductAudience(),
                 product.getProductCategory(), product.getTargetSummary(), product.getRequiredDocuments(),
                 product.getApplicationMethod(),
                 product.getInformationBaseDate(), eligibility.status(), passed, totalHard, additionalChecks,
-                eligibility.unknownRules().size(), purposeMatched, preferredMatches, eligibility);
+                eligibility.unknownRules().size(), purposeMatched, preferredMatches, List.copyOf(reasons), nextField, eligibility);
+    }
+
+    private boolean profileValueMissing(TempProfile profile, String field) {
+        return switch (field) {
+            case "birthDate" -> profile.getBirthDate() == null;
+            case "visaType" -> profile.getVisaType() == null;
+            case "visaExpiry" -> profile.getVisaExpiry() == null;
+            case "residencyStartDate" -> profile.getResidencyStartDate() == null;
+            case "residentStatus" -> profile.getResidentStatus() == null;
+            case "occupation" -> profile.getOccupation() == null;
+            case "employmentType" -> profile.getEmploymentType() == null;
+            case "monthlyIncome" -> profile.getMonthlyIncome() == null;
+            case "employmentDurationMonths" -> profile.getEmploymentDurationMonths() == null;
+            case "hasExistingProductAccount" -> profile.getHasExistingProductAccount() == null;
+            case "desiredMonthlyAmount" -> profile.getDesiredMonthlyAmount() == null;
+            case "hasResidenceCard" -> profile.getHasResidenceCard() == null;
+            case "hasPassport" -> profile.getHasPassport() == null;
+            case "hasDomesticPhone" -> profile.getHasDomesticPhone() == null;
+            case "canDomesticPhoneVerify" -> profile.getCanDomesticPhoneVerify() == null;
+            case "hasKoreanBankAccount" -> profile.getHasKoreanBankAccount() == null;
+            case "hasKoreanCreditHistory" -> profile.getHasKoreanCreditHistory() == null;
+            case "preferredChannel" -> profile.getPreferredChannel() == null;
+            case "remittanceCountry" -> profile.getRemittanceCountry() == null;
+            case "desiredAmount" -> profile.getDesiredAmount() == null;
+            default -> false;
+        };
     }
 
     private boolean preferredBankMatches(TempProfile profile, FinancialProduct product) {
