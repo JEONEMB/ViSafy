@@ -34,11 +34,12 @@ $content = @(
     "ADMIN_JWT_SECRET=$(New-Secret)"
     "RAG_INTERNAL_TOKEN=$(New-Secret)"
     'LLM_PROVIDER=openai'
-    "LLM_API_KEY=$OpenAiApiKey"
-    "LLM_MODEL=$OpenAiModel"
-    'EMBEDDING_PROVIDER=hash'
-    'EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
+    "OPENAI_API_KEY=$OpenAiApiKey"
+    "OPENAI_MODEL=$OpenAiModel"
+    'OPENAI_REASONING_EFFORT=medium'
+    'EMBEDDING_PROVIDER=fastembed'
+    'EMBEDDING_MODEL=intfloat/multilingual-e5-small'
+    'EMBEDDING_DIMENSIONS=384'
 )
 [IO.File]::WriteAllLines($target, $content, [Text.UTF8Encoding]::new($false))
 Write-Output "Created $target. This file is ignored by Git."
-
