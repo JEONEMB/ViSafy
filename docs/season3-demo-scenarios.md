@@ -1,49 +1,78 @@
-# SSAFIN Season 3 고정 Demo 시나리오
+# SSAFIN Season 3 Demo 검증 시나리오
 
-이 문서는 대회 시연에서 동일한 입력과 기대 결과를 재현하기 위한 기준이다. 아래 상품명은 실제 승인 Source 패키지가 등록된 상품으로 교체하며, 공식 근거가 없는 임시 상품을 `READY`로 만들지 않는다.
+이 문서는 [season3-demo-manifest.md](season3-demo-manifest.md)에 고정한 Demo A~E의 합격 기준을 정의한다.
 
-## 공통 역할 경계
+## 공통 판단 경계
 
 ```text
 Official Source → Human Verification → Rule Engine → Eligibility
-Access Rule → Identity / Channel / Document
+Access Evidence → Identity / Branch / Online / Document
 RAG → 승인된 공식 근거 검색
 LLM → 쉬운 설명 / 번역 / 다음 행동 / 은행 문의문
 ```
 
-LLM은 Eligibility 또는 Access 상태를 변경하지 않으며, 가입 가능성·승인확률·신용등급·은행 내부심사 기준을 추정하지 않는다.
+LLM은 Eligibility 또는 Access 상태를 변경하지 않는다. 국적·비자·채널·서류·금액·대출 승인 가능성을 Source 없이 생성하지 않는다.
 
-## Demo A — 일반상품과 최소 입력
+## Demo A 합격 기준
 
-- Profile: `nationality=VN`, `residentStatus=RESIDENT`, `hasResidenceCard=true`, `hasDomesticPhone=true`, `financialPurpose=SAVE_MONEY`
-- Product: `productAudience=GENERAL`, 승인 Visa Rule 없음
-- 기대: `requiredFields`에 `visaType`, `visaExpiry`가 없고 신분확인·채널·서류는 각각 공식 Access 근거로 표시
-- 자동검증: `RequiredProfileFieldsTest.generalProductWithoutVisaRuleDoesNotAskVisaQuestions`, `AiExplanationServiceTest.generalProductWithoutVisaRuleDoesNotRequireOrInventVisaFacts`
+- `KB-MY-SAVINGS` 조회 성공
+- `productAudience=GENERAL`
+- `requiredFields`에 Visa 관련 필드 없음
+- 일반상품이라는 이유만으로 국적 제한을 생성하지 않음
+- 공식 Rule과 Source가 결과에 연결됨
 
-## Demo B — 일반상품과 외국인 특화상품 비교
+## Demo B 합격 기준
 
-- 상품 목록에서 `GENERAL`과 `FOREIGNER_SPECIALIZED` 배지를 같은 화면에 표시
-- 정렬이나 추천은 외국인 특화 여부가 아니라 Eligibility 결과, 충족 HARD Rule 수, UNKNOWN 수, 금융목적 일치 순서 사용
-- 핵심 문구: 외국인이라고 외국인 전용상품만 이용하는 것은 아니다.
+- `KB-MY-SAVINGS`와 `HANA-EASY-SAVINGS-2025`가 같은 추천 결과에 표시됨
+- 외국인 특화 여부가 추천 점수나 가입 가능성을 자동 결정하지 않음
+- 추천 이유가 충족 HARD Rule 수, UNKNOWN 수, 금융 목적 일치로 설명됨
 
-## Demo C — 영업점 가능·모바일 미확인
+## Demo C 합격 기준
 
-- 공식 Channel Evidence: 영업점 이용만 확인
-- 기대: `eligibilityStatus=PUBLIC_CONDITIONS_MET`, `branch=AVAILABLE`, `online=UNKNOWN`, `accessStatus=ACCESS_READY_BRANCH_ONLY`
-- 자동검증: `AccessAssessmentServiceTest.branchEvidenceNeverInventsMobileAvailability`
+- `HANA-SALARY-COMPOUND-SAVINGS`의 Branch와 Online 상태가 별도로 표시됨
+- 상품 수준 모바일 채널과 외국인 모바일 신규 가능성을 구분함
+- 직접 근거가 없는 외국인 모바일 상태는 `UNKNOWN`
 
-## Demo D — Visa가 실제 필요한 외국인 대출
+## Demo D 합격 기준
 
-- 승인 HARD Rule: `VISA_TYPE`, `VISA_REMAINING_MONTH`, `EMPLOYMENT_DURATION_MONTHS`, `MONTHLY_INCOME`
-- 기대: 해당 상품 상세에서만 `visaType`, `visaExpiry`, `employmentDurationMonths`, `monthlyIncome`을 동적으로 요청
-- 자동검증: `RequiredProfileFieldsTest.foreignerLoanAsksVisaOnlyWhenApprovedHardRulesRequireIt`, Playwright `user-journey.spec.ts`
+- `HANA-EZ-LOAN`에서만 승인 Rule에 필요한 Visa·체류·재직 입력을 동적으로 요청함
+- E-7/E-9, 국내 거주기간, 급여소득 기간을 결정론적으로 비교함
+- 거래외국환 지정과 E-9 최초 입국 확인을 은행 확인사항으로 표시함
+- 외국인등록증·여권·고용 및 소득 관련 서류를 공식 Source와 함께 표시함
+- 영업점 채널은 확인되고 모바일 신청은 생성하지 않음
 
-## Demo E — 공식 Access 자료 부족
+## Demo E 합격 기준
 
-- 신분확인·영업점·모바일 Channel Evidence 없음
-- 기대: `ACCESS_UNKNOWN`; RAG 근거가 없으면 금융기관 추가 확인 고정 안내
-- 자동검증: `AccessAssessmentServiceTest.noOfficialAccessEvidenceRemainsUnknown`, `test_no_evidence_uses_fixed_safe_fallback_and_full_disclaimer`
+- `SHINHAN-SOL-GLOBAL-JEONSE`를 PASS 또는 READY로 간주하지 않음
+- 상품 존재를 확인한 보조 문구를 가입조건 근거로 승격하지 않음
+- `NOT_READY`, `SOURCE_INSUFFICIENT`, `ACCESS_UNKNOWN`을 사용자용 쉬운 문구로 표시함
+- Agent가 신한은행에 확인할 항목을 구조화함
 
-## 제출 데이터 Gate
+## Agent 질문 세트
 
-Demo A~E를 실제 상품으로 고정하려면 각 상품에 공식 상품페이지, 상품설명서/약관, 외국인 실명확인, 채널, 필요서류, 신청절차, Rule Evidence와 정보 기준일이 필요하다. Source 간 충돌 또는 미검수 후보가 있으면 Demo 결과를 강제로 고정하지 않고 `INSUFFICIENT_INFORMATION` 또는 `ACCESS_UNKNOWN`으로 유지한다.
+Demo D에서 다음 질문을 순서대로 사용한다.
+
+```text
+1. 이 대출은 누가 신청할 수 있어?
+2. E-9 비자인 내가 준비할 서류는 무엇이야?
+3. 모바일로 신청할 수 있어?
+4. 그럼 은행에 무엇을 물어봐야 해?
+5. Can I apply online and what documents should I bring?
+```
+
+합격 기준:
+
+- 질문에 대한 직접 답변이 첫 문장에 표시됨
+- 한국어 질문은 한국어, 영어 질문은 영어로 답변
+- 후속 질문이 같은 상품의 대화 맥락을 유지함
+- 승인 Source 인용이 연결됨
+- 모바일 근거가 없으면 영업점만 안내하고 모바일 가능을 만들지 않음
+
+## 시연 직전 체크
+
+- 새 브라우저에서 Landing부터 시작
+- 고정 Profile 값 준비
+- OpenAI Dashboard와 AI Service Health 확인
+- 공식 Source URL을 새 탭에서 미리 검증
+- Demo E의 부족 상태가 변경되지 않았는지 확인
+- 화면 녹화 예비본과 캡처 준비

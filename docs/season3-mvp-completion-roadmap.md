@@ -93,22 +93,28 @@ Season 3 PARTIAL: 3개
 
 담당: 사용자 자료 수집 + Codex 데이터 반영 지원
 
-현재 누락 (2026-08-28 실행 DB 기준 재측정):
+2026-08-28 공식자료 재검수 및 Flyway V24 적용 결과:
 
 ```text
-활성 상품 11개 중 8개는 신분확인·Channel·필요서류 Evidence를 모두 보유
-Evidence 미보유 3개는 전부 FOREIGNER_SPECIALIZED
-  SHINHAN-SOL-GLOBAL-JEONSE        승인 Rule 자체가 없어 진단 불가
-  HANA-EZ-LOAN                     가입조건 Rule은 있으나 Access Evidence 0건
-  SHINHAN-SOL-GLOBAL-SAVINGS-2025  가입조건 Rule은 있으나 Access Evidence 0건
+HANA-EZ-LOAN
+  신분확인·영업점·필요서류 Evidence 보완, Evidence Coverage 87%
+  NEED_BANK_CONFIRMATION / ACCESS_ADDITIONAL_DOCUMENTS
+
+SHINHAN-SOL-GLOBAL-SAVINGS-2025
+  상품 수준 비대면 채널 문구 보완, 외국인 모바일 신규는 UNKNOWN 유지
+  NEED_BANK_CONFIRMATION / ACCESS_UNKNOWN, Evidence Coverage 62%
+
+SHINHAN-SOL-GLOBAL-JEONSE
+  상품 존재 근거만 확인, 직접 가입조건·신분확인·채널·서류 Source 미발견
+  INSUFFICIENT_INFORMATION / ACCESS_UNKNOWN, Evidence Coverage 25%
 ```
 
-- [ ] 위 3개 상품의 외국인등록증·여권·국내거소신고증 등 사용 가능한 신분증 확인
-- [ ] 신분증 안내가 가입조건인지 단순 신분확인 방법인지 분류
-- [ ] 영업점 이용 가능 여부 확인
-- [ ] 모바일 앱 이용 가능 여부 확인
-- [ ] 비대면 이용 여부가 없으면 `UNKNOWN` 유지
-- [ ] 공식적으로 확인되지 않은 채널을 `AVAILABLE`로 등록하지 않기
+- [x] 위 3개 상품의 공식 신분증 문구 조사(미공개 항목은 미확인으로 기록)
+- [x] 신분증 안내가 가입조건인지 단순 신분확인 방법인지 분류
+- [x] 영업점 이용 가능 여부 조사(명시된 EZ Loan만 AVAILABLE)
+- [x] 모바일 앱 이용 가능 여부 조사
+- [x] 비대면 이용 여부가 없거나 고객 범위가 불명확하면 `UNKNOWN` 유지
+- [x] 공식적으로 확인되지 않은 채널을 `AVAILABLE`로 등록하지 않기
 
 완료조건:
 
@@ -123,12 +129,12 @@ Identity / Branch / Mobile 상태가 각각 표시됨
 
 담당: 공동
 
-- [ ] Demo A에 사용할 실제 일반 예·적금 선정
-- [ ] Demo B에 사용할 일반상품·외국인 특화상품 쌍 선정
-- [ ] Demo C에 사용할 영업점 가능·모바일 미확인 상품 선정
-- [ ] Demo D에 사용할 Visa·재직·소득 Rule 대출상품 선정
-- [ ] Demo E에 사용할 공식 Access 자료 부족 상품 선정
-- [ ] 각 Demo의 상품 ID와 대표 Profile 고정
+- [x] Demo A에 사용할 실제 일반 예·적금 선정
+- [x] Demo B에 사용할 일반상품·외국인 특화상품 쌍 선정
+- [x] Demo C에 사용할 영업점 가능·모바일 미확인 상품 선정
+- [x] Demo D에 사용할 Visa·재직·소득 Rule 대출상품 선정
+- [x] Demo E에 사용할 공식 Access 자료 부족 상품 선정
+- [x] 각 Demo의 Product Code·현재 ID와 대표 Profile 고정
 - [ ] Demo 결과 화면 캡처
 - [ ] 공식 Source 링크가 시연 중 열리는지 확인
 - [ ] Demo 결과와 공식 원문을 사람 검수
@@ -139,13 +145,13 @@ Identity / Branch / Mobile 상태가 각각 표시됨
 
 담당: 공동
 
-- [ ] 0:00~0:30 문제 정의와 Landing
-- [ ] 0:30~1:00 언어·금융목적·준비상태 입력
-- [ ] 1:00~1:30 Financial Journey와 일반·특화상품 비교
-- [ ] 1:30~2:10 상품별 동적 질문과 Eligibility 결과
-- [ ] 2:10~2:35 Identity·Branch·Mobile Access 결과
-- [ ] 2:35~2:50 RAG 공식 근거와 Source 링크
-- [ ] 2:50~3:00 은행 문의문과 최종 메시지
+- [x] 0:00~0:25 문제 정의와 Landing
+- [x] 0:25~0:50 언어·금융목적·준비상태 입력
+- [x] 0:50~1:15 Financial Journey와 일반·특화상품 비교
+- [x] 1:15~1:40 상품별 동적 질문과 Eligibility 결과
+- [x] 1:40~2:15 Identity·Branch·Mobile Access 결과
+- [x] 2:15~2:40 RAG 공식 근거와 Source 링크
+- [x] 2:40~3:00 자료 부족 Guardrail·문의문·최종 메시지
 
 반드시 보여줄 메시지:
 
@@ -303,15 +309,15 @@ ANTHROPIC_API_KEY + ANTHROPIC_MODEL
 
 ## 6. 최종 회귀 테스트
 
-- [ ] Backend 전체 테스트 통과
+- [x] Backend 전체 테스트 통과
 - [ ] AI Service 전체 테스트 통과
 - [ ] Next.js production build 통과
 - [ ] Playwright E2E 통과
-- [ ] Demo A 일반상품에서 Visa 질문 없음
-- [ ] Demo B 일반·특화상품 동시 표시
-- [ ] Demo C Branch AVAILABLE / Mobile UNKNOWN
-- [ ] Demo D Visa Rule에 따른 동적 입력
-- [ ] Demo E ACCESS_UNKNOWN과 은행 확인 안내
+- [x] Demo A 일반상품에서 Visa 질문 없음
+- [x] Demo B 일반·특화상품 동시 표시
+- [x] Demo C Branch AVAILABLE / Mobile UNKNOWN
+- [x] Demo D Visa Rule에 따른 동적 입력
+- [x] Demo E ACCESS_UNKNOWN과 은행 확인 안내
 - [ ] 한국어·영어·베트남어·중국어·일본어·태국어 핵심 값 동일
 - [ ] Source Conflict 자동 선택 금지
 - [ ] 만료 Rule 진단 제외

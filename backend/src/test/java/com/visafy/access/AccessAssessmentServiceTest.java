@@ -88,6 +88,23 @@ class AccessAssessmentServiceTest {
     }
 
     @Test
+    void unconfirmedForeignerMobileStatementNeverBecomesAvailable() {
+        SourceDocument source = source();
+        RuleCandidate channel = candidate(source, "PRODUCT_NON_FACE_TO_FACE_CHANNEL", "true",
+                RuleNature.CHANNEL_REQUIREMENT,
+                "외국인 모바일 신규 가능 여부는 공식 자료에서 확인 필요");
+        channel.approve();
+        TempProfile profile = mock(TempProfile.class);
+        when(profile.getLanguage()).thenReturn("ko");
+        when(repository.findByProductCodeOrderByCreatedAtDesc("DEMO")).thenReturn(List.of(channel));
+
+        AccessAssessment result = service.assess(profile, product(source));
+
+        assertThat(result.online()).isEqualTo(AccessAssessment.AccessAvailability.UNKNOWN);
+        assertThat(result.status()).isEqualTo(AccessStatus.ACCESS_UNKNOWN);
+    }
+
+    @Test
     void branchEvidenceNeverInventsMobileAvailability() {
         SourceDocument source = source();
         RuleCandidate branch = candidate(source, "BRANCH_ONLY", "true", RuleNature.CHANNEL_REQUIREMENT,

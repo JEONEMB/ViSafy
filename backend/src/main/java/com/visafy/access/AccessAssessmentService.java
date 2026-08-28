@@ -97,8 +97,17 @@ public class AccessAssessmentService {
     private boolean explicitlySupportsForeignerAccess(RuleCandidate candidate) {
         String key = candidate.getRuleKey().toUpperCase(Locale.ROOT);
         String evidence = combined(candidate);
+        if (containsUnconfirmedOrNegativeAccess(evidence)) return false;
         return key.equals("NATIONALITY") || key.equals("IS_FOREIGNER") || key.equals("FOREIGNER_ALLOWED")
                 || evidence.contains("외국인") || evidence.contains("FOREIGNER");
+    }
+
+    private boolean containsUnconfirmedOrNegativeAccess(String evidence) {
+        return evidence.contains("UNKNOWN") || evidence.contains("UNVERIFIED")
+                || evidence.contains("NOT CONFIRMED") || evidence.contains("NEED_CONFIRMATION")
+                || evidence.contains("확인 필요") || evidence.contains("미확인")
+                || evidence.contains("확정하지 않") || evidence.contains("어렵습니다")
+                || evidence.contains("이용 불가") || evidence.contains("가입 불가");
     }
 
     private boolean concernsAccess(RuleCandidate candidate) {
