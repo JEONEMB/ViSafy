@@ -1,399 +1,163 @@
-# SSAFIN Season 3 MVP 완료 로드맵
+# SSAFIN Season 3 MVP 남은 작업
 
-> 작성 기준: 2026-08-25
-> 목적: Season 3 최종 완료조건 15개를 모두 충족하고 2026 금융 AI Challenge 제출 가능한 상태로 만들기
+> 갱신일: 2026-08-28
+>
+> 기준 커밋: `c8088d6`
+>
+> 목표: 2026 금융 AI Challenge 공개 심사 전에 실제로 남은 작업만 관리한다.
 
-## 1. 현재 상태
+## 1. 현재 완료 기준선
 
-```text
-완료: 8개
-부분 충족: 5개
-미충족: 2개
-```
+다음 항목은 구현과 데이터 반영이 끝났으므로 남은 작업에서 제외한다.
 
-실행 데이터 기준:
+- 일반상품 5개 및 외국인 특화상품 통합 조회
+- Season 3 READY 8개와 3개 금융기관 데이터
+- 특화상품 3개의 확인 가능한 Access Evidence 반영
+- 근거가 불충분한 항목을 `UNKNOWN` 또는 `INSUFFICIENT_INFORMATION`으로 유지하는 Guardrail
+- Demo A~E 실제 Product Code·대표 Profile·기대 결과 고정
+- 3분 시연 순서와 핵심 메시지 작성
+- 다국어 Semantic Embedding 적용
+- OpenAI Responses API와 안전한 템플릿 Fallback 연결
+- LLM Rule Candidate 제안과 원문 대조 검증
+- `contentHash` 변경 감지 및 사용자용 변경 안내 배지
+- Backend 회귀 테스트 85건 통과
 
-```text
-활성 상품: 11개
-기관: 3곳
-GENERAL: 5개
-FOREIGNER_SPECIALIZED: 6개
-Season 3 READY: 8개
-Season 3 PARTIAL: 3개
-완성된 Season 3 Source 패키지: 8개
-```
-
-현재 가장 큰 문제는 기능 부족보다 실제 일반상품과 Access Evidence 부족이다.
-
----
-
-## 2. P0 — 제출 전 필수 작업
-
-### P0-1. 일반 금융상품 데이터 구축
-
-담당: 사용자 자료 수집 + 관리자 검수
-
-- [x] 일반 입출금계좌 2개 조사 후보 선정
-- [x] 일반 예·적금 3개 조사 후보 선정
-- [x] 신한·하나·KB 3개 금융기관 후보 확보
-- [x] 각 상품을 `productAudience=GENERAL`로 등록
-- [x] 상품 Category 등록
-- [x] 상품 금융목적 연결
-- [x] 일반상품과 외국인 특화상품이 상품 목록에 함께 표시되는지 확인
-
-상품별 필수 자료:
-
-```text
-공식 상품페이지 URL
-상품설명서 또는 약관
-상품 가입대상 원문
-외국인 실명확인 안내
-영업점 가입 안내
-모바일·비대면 가입 안내
-필요서류
-신청절차
-정보 기준일
-```
-
-완료조건:
-
-- `GENERAL` 상품이 실제 API에서 5개 이상 조회된다.
-- 일반상품과 외국인 특화상품을 같은 화면에서 비교할 수 있다.
-- 일반상품에 Visa Rule이 없다면 Visa 질문이 나타나지 않는다.
-
-### P0-2. Season 3 READY 패키지 완성
-
-담당: 사용자 자료 수집 + 관리자 승인
-
-- [x] 상품페이지 Evidence 등록
-- [x] 상품설명서·약관 Evidence 등록
-- [x] 승인 HARD Rule Evidence 연결
-- [x] 외국인 신분확인 Evidence 연결
-- [x] Channel Evidence 연결
-- [x] 필요서류 Evidence 연결
-- [x] 신청절차 Evidence 연결
-- [x] 정보 기준일과 최근 검증일 입력
-- [x] Source Snapshot과 `contentHash` 확인
-- [x] Source와 Rule 승인 기록 저장
-
-목표:
-
-| 분야 | 최소 READY 수 |
-|---|---:|
-| 입출금계좌 | 2 |
-| 일반 예·적금 | 3 |
-| 외국인 특화상품 | 2 |
-| 해외송금 | 1 |
-| 대출 | 1 |
-| 전체 | 8개 이상 |
-
-하나의 상품이 외국인 특화상품과 예·적금 등 여러 목표에 동시에 포함될 수 있다.
-
-### P0-3. Access Evidence 보완
-
-담당: 사용자 자료 수집 + Codex 데이터 반영 지원
-
-2026-08-28 공식자료 재검수 및 Flyway V24 적용 결과:
-
-```text
-HANA-EZ-LOAN
-  신분확인·영업점·필요서류 Evidence 보완, Evidence Coverage 87%
-  NEED_BANK_CONFIRMATION / ACCESS_ADDITIONAL_DOCUMENTS
-
-SHINHAN-SOL-GLOBAL-SAVINGS-2025
-  상품 수준 비대면 채널 문구 보완, 외국인 모바일 신규는 UNKNOWN 유지
-  NEED_BANK_CONFIRMATION / ACCESS_UNKNOWN, Evidence Coverage 62%
-
-SHINHAN-SOL-GLOBAL-JEONSE
-  상품 존재 근거만 확인, 직접 가입조건·신분확인·채널·서류 Source 미발견
-  INSUFFICIENT_INFORMATION / ACCESS_UNKNOWN, Evidence Coverage 25%
-```
-
-- [x] 위 3개 상품의 공식 신분증 문구 조사(미공개 항목은 미확인으로 기록)
-- [x] 신분증 안내가 가입조건인지 단순 신분확인 방법인지 분류
-- [x] 영업점 이용 가능 여부 조사(명시된 EZ Loan만 AVAILABLE)
-- [x] 모바일 앱 이용 가능 여부 조사
-- [x] 비대면 이용 여부가 없거나 고객 범위가 불명확하면 `UNKNOWN` 유지
-- [x] 공식적으로 확인되지 않은 채널을 `AVAILABLE`로 등록하지 않기
-
-완료조건:
-
-```text
-Eligibility와 Access 결과가 별도 표시됨
-Identity / Branch / Mobile 상태가 각각 표시됨
-근거가 없으면 ACCESS_UNKNOWN
-영업점만 확인되면 ACCESS_READY_BRANCH_ONLY
-```
-
-### P0-4. Demo A~E 실제 상품 고정
-
-담당: 공동
-
-- [x] Demo A에 사용할 실제 일반 예·적금 선정
-- [x] Demo B에 사용할 일반상품·외국인 특화상품 쌍 선정
-- [x] Demo C에 사용할 영업점 가능·모바일 미확인 상품 선정
-- [x] Demo D에 사용할 Visa·재직·소득 Rule 대출상품 선정
-- [x] Demo E에 사용할 공식 Access 자료 부족 상품 선정
-- [x] 각 Demo의 Product Code·현재 ID와 대표 Profile 고정
-- [ ] Demo 결과 화면 캡처
-- [ ] 공식 Source 링크가 시연 중 열리는지 확인
-- [ ] Demo 결과와 공식 원문을 사람 검수
-
-기준 문서: [`season3-demo-scenarios.md`](season3-demo-scenarios.md)
-
-### P0-5. 3분 시연 시나리오 작성
-
-담당: 공동
-
-- [x] 0:00~0:25 문제 정의와 Landing
-- [x] 0:25~0:50 언어·금융목적·준비상태 입력
-- [x] 0:50~1:15 Financial Journey와 일반·특화상품 비교
-- [x] 1:15~1:40 상품별 동적 질문과 Eligibility 결과
-- [x] 1:40~2:15 Identity·Branch·Mobile Access 결과
-- [x] 2:15~2:40 RAG 공식 근거와 Source 링크
-- [x] 2:40~3:00 자료 부족 Guardrail·문의문·최종 메시지
-
-반드시 보여줄 메시지:
-
-> 외국인이라고 외국인 전용상품만 이용하는 것은 아닙니다.
-
-> SSAFIN은 가입 승인을 예측하지 않고, 공개조건과 이용 경로를 공식 근거로 설명합니다.
-
-### P0-6. 실제 AI 연결 또는 표현 조정
-
-담당: Codex 구현 + 사용자 Provider 선택
-
-선택지 A — 실제 LLM 연결 (채택, 2026-08-28 실호출 검증 완료):
-
-- [x] OpenAI, Gemini, Anthropic 중 하나 선택 — OpenAI Responses API
-- [x] Provider Adapter 구현
-- [x] 검색된 공식 Context만 LLM에 전달
-- [x] Eligibility와 Access 상태는 읽기 전용으로 전달
-- [x] 구조화 숫자·금액·Visa Code 보존
-- [x] 근거가 없으면 고정 Fallback 반환
-- [x] 템플릿 설명을 장애 시 Fallback으로 유지
-- [x] 로컬 실호출에서 `OPENAI_RESPONSES_API`, `OPENAI_STRUCTURED_OUTPUT` guardrail 확인
-- [ ] 운영 배포환경 Secret으로 같은 호출 재검증하고 응답 캡처 보관
-
-선택지 B — 현재 구조 유지:
-
-- [ ] 제출 문구를 `LLM Agent`가 아닌 `공식 Source 기반 AI 금융 정착 Agent MVP`로 통일
-- [ ] 현재 설명·번역·문의문이 검증 가능한 템플릿이라는 점을 명시
-- [ ] RAG 검색과 Rule Engine 결합을 AI 역할의 핵심으로 설명
-
-권장: 대회 AI 필연성을 강화하려면 선택지 A를 적용한다.
-
-### P0-7. UI 오류 보완
-
-담당: Codex
-
-- [x] Visa 정보가 없는 일반상품에서 `null months`를 숨김
-- [x] 비자와 무관한 UNKNOWN Rule 메시지에서 Visa 문구를 제거
-- [x] 일반상품 AI 설명에서 값이 없는 Visa 카드가 나타나지 않도록 처리
-- [x] `GENERAL`, `FOREIGNER_SPECIALIZED`, `POLICY` 배지 번역 적용
-- [x] Access 상태값을 사용자용 쉬운 문구로 변환
-
-### P0-8. README와 실제 상태 일치
-
-담당: Codex
-
-- [x] Season 2 READY 5개와 Season 3 READY 수를 별도 표기
-- [x] 현재 실행 데이터 수를 다시 측정
-- [x] Demo A~E 실행법 추가
-- [x] 실제 LLM 사용 여부를 정확히 표기
-- [ ] 공개 HTTPS 제출 URL 확정 후 실제 주소와 운영 담당자 추가
+`SHINHAN-SOL-GLOBAL-JEONSE`의 근거 부족은 미완성 데이터가 아니라 Demo E에서 보여줄 의도된 안전 결과다. 직접 상품설명서가 추가 확보되기 전에는 시스템이 가입 가능 여부를 추정하지 않는다.
 
 ---
 
-## 3. P1 — AI와 검색 품질 보강
+## 2. P0 — 공개 제출 전 필수
 
-### P1-1. 다국어 Semantic Embedding
+### P0-1. 공개 HTTPS 배포와 운영 Secret 교체
 
-- [ ] 현재 384차원 해시 Embedding을 기준선으로 측정
-- [ ] 한국어·영어·베트남어 다국어 Embedding 모델 선정
-- [ ] 로컬 모델 또는 외부 Embedding API 선택
-- [ ] 같은 질문의 언어별 Top-K 문서 일치율 비교
-- [ ] 다른 상품 Source 혼입 여부 측정
+현재 유일한 외부 공개 블로커다.
 
-### P1-2. RAG 평가 데이터셋
-
-- [ ] 상품별 대표 질문 5개 이상 작성
-- [ ] 질문별 기대 Source 문서 지정
-- [ ] Top-K 포함률 측정
-- [ ] Source 인용 정확성 측정
-- [ ] 숫자·Visa·금액 무결성 측정
-- [ ] 근거 없는 답변 차단률 측정
-
-### P1-3. AI Rule Candidate 추출
-
-- [x] 공식 문서에서 Rule Candidate 추출
-- [x] `ruleKey`, `operator`, `value`, `ruleLevel`, `ruleNature` 구조화
-- [x] Source Excerpt와 Locator 필수 반환
-- [x] 관리자 승인 전 Runtime 사용 금지
-- [x] 승인·수정·거절 이력 저장
-- [x] Backend `POST /api/admin/rule-candidates/extract`와 `/admin/sources` 화면 연결
-- [x] 추출 문장이 저장 Snapshot 원문에 실재하는지 재대조 후 미검증 후보 폐기
-- [x] 같은 Source의 동일 조건 재추출 시 중복 저장 금지
-- [x] 정규식 추출기를 LLM 후보 제안 + 원문 대조 검증 구조로 확장
-- [x] LLM 제안 값이 Rule Engine 비교 형식과 다르면 저장 전 폐기
-- [x] API Key 누락·Provider 장애 시 규칙 기반 추출만으로 계속 동작
-
-### P1-4. 문서 처리
-
-- [ ] PDF Text Extraction
-- [ ] PDF 페이지 번호 보존
-- [ ] 스캔 PDF OCR 검토
-- [ ] HTML 본문 추출기 구현
-- [x] `contentHash` 변경 감지
-- [x] 변경 Source 재검수 대기 상태를 상품 상세에서 사용자에게 표시(6개 언어)
-- [ ] 변경 Source 재검수 알림(메일·푸시 등 별도 채널)
-
----
-
-## 4. 운영 Secret 및 API Key
-
-### 현재 로컬 실행
-
-외부 API Key 없이 실행 가능하다.
-
-### 운영 배포 전 필수 Secret
-
+- [ ] 공개 Linux 서버 또는 배포 플랫폼 준비
+- [ ] 도메인과 DNS 연결
+- [ ] Caddy를 통한 HTTPS 인증서 발급 확인
+- [ ] Frontend·Backend·AI Service·MySQL 운영 구성 기동
 - [ ] `RAG_INTERNAL_TOKEN`을 긴 무작위 값으로 교체
-- [ ] `ADMIN_PASSWORD` 교체
-- [ ] `DB_PASSWORD` 교체
-- [ ] `MYSQL_ROOT_PASSWORD` 교체
-- [ ] Secret을 Git이 아닌 배포환경 Secret Manager에서 관리
-- [ ] `.env`가 Git 추적 대상이 아닌지 확인
-
-### 실제 LLM 연결 시
-
-다음 중 하나만 선택한다.
-
-```text
-OPENAI_API_KEY + OPENAI_MODEL + OPENAI_REASONING_EFFORT
-GEMINI_API_KEY + GEMINI_MODEL
-ANTHROPIC_API_KEY + ANTHROPIC_MODEL
-```
-
-현재 범용 설정인 `LLM_API_KEY`, `LLM_MODEL`을 사용할 경우 Provider Adapter가 필요하다.
-
-### 선택 항목
-
-- [ ] 외부 Embedding API Key
-- [ ] OCR API Key
-- [ ] 오류 모니터링용 Sentry DSN
-- [ ] 배포 플랫폼 Token 또는 Service Account
-
-은행 API, Open Banking, MyData API Key는 현재 MVP에 필요하지 않다.
-
----
-
-## 5. 배포와 보안
-
-- [ ] Frontend 공개 HTTPS URL 배포
-- [ ] Backend 공개 또는 내부 HTTPS URL 구성
-- [ ] MySQL 운영 DB 구성
-- [ ] AI Service와 Backend 내부 통신 제한
-- [ ] `/internal/rag/**` 외부 접근 차단
-- [ ] 운영 CORS Domain 설정
-- [ ] 기본 관리자 계정 제거
-- [ ] HTTP Basic을 HTTPS로 보호
-- [ ] 가능하면 HttpOnly Cookie 기반 관리자 인증으로 교체
-- [ ] 운영 DB와 ChromaDB 백업 설정
+- [ ] `ADMIN_PASSWORD` 교체 및 기본 관리자 비밀번호 제거
+- [ ] `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD` 교체
+- [ ] OpenAI Key를 저장소가 아닌 운영 Secret으로 설정
+- [ ] `.env`가 Git 추적 대상이 아닌지 재확인
+- [ ] 운영 CORS를 제출 도메인으로 제한
+- [ ] `/internal/**` 및 AI Service 직접 외부 접근 차단
+- [ ] 관리자 HTTP Basic이 HTTPS 밖으로 노출되지 않는지 확인
+- [ ] 운영 DB와 RAG 색인 백업 경로 설정
 - [ ] Health Check와 장애 모니터링 구성
-- [ ] 심사 기간 동안 URL 유지
+- [ ] 2026-09-07 11:00부터 2026-09-11 23:59까지 URL 유지
 
-`ADMIN_JWT_SECRET`은 현재 설정만 존재하고 실제 JWT 인증에는 사용되지 않는다. JWT를 구현하지 않는다면 혼동되지 않도록 제거하거나 README에 미사용 상태를 명시한다.
+배포 절차는 [`production-deployment.md`](production-deployment.md)를 따른다.
 
----
+### P0-2. 공개 환경 실호출 및 E2E 검증
 
-## 6. 최종 회귀 테스트
+- [ ] 공개 URL에서 OpenAI Responses API 성공 호출 1회 재검증
+- [ ] 성공 응답과 Guardrail 정보를 캡처해 제출 증빙으로 보관
+- [ ] 새 브라우저에서 언어 선택 → Profile → 추천 → 상품 상세 전체 흐름 확인
+- [ ] Demo A~E를 공개 URL에서 각각 재현
+- [ ] Demo 화면 캡처 보관
+- [ ] 모든 Demo의 공식 Source 링크가 실제로 열리는지 확인
+- [ ] Demo 결과와 공식 원문을 사람이 최종 대조
+- [ ] 모바일 화면에서 가로 스크롤과 핵심 CTA 가림 여부 확인
+- [ ] 심사 기간 가용성 점검 방법과 담당자 기록
 
-- [x] Backend 전체 테스트 통과
-- [ ] AI Service 전체 테스트 통과
-- [ ] Next.js production build 통과
-- [ ] Playwright E2E 통과
-- [x] Demo A 일반상품에서 Visa 질문 없음
-- [x] Demo B 일반·특화상품 동시 표시
-- [x] Demo C Branch AVAILABLE / Mobile UNKNOWN
-- [x] Demo D Visa Rule에 따른 동적 입력
-- [x] Demo E ACCESS_UNKNOWN과 은행 확인 안내
-- [ ] 한국어·영어·베트남어·중국어·일본어·태국어 핵심 값 동일
-- [ ] Source Conflict 자동 선택 금지
-- [ ] 만료 Rule 진단 제외
-- [ ] RAG 다른 상품 Source 혼입 금지
-- [ ] LLM이 Eligibility·Access 상태를 변경하지 않음
-- [ ] 모바일 화면 가로 스크롤 없음
+### P0-3. 최종 회귀 테스트
 
----
+- [x] Backend 전체 테스트 85건 통과
+- [x] AI Service 전체 테스트 51건 통과
+- [x] Next.js production build 통과
+- [x] Playwright E2E 10건 통과
+- [x] 한국어·영어·베트남어·중국어·일본어·태국어 핵심 흐름 확인
+- [x] Source Conflict 자동 선택 금지 확인
+- [x] 만료 Rule 평가 제외 확인
+- [x] 다른 상품 Source의 RAG 혼입 금지 확인
+- [x] LLM이 Eligibility·Access 상태를 변경하지 않는지 확인
+- [x] Prompt Injection과 가입 보장 표현 차단 확인
 
-## 7. 역할별 다음 업무
+2026-08-28 로컬 Release Candidate 기준 결과다. 공개 배포 후에는 같은 회귀 세트와 Demo A~E를 공개 URL에서 한 번 더 실행한다.
 
-### 사용자가 먼저 준비할 것
+### P0-4. 제출 문서 최종 동기화
 
-1. 일반 입출금계좌 2개와 일반 예·적금 3개 선정
-2. 상품별 공식 페이지·상품설명서·약관 URL 수집
-3. 외국인 실명확인 공식 안내 수집
-4. 영업점·모바일 Channel 공식 안내 수집
-5. 필요서류·신청절차 공식 원문 수집
-6. LLM Provider 선택 및 API Key 발급 여부 결정
-7. 배포 플랫폼 결정
-
-자료를 전달할 때 상품마다 다음 표를 작성한다.
-
-| 항목 | 내용 |
-|---|---|
-| 기관 |  |
-| 상품명 |  |
-| Product Audience | GENERAL / FOREIGNER_SPECIALIZED / POLICY |
-| Product Category |  |
-| 공식 상품페이지 |  |
-| 상품설명서·약관 |  |
-| 가입대상 원문 |  |
-| 신분확인 원문 |  |
-| 영업점 안내 |  |
-| 모바일 안내 |  |
-| 필요서류 |  |
-| 신청절차 |  |
-| 정보 기준일 |  |
-
-### Codex가 처리할 것
-
-1. 전달받은 공식 자료의 Source·Snapshot·Rule·Evidence 반영
-2. 일반상품 Dataset과 Demo A~E 고정
-3. `null months`와 비자 무관 UNKNOWN 메시지 수정
-4. 선택한 LLM Provider Adapter 구현
-5. 다국어 Embedding 또는 Retrieval 평가 구현
-6. README와 제출 Demo 문서 갱신
-7. 전체 테스트·배포 검증
+- [ ] README에 실제 공개 HTTPS URL 추가
+- [ ] 관리자 운영 방법과 비상 복구 절차 추가
+- [ ] 기능명세서·README·UI의 상품 수와 READY 상태 일치 확인
+- [ ] 실제 OpenAI 호출 캡처와 Demo 캡처의 보관 위치 기록
+- [ ] 기획서에서 Rule Engine·Access Model·RAG·LLM 역할을 실제 구현과 동일하게 표현
 
 ---
 
-## 8. 최종 완료 Gate
+## 3. P1 — 제출 매력도와 운영 품질
 
-다음 조건을 모두 만족해야 Season 3 MVP를 완료로 선언한다.
+P0를 지연시키지 않는 범위에서 수행한다.
 
-- [ ] 일반상품이 실제 추천 결과에 포함됨
-- [ ] GENERAL과 FOREIGNER_SPECIALIZED를 함께 비교 가능
-- [x] Season 3 READY 8개 이상
-- [x] 완성된 Source 패키지 8개 이상
-- [ ] Demo A~E가 실제 공식 상품으로 재현됨
-- [ ] Identity·Branch·Mobile Evidence 표시
-- [ ] Visa Rule이 없는 상품에서 Visa 입력·설명 없음
-- [ ] 금융목적에서 다음 행동까지 연결
-- [ ] Eligibility·Access·RAG·설명의 역할이 분리됨
-- [ ] AI가 판정·확률·신용등급을 생성하지 않음
-- [ ] 3분 시연 완료
+### P1-1. 승인 Source 기반 RAG 품질 리포트
+
+- [ ] 고정 Demo 상품별 대표 질문 5개를 최종 검수
+- [ ] 질문별 기대 승인 Source ID 지정
+- [ ] 언어별 Top-K Source 포함률 측정
+- [ ] 다른 상품 Source 혼입률 측정
+- [ ] Source 인용 정확성과 숫자·Visa·금액 무결성 측정
+- [ ] 근거 없는 질문의 안전 차단률 측정
+- [ ] 결과를 발표자료용 한 장 표로 정리
+
+### P1-2. 문서 수집 자동화
+
+- [ ] 은행별 HTML 본문 추출기
+- [ ] PDF Text Extraction과 페이지 번호 보존
+- [ ] 스캔 PDF OCR 및 품질 검수
+- [ ] Source 정기 수집 스케줄러
+- [ ] 변경 Source 관리자 알림과 재검수 Workflow
+- [ ] 증분 재색인과 삭제 문서 반영
+
+### P1-3. 운영 관측성
+
+- [ ] 관리자 화면에 색인 실행 이력·실패 문서·Chunk 수 표시
+- [ ] 검색·LLM 지연시간과 오류율 수집
+- [ ] 개인정보를 제외한 감사 로그 보존
+- [ ] 선택적으로 Sentry 등 오류 모니터링 연결
+
+### 완료된 배포 사전 준비
+
+- [x] 운영 Secret placeholder·길이·DB 비밀번호 일치 검증
+- [x] 무작위 관리자 아이디와 숨김 OpenAI Key 입력
+- [x] Caddy에서 `/internal/**`·Swagger·OpenAPI 비공개
+- [x] 익명 관리자 요청 401 자동검사
+- [x] MySQL·RAG 동시 백업 및 checksum manifest
+- [x] 명시적 확인과 복구 전 안전 백업을 요구하는 복구 스크립트
+- [x] 격리된 `ssafin-preflight` Production 이미지 Build·HTTPS 기동 리허설
+
+---
+
+## 4. 지금 필요한 사용자 준비
+
+Codex가 저장소 안에서 대신 만들 수 없는 항목이다.
+
+1. 공개 서버 또는 배포 플랫폼 계정과 접속 권한
+2. 사용할 도메인과 DNS 변경 권한
+3. 운영용 Secret을 보관할 안전한 장소
+4. 심사 기간 장애를 확인할 담당자와 연락 수단
+
+서버와 도메인이 준비되면 배포, Secret 적용, 공개 URL 검증은 [`production-deployment.md`](production-deployment.md) 순서로 즉시 진행한다.
+
+---
+
+## 5. MVP 완료 Gate
+
+아래 항목이 모두 충족되면 `MVP complete` 커밋을 사용할 수 있다.
+
+- [x] 일반상품과 외국인 특화상품 통합 추천
+- [x] Visa Rule이 없는 상품에서 Visa 입력을 강제하지 않음
+- [x] Eligibility와 Access를 분리해 표시
+- [x] Identity·Branch·Mobile·필요서류 Evidence 구조
+- [x] 공식 근거가 없을 때 추정하지 않음
+- [x] Demo A~E 상품과 기대 결과 고정
+- [x] RAG와 LLM이 Rule Engine 판정을 변경하지 않음
+- [x] 다국어 Semantic Retrieval과 OpenAI Fallback
 - [ ] 공개 HTTPS URL 정상 동작
 - [ ] 운영 Secret 교체 완료
-- [ ] 기능명세서·README·UI·실제 API 상태 일치
+- [ ] 공개 URL에서 Demo A~E와 OpenAI 실호출 검증
+- [x] 로컬 최종 전체 회귀 테스트 통과
+- [ ] 심사 기간 가용성 유지 준비 완료
 
-## 9. 제출용 최종 표현
-
-실제 LLM 또는 검증된 AI Retrieval이 연결된 뒤 다음 문구를 사용한다.
-
-> SSAFIN은 공식 금융정보와 사람이 검수한 Rule을 기반으로 국내 체류 외국인이 이용할 수 있는 일반·외국인 특화 금융서비스와 신분확인·채널·필요서류·다음 행동을 설명하는 AI 금융 정착 Agent다.
-
-그전에는 다음 표현이 더 정확하다.
-
-> SSAFIN은 공식 Source 기반 Rule Engine과 RAG 구조를 갖춘 외국인 금융 정착 Agent MVP다.
+현재 상태는 **기능·데이터 구현 완료, 공개 운영 검증 대기**다. 따라서 공개 배포 검증 전에는 `MVP complete`보다 `release candidate`가 정확한 표현이다.

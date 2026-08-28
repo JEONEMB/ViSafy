@@ -427,7 +427,7 @@ docker run --rm --ipc=host -e E2E_BASE_URL=http://host.docker.internal:3000 -v "
 - 하나 외국인 EZ Loan은 공식 상세페이지를 확보해 `PARTIAL`로 전환했습니다. SOL글로벌 전세대출은 직접 상품설명서가 추가로 필요하며, 신한 생계비계좌는 신분증 문구의 성격을 확인할 공식 원문이 필요합니다. 확보 전에는 READY로 전환하지 않습니다.
 - `거주자/비거주자`는 민감한 식별번호 없이 사용자가 구분값만 입력합니다. 본인의 법적 구분이 불확실하면 금융기관 확인이 필요합니다.
 - 구조화 필요서류와 신청절차는 MVP에서 등록·조회 중심으로 지원합니다. 수정·비활성화 관리 UI와 변경 이력은 후속 보완 항목입니다.
-- DATA-003의 LLM 자동 추출은 아직 연결하지 않았습니다. 현재는 관리자 화면에서 후보 구조를 직접 입력합니다.
+- DATA-003은 OpenAI가 공식 Snapshot에서 Rule Candidate를 제안하고 규칙 기반 검증기가 인용문·숫자·비자코드·Rule 형식을 원문과 대조합니다. 검증을 통과해도 관리자 승인 전에는 Runtime 판정에 사용하지 않으며, OpenAI 장애 시 규칙 기반 추출로 복귀합니다.
 - `/api/admin/**`, 상품 관리, Source·Rule 검수 화면은 기본적으로 관리자 인증이 필요합니다. 로그인 정보는 브라우저 탭의 `sessionStorage`에만 유지되며 탭을 닫으면 삭제됩니다.
 - 현재 MVP 관리자 인증은 HTTP Basic 방식입니다. 반드시 HTTPS 환경에서 사용하고, 실제 외부 배포 전에는 JWT의 HttpOnly 쿠키 또는 조직 SSO로 교체해야 합니다.
 
@@ -442,6 +442,8 @@ docker run --rm --ipc=host -e E2E_BASE_URL=http://host.docker.internal:3000 -v "
 - [ ] Source 만료·Rule 충돌·색인 누락 시 사용자에게 `확인 필요`가 표시되는 통합 시나리오 재검증
 - [ ] RAG 답변이 Eligibility Engine 결과를 변경하거나 가입을 보장하지 않는지 한국어·영어·베트남어·중국어·일본어·태국어 회귀 테스트
 - [ ] 운영 배포에서 `/internal/rag/**`가 외부 네트워크에 직접 노출되지 않는지 확인
+- [x] 로컬 Production Compose·Secret·비공개 포트·HTTPS 보안 Smoke 리허설 스크립트 구축
+- [x] MySQL·RAG 동시 백업과 checksum 기반 명시적 복구 스크립트 구축
 
 **P1 · 문서 수집과 전처리 자동화**
 
@@ -449,7 +451,8 @@ docker run --rm --ipc=host -e E2E_BASE_URL=http://host.docker.internal:3000 -v "
 - [ ] PDF 상품설명서·약관 Text Extraction 구현 및 페이지 번호를 `source_locator`에 보존
 - [ ] 스캔 PDF·이미지를 위한 OCR 도입과 추출 품질 검수 절차 마련
 - [ ] HWP/HWPX 문서 지원 필요성을 조사하고 제출 대상 문서에 맞는 추출기 선택
-- [ ] `content_hash` 변경 감지, 정기 수집 스케줄러, 증분 재색인 및 삭제 문서 반영
+- [x] `content_hash` 변경 감지와 사용자용 변경 안내 배지
+- [ ] 정기 수집 스케줄러, 증분 재색인 및 삭제 문서 반영
 - [ ] robots.txt, 이용약관, 요청 속도 제한 및 수집 실패 재시도 정책 문서화
 
 **P1 · 검색 품질 고도화**
@@ -469,6 +472,8 @@ docker run --rm --ipc=host -e E2E_BASE_URL=http://host.docker.internal:3000 -v "
 - [ ] 색인·검색·답변의 지연시간, 오류율과 감사 로그를 개인정보 없이 관측할 수 있도록 구성
 
 OpenAI 없이도 핵심 Rule Engine·Access Model·RAG와 템플릿 설명은 실행할 수 있습니다. OpenAI 설명을 사용할 때만 `OPENAI_API_KEY`와 사용 가능한 모델 ID가 필요합니다. `RAG_INTERNAL_TOKEN`은 외부 API Key가 아니라 Backend와 AI Service 사이의 내부 인증용 비밀값입니다.
+
+2026-08-28 Release Candidate 회귀 결과는 Backend 85건, AI Service 51건, Playwright 10건(6개 언어 Landing 포함) 통과이며 Frontend typecheck·lint·production build와 격리 Production HTTPS 리허설도 통과했습니다. 공개 배포 후 같은 흐름을 공개 URL에서 재검증합니다.
 
 ## 관리자 계정 설정
 
@@ -573,13 +578,13 @@ Season 3의 `READY`는 상품 페이지와 약관만 존재한다고 충족되�
 3. [`docs/season3-demo-scenarios.md`](docs/season3-demo-scenarios.md)에 기록된 Demo별 Profile과 상품 ID를 사용합니다.
 4. 상품 상세에서 Eligibility와 Identity·Branch·Mobile Access를 각각 확인합니다.
 5. 판단 근거 탭에서 공식 Source 원문과 확인일을 대조합니다.
-6. Demo A~E는 실제 공식 상품 패키지가 확정되기 전까지 시나리오 정의이며, 제출 Demo로 확정했다고 표현하지 않습니다.
+6. Demo A~E의 고정 Product Code·대표 Profile·기대 결과는 [`docs/season3-demo-manifest.md`](docs/season3-demo-manifest.md)를 따릅니다. 공개 배포 후 같은 시나리오를 재현하고 화면과 공식 Source 링크를 최종 검수합니다.
 
 ### 현재 AI 구성
 
 OpenAI Responses API Adapter가 선택형으로 연결되어 있습니다. `LLM_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6-terra`, `OPENAI_REASONING_EFFORT=medium`을 배포환경 Secret으로 설정하면 승인된 공식 RAG Context, Eligibility Result, Access Result, Rule Detail을 이용해 쉬운 설명·다음 행동·필요 시 은행 문의문을 생성합니다. Key 누락·API 장애·구조화 출력 오류·숫자 또는 Visa 코드 무결성 위반 시 검증 가능한 템플릿으로 자동 복귀합니다. LLM 출력 스키마에는 상태 필드가 없으며 Backend가 계산한 Eligibility와 Access 판정은 응답 조립 단계에서 고정됩니다. RAG는 ONNX 기반 다국어 FastEmbed와 SQLite 영속 색인을 사용하며 Product Metadata Filtering과 승인·유효기간 필터를 항상 적용합니다.
 
-현재 개발환경에서는 OpenAI 실패 시 Fallback과 판정 불변성을 검증했습니다. OpenAI 계정의 결제·크레딧 및 모델 권한이 아직 확인되지 않아 실제 Responses API 성공 생성은 제출 전 검증 항목으로 남아 있습니다.
+현재 개발환경에서 OpenAI Responses API 실호출, 장애 시 Fallback과 판정 불변성을 검증했습니다. 제출 전에는 운영 Secret으로 교체한 공개 배포 환경에서 동일 호출을 한 번 더 검증하고 응답 캡처를 보관합니다.
 
 PDF/HTML 추출, 페이지 번호 보존, OCR 필요 페이지 표시, `contentHash` 변경 감지, PENDING Rule Candidate 추출과 RAG 평가 실행법은 [`docs/ai-rag-quality-and-secrets.md`](docs/ai-rag-quality-and-secrets.md)에 정리되어 있습니다. RAG Dataset은 Flyway V18/V19의 실제 승인 Source ID와 일반상품 5개별 질문 5개 이상으로 교체되었습니다.
 

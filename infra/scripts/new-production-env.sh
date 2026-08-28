@@ -7,7 +7,7 @@ if [[ $# -lt 1 || $# -gt 2 ]]; then
 fi
 
 domain="$1"
-model="${2:-gpt-5.6-luna}"
+model="${2:-gpt-5.6-terra}"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 target="${repo_root}/.env.production"
 
@@ -33,6 +33,7 @@ new_secret() {
 
 umask 077
 mysql_password="$(new_secret)"
+admin_username="admin_$(openssl rand -hex 8)"
 cat > "$target" <<EOF
 VISAFY_DOMAIN=$domain
 NEXT_PUBLIC_DEFAULT_LANGUAGE=ko
@@ -41,7 +42,7 @@ MYSQL_USER=visafy
 MYSQL_PASSWORD=$mysql_password
 MYSQL_ROOT_PASSWORD=$(new_secret)
 DB_PASSWORD=$mysql_password
-ADMIN_USERNAME=admin
+ADMIN_USERNAME=$admin_username
 ADMIN_PASSWORD=$(new_secret)
 ADMIN_JWT_SECRET=$(new_secret)
 RAG_INTERNAL_TOKEN=$(new_secret)

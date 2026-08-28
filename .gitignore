@@ -37,6 +37,7 @@ infra/mysql-data/
 ai-service/chroma-data/
 data-pipeline/snapshots/*
 !data-pipeline/snapshots/.gitkeep
+backups/
 
 # IDE / OS
 .idea/

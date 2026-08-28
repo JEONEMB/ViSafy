@@ -1,15 +1,10 @@
 {$VISAFY_DOMAIN} {
     encode zstd gzip
 
+    @private_paths path /internal/* /api/internal/* /v3/api-docs* /swagger-ui* /swagger-ui.html
+    respond @private_paths 404
+
     handle /api/* {
-        reverse_proxy backend:8080
-    }
-
-    handle /v3/api-docs* {
-        reverse_proxy backend:8080
-    }
-
-    handle /swagger-ui* {
         reverse_proxy backend:8080
     }
 

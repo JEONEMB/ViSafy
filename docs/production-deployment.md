@@ -51,7 +51,7 @@ DNS의 A 레코드는 서버의 IPv4 주소를 가리키게 한다. IPv6를 실�
 API Key를 명령행 인자로 전달하지 않는다. 아래 스크립트가 Key를 숨김 입력으로 받고 나머지 Secret을 무작위로 생성한다.
 
 ```bash
-./infra/scripts/new-production-env.sh ssafin.example.com gpt-5.6-luna
+./infra/scripts/new-production-env.sh ssafin.example.com gpt-5.6-terra
 ```
 
 생성되는 `.env.production`은 권한 `600`이며 Git에서 제외된다. 실제 Key나 Secret을 문서, 커밋, Docker 이미지에 넣지 않는다.
@@ -61,9 +61,27 @@ Windows에서 미리 생성할 때는 다음을 사용한다.
 ```powershell
 .\infra\scripts\new-production-env.ps1 `
   -Domain 'ssafin.example.com' `
-  -OpenAiApiKey 'YOUR_PROJECT_API_KEY' `
-  -OpenAiModel 'gpt-5.6-luna'
+  -OpenAiModel 'gpt-5.6-terra'
 ```
+
+API Key는 명령행 인자로 받지 않고 화면에 표시되지 않는 보안 입력으로 받는다. 생성된 관리자 아이디와 비밀번호는 모두 무작위 값이며 `.env.production`에서 확인해 비밀 관리 도구에 옮긴다.
+
+## 서버 확보 전 로컬 Production 리허설
+
+운영 Compose 병합, Secret 검증, 비공개 포트와 이미지 Build는 도메인 없이 미리 확인할 수 있다.
+
+```powershell
+# Secret·Compose·비공개 포트 검사
+.\infra\scripts\preflight-production.ps1
+
+# Production 이미지까지 Build
+.\infra\scripts\preflight-production.ps1 -BuildImages
+
+# 격리된 Volume과 https://localhost:8443을 사용하는 전체 기동 리허설
+.\infra\scripts\preflight-production.ps1 -RunServices
+```
+
+리허설은 프로젝트 이름 `ssafin-preflight`와 별도 Volume을 사용한다. 종료 시 해당 격리 Volume만 제거하며 개발·운영 DB에는 접근하지 않는다.
 
 ## 공개 시작
 
@@ -90,6 +108,35 @@ git pull --ff-only origin main
 
 MySQL 데이터와 RAG 색인은 Docker named volume에 보존된다. 운영 업데이트 전에는 DB 백업을 별도로 생성한다.
 
+## 백업과 복구
+
+운영 업데이트 전 MySQL과 RAG 색인을 같은 시점의 백업 묶음으로 저장한다.
+
+```bash
+./infra/scripts/backup-production.sh
+```
+
+백업은 `backups/YYYYMMDDTHHMMSSZ` 아래에 저장되며 Git에서 제외된다. SQL, RAG 압축파일, Git commit과 SHA-256 manifest가 포함된다. 서버 Snapshot이나 별도 암호화 저장소로 한 번 더 복제한다.
+
+복구는 현재 데이터를 교체하므로 정확한 백업 경로와 명시적 확인 문자열이 필요하다. 스크립트가 먼저 현재 상태의 안전 백업을 만든 뒤 checksum을 검증하고 복구한다.
+
+```bash
+./infra/scripts/restore-production.sh \
+  backups/20260828T120000Z \
+  --confirm-data-replacement
+```
+
+애플리케이션 코드 롤백은 데이터 백업 후 마지막 정상 commit을 checkout하고 동일한 배포 스크립트를 실행한다.
+
+```bash
+./infra/scripts/backup-production.sh
+git fetch origin
+git checkout --detach LAST_KNOWN_GOOD_COMMIT
+./infra/scripts/deploy-production.sh
+```
+
+정상화 후에는 `main`으로 돌아와 fast-forward 상태를 확인한다. DB Migration이 적용된 이후의 코드 롤백은 스키마 호환성을 먼저 확인하며 Flyway 파일을 임의로 삭제하거나 되돌리지 않는다.
+
 ## 공개 URL 점검
 
 ```bash
@@ -97,6 +144,8 @@ MySQL 데이터와 RAG 색인은 Docker named volume에 보존된다. 운영 업
 ```
 
 이 스크립트는 Frontend, Backend, AI 프록시, 상품 API, HTTPS 보안 헤더를 확인한다. 이후 실제 브라우저에서 다음 흐름을 수동 검증한다.
+
+추가로 익명 관리자 접근 차단, `/internal/**`·Swagger/OpenAPI 비공개, OpenAI Provider 설정도 자동 확인한다.
 
 ```text
 언어 선택 → 금융 목적 → Profile 저장 → 추천 → Financial Journey

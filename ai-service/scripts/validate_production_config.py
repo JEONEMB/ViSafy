@@ -2,17 +2,28 @@ import os
 import sys
 
 PLACEHOLDERS = {"", "visafy", "change-me", "local-rag-development-token", "local-development-only-secret"}
-REQUIRED = ("RAG_INTERNAL_TOKEN", "ADMIN_PASSWORD", "DB_PASSWORD", "MYSQL_ROOT_PASSWORD")
+REQUIRED = (
+    "RAG_INTERNAL_TOKEN",
+    "ADMIN_USERNAME",
+    "ADMIN_PASSWORD",
+    "MYSQL_PASSWORD",
+    "DB_PASSWORD",
+    "MYSQL_ROOT_PASSWORD",
+)
 
 
 def validate(environment: dict[str, str]) -> list[str]:
     errors = []
     for key in REQUIRED:
         value = environment.get(key, "").strip()
-        if value in PLACEHOLDERS or value.startswith("change-me"):
+        if value in PLACEHOLDERS or value.startswith(("change-me", "replace-with")):
             errors.append(f"{key} must be replaced with a deployment secret")
         elif len(value) < 16:
             errors.append(f"{key} must be at least 16 characters")
+    if environment.get("ADMIN_USERNAME", "").strip().lower() == "admin":
+        errors.append("ADMIN_USERNAME must not use the default admin account name")
+    if environment.get("MYSQL_PASSWORD", "").strip() != environment.get("DB_PASSWORD", "").strip():
+        errors.append("DB_PASSWORD must match MYSQL_PASSWORD")
     providers = {
         "openai": ("OPENAI_API_KEY", "OPENAI_MODEL"),
         "gemini": ("GEMINI_API_KEY", "GEMINI_MODEL"),
@@ -23,7 +34,8 @@ def validate(environment: dict[str, str]) -> list[str]:
         errors.append(f"Unsupported LLM_PROVIDER: {selected}")
     elif selected in providers:
         for key in providers[selected]:
-            if not environment.get(key, "").strip():
+            value = environment.get(key, "").strip()
+            if not value or value.startswith(("change-me", "replace-with")):
                 errors.append(f"{key} is required for LLM_PROVIDER={selected}")
     return errors
 

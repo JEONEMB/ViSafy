@@ -67,8 +67,8 @@ test("Season 3 language, purpose, readiness, dynamic fields, and access flow", a
   await page.getByRole("link", { name: /View details/ }).click();
   await page.getByRole("button", { name: "Check eligibility with my profile", exact: true }).click();
   await page.getByLabel("Visa Type").selectOption("E-9");
-  await page.getByLabel("Has Existing Product Account").selectOption("false");
-  await page.getByLabel("Desired Monthly Amount").fill("200000");
+  await page.getByLabel("Existing account for this product").selectOption("false");
+  await page.getByLabel("Desired monthly amount").fill("200000");
   await page.getByRole("button", { name: "Save and run pre-check" }).click();
   await expect(page.getByText("How you can access this service")).toBeVisible();
   await expect(page.getByText("Branch access confirmed")).toBeVisible();

@@ -1,10 +1,7 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$Domain,
-    [Parameter(Mandatory = $true)]
-    [string]$OpenAiApiKey,
-    [Parameter(Mandatory = $true)]
-    [string]$OpenAiModel
+    [string]$OpenAiModel = 'gpt-5.6-terra'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -21,6 +18,21 @@ function New-Secret {
 }
 
 $mysqlPassword = New-Secret
+$adminUsername = 'admin_' + (New-Secret).Substring(0, 16)
+$openAiApiKey = $env:OPENAI_API_KEY
+if ([string]::IsNullOrWhiteSpace($openAiApiKey)) {
+    $secureKey = Read-Host 'OpenAI Project API Key' -AsSecureString
+    $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureKey)
+    try {
+        $openAiApiKey = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+    }
+    finally {
+        [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+    }
+}
+if ([string]::IsNullOrWhiteSpace($openAiApiKey)) {
+    throw 'OpenAI API Key must not be empty.'
+}
 $content = @(
     "VISAFY_DOMAIN=$Domain"
     'NEXT_PUBLIC_DEFAULT_LANGUAGE=ko'
@@ -29,12 +41,12 @@ $content = @(
     "MYSQL_PASSWORD=$mysqlPassword"
     "MYSQL_ROOT_PASSWORD=$(New-Secret)"
     "DB_PASSWORD=$mysqlPassword"
-    'ADMIN_USERNAME=admin'
+    "ADMIN_USERNAME=$adminUsername"
     "ADMIN_PASSWORD=$(New-Secret)"
     "ADMIN_JWT_SECRET=$(New-Secret)"
     "RAG_INTERNAL_TOKEN=$(New-Secret)"
     'LLM_PROVIDER=openai'
-    "OPENAI_API_KEY=$OpenAiApiKey"
+    "OPENAI_API_KEY=$openAiApiKey"
     "OPENAI_MODEL=$OpenAiModel"
     'OPENAI_REASONING_EFFORT=medium'
     'EMBEDDING_PROVIDER=fastembed'
