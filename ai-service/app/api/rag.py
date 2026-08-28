@@ -7,9 +7,13 @@ from app.guardrail.answer_builder import (
     GUARDRAILS,
     GroundedAnswerBuilder,
     contains_prompt_injection,
+    is_greeting,
+    needs_clarification,
+    response_language,
 )
 from app.ingestion.models import SyncDocumentsRequest, SyncDocumentsResponse
 from app.rag.dependencies import get_document_store
+from app.rag.llm import OpenAIRagAnswerEnhancer
 from app.rag.models import RagAnswerRequest, RagAnswerResponse, RetrievalRequest, RetrievalResponse
 from app.rag.store import OfficialDocumentStore
 
@@ -67,6 +71,7 @@ def answer(
     store: OfficialDocumentStore = Depends(get_document_store),
 ) -> RagAnswerResponse:
     builder = GroundedAnswerBuilder()
+    language = response_language(request.query, request.language)
     if contains_prompt_injection(request.query):
         return RagAnswerResponse(
             answer=builder.blocked(request),
@@ -74,13 +79,29 @@ def answer(
             ruleResult=request.rule_result,
             documents=[],
             guardrailsApplied=[*GUARDRAILS, "PROMPT_INJECTION_BLOCKED"],
+            responseLanguage=language,
+        )
+    if is_greeting(request.query) or needs_clarification(request.query):
+        return RagAnswerResponse(
+            answer=builder.build(request, []),
+            eligibilityStatus=request.eligibility_status,
+            ruleResult=request.rule_result,
+            documents=[],
+            guardrailsApplied=[*GUARDRAILS, "NON_RAG_CONVERSATION_RESPONSE"],
+            responseLanguage=language,
         )
     documents = store.retrieve(request.product_id, request.rule_key, request.query, request.top_k)
-    grounded_answer = builder.build(request, documents)
+    fallback = builder.build(request, documents)
+    enhancer = OpenAIRagAnswerEnhancer(settings)
+    grounded_answer = enhancer.enhance(request, documents, fallback)
+    applied = [*GUARDRAILS]
+    if grounded_answer != fallback:
+        applied.extend(["OPENAI_RESPONSES_API", "OPENAI_STRUCTURED_OUTPUT"])
     return RagAnswerResponse(
         answer=grounded_answer,
         eligibilityStatus=request.eligibility_status,
         ruleResult=request.rule_result,
         documents=documents,
-        guardrailsApplied=GUARDRAILS,
+        guardrailsApplied=applied,
+        responseLanguage=language,
     )

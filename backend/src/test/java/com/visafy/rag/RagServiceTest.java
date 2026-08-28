@@ -61,7 +61,7 @@ class RagServiceTest {
                 null, List.of(visaRule), List.of(), List.of(), List.of(), List.of(), "최종 승인이 아닙니다.");
         when(eligibilityService.precheck(profile, product)).thenReturn(eligibility);
         RagAnswerResponse expected = new RagAnswerResponse("answer", "PUBLIC_CONDITIONS_MET",
-                visaRule.message(), List.of(), List.of("ELIGIBILITY_RESULT_IMMUTABLE"));
+                visaRule.message(), List.of(), List.of("ELIGIBILITY_RESULT_IMMUTABLE"), "ko");
         when(aiClient.answer(any())).thenReturn(expected);
 
         RagAnswerResponse response = service.answer(" session-uuid ", 10L, "visa_type", "E-9 제한", 5);
@@ -73,6 +73,7 @@ class RagServiceTest {
         assertThat(captor.getValue().ruleResult()).isEqualTo("F-5 체류자격 조건 충족");
         assertThat(captor.getValue().ruleKey()).isEqualTo("VISA_TYPE");
         assertThat(captor.getValue().language()).isEqualTo("ko");
+        assertThat(captor.getValue().conversationContext()).isEmpty();
     }
 
     private static TempProfile profile() {

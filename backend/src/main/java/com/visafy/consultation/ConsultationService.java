@@ -29,16 +29,17 @@ public class ConsultationService {
         TempProfile profile = profileService.getBySessionId(profileSessionId);
         String hash = ApiExecutionHistoryService.hashSessionId(profileSessionId);
         List<Consultation> recent = repository.findTop10ByProfileSessionHashAndProductIdOrderByCreatedAtDesc(hash, productId);
-        String context = recent.stream().limit(3).map(Consultation::getQuestion)
-                .map(value -> value.length() > 200 ? value.substring(0, 200) : value)
-                .reduce((left, right) -> right + " / " + left).map(value -> value + " / " + question).orElse(question);
-        RagAnswerResponse response = ragService.answer(profileSessionId, productId, ruleKey, context, topK);
+        String context = recent.stream().limit(3)
+                .map(value -> "Q: " + clip(value.getQuestion(), 200) + "\nA: " + clip(value.getAnswer(), 500))
+                .reduce((left, right) -> right + "\n\n" + left).orElse("");
+        RagAnswerResponse response = ragService.answer(
+                profileSessionId, productId, ruleKey, question.strip(), topK, context);
         Instant now = Instant.now(); String id = UUID.randomUUID().toString();
         repository.save(new Consultation(id, hash,
                 productId, ruleKey.strip().toUpperCase(), question.strip(), response.answer(),
-                profile.getLanguage(), now, profile.getExpiresAt()));
+                response.responseLanguage(), now, profile.getExpiresAt()));
         return new ConsultationResponse(id, response.answer(), response.eligibilityStatus(), response.ruleResult(),
-                response.documents(), response.guardrailsApplied(), profile.getLanguage(), now);
+                response.documents(), response.guardrailsApplied(), response.responseLanguage(), now);
     }
 
     public List<ConsultationHistoryItem> history(String profileSessionId, Long productId) {
@@ -56,4 +57,8 @@ public class ConsultationService {
     ) {}
     public record ConsultationHistoryItem(String id, String question, String answer, String ruleKey,
                                           String language, Instant createdAt) {}
+
+    private static String clip(String value, int limit) {
+        return value.length() <= limit ? value : value.substring(0, limit);
+    }
 }

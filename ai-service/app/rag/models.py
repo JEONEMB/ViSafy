@@ -35,6 +35,7 @@ class RagAnswerRequest(RetrievalRequest):
     eligibility_status: str = Field(alias="eligibilityStatus", min_length=1, max_length=80)
     rule_result: str = Field(alias="ruleResult", min_length=1, max_length=2000)
     language: str = Field(default="ko", pattern="^(ko|en|vi|zh|ja|th)$")
+    conversation_context: str = Field(default="", alias="conversationContext", max_length=4000)
 
 
 class RagAnswerResponse(BaseModel):
@@ -43,5 +44,6 @@ class RagAnswerResponse(BaseModel):
     rule_result: str = Field(alias="ruleResult")
     documents: list[RetrievedDocument]
     guardrails_applied: list[str] = Field(alias="guardrailsApplied")
+    response_language: str = Field(alias="responseLanguage")
 
     model_config = {"populate_by_name": True}

@@ -32,6 +32,11 @@ public class RagService {
 
     public RagAnswerResponse answer(String profileSessionId, Long productId, String ruleKey,
                                     String query, int topK) {
+        return answer(profileSessionId, productId, ruleKey, query, topK, "");
+    }
+
+    public RagAnswerResponse answer(String profileSessionId, Long productId, String ruleKey,
+                                    String query, int topK, String conversationContext) {
         TempProfile profile = profileService.getBySessionId(profileSessionId.strip());
         FinancialProduct product = productRepository.findOneById(productId)
                 .filter(FinancialProduct::isActive)
@@ -46,6 +51,7 @@ public class RagService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Rule is not available for this product"));
         return aiClient.answer(new RagAnswerRequest(productId, normalizedKey, query.strip(), topK,
-                eligibility.status().name(), rule.message(), profile.getLanguage()));
+                eligibility.status().name(), rule.message(), profile.getLanguage(),
+                conversationContext == null ? "" : conversationContext.strip()));
     }
 }

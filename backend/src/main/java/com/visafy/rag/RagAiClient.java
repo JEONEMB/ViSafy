@@ -79,7 +79,7 @@ public class RagAiClient {
     ) {}
     public record RagAnswerRequest(
             Long productId, String ruleKey, String query, int topK, String eligibilityStatus,
-            String ruleResult, String language
+            String ruleResult, String language, String conversationContext
     ) {}
     public record RetrievedDocument(
             Long documentId, String title, String content, String sourceUrl, Instant retrievedAt, double score,
@@ -88,6 +88,6 @@ public class RagAiClient {
     ) {}
     public record RagAnswerResponse(
             String answer, String eligibilityStatus, String ruleResult, List<RetrievedDocument> documents,
-            List<String> guardrailsApplied
+            List<String> guardrailsApplied, String responseLanguage
     ) {}
 }

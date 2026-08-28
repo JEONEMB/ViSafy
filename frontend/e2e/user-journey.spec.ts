@@ -8,6 +8,8 @@ const product = { id: 10, productCode: "E2E-LOAN", institution: "KB Bank", produ
 const eligibility = { status: "NEED_BANK_CONFIRMATION", productId: 10, passedRules: [{ ruleId: 101, key: "VISA_TYPE", messageCode: "RULE_PASSED", message: "Visa condition met", actualValue: "E-9", expectedValue: '["E-9"]', mandatory: true, blocking: false, sourceExcerpt: "Eligible status: E-9", sourceLocator: "p.3", sourceUrl }], failedRules: [], externalChecks: [], unknownRules: [], insufficientReasons: [], requiredFields: product.requiredFields, accessAssessment: access, disclaimer: "This is not final approval." };
 const guidance = { productId: 10, personalized: true, officialRequired: [], conditional: [], bankConfirmation: [], applicationSteps: [], excludedConditionalCount: 0, disclaimer: "Official sources only." };
 const recommendation = { productId: 10, institution: product.institution, productName: product.productName, productType: product.productType, financialPurpose: product.financialPurpose, productAudience: product.productAudience, productCategory: product.productCategory, targetSummary: product.targetSummary, requiredDocuments: product.requiredDocuments, applicationMethod: product.applicationMethod, informationBaseDate: product.informationBaseDate, eligibilityStatus: eligibility.status, confirmedPublicConditions: 1, totalPublicConditions: 1, additionalCheckCount: 1, unknownCount: 0, purposeMatched: true, preferredConditionMatches: 0, recommendationReasonCodes: ["FINANCIAL_PURPOSE_MATCH", "NO_EXPLICIT_FAILURE"], nextPreparationField: "visaType", eligibility };
+const missingEligibility = { ...eligibility, status: "INSUFFICIENT_INFORMATION", insufficientReasons: [{ key: "RESIDENT_STATUS", messageCode: "MISSING_REQUIRED_PROFILE_FIELD", message: "Resident status is required for this check.", mandatory: true, blocking: true }], requiredFields: ["residentStatus"] };
+const missingRecommendation = { ...recommendation, eligibilityStatus: "INSUFFICIENT_INFORMATION", nextPreparationField: "residentStatus", eligibility: missingEligibility };
 const journey = { purpose: "GET_LOAN", currentStep: 2, headline: "My financial journey in Korea", nextAction: "Open an account first.", profile: { nationality: "VN", hasResidenceCard: true, hasPassport: false, hasDomesticPhone: true, canDomesticPhoneVerify: true, hasKoreanBankAccount: false, hasKoreanCreditHistory: false, remittanceCountry: null }, steps: [
   { step: 1, code: "IDENTITY_PREPARATION", status: "COMPLETED", title: "Prepare identification", description: "Review identification." },
   { step: 2, code: "DEMAND_DEPOSIT_ACCOUNT", status: "CURRENT", title: "Demand deposit account", description: "Review account preparation." },
@@ -15,17 +17,17 @@ const journey = { purpose: "GET_LOAN", currentStep: 2, headline: "My financial j
 ] };
 
 async function json(route: Route, body: unknown, status = 200) { await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) }); }
-async function mockApi(page: Page, captured: Record<string, unknown>) {
-  let profile: Record<string, unknown> | null = null;
+async function mockApi(page: Page, captured: Record<string, unknown>, additionalInformation = false) {
+  let profile: Record<string, unknown> | null = { id: 1, sessionId: "e2e-session", nationality: "VN", financialPurpose: "GET_LOAN", language: "ko", residentStatus: null, expiresAt: "2026-08-29T00:00:00Z" };
   await page.route("http://localhost:8080/api/**", async (route) => {
     const request = route.request(); const path = new URL(request.url()).pathname;
     if (path === "/api/profiles" && request.method() === "POST") { const body = request.postDataJSON(); Object.assign(captured, body); profile = { ...body, id: 1, sessionId: "e2e-session", expiresAt: "2026-08-25T00:00:00Z" }; return json(route, profile, 201); }
     if (path === "/api/profiles/1" && request.method() === "GET") return json(route, profile);
-    if (path === "/api/profiles/1" && request.method() === "PUT") { const body = request.postDataJSON(); profile = { ...body, id: 1, sessionId: "e2e-session", expiresAt: "2026-08-25T00:00:00Z" }; return json(route, profile); }
+    if (path === "/api/profiles/1" && request.method() === "PUT") { const body = request.postDataJSON(); Object.assign(captured, body); profile = { ...body, id: 1, sessionId: "e2e-session", expiresAt: "2026-08-25T00:00:00Z" }; return json(route, profile); }
     if (path === "/api/products") return json(route, [product]);
     if (path === "/api/products/10") return json(route, product);
     if (path === "/api/products/10/guidance") return json(route, guidance);
-    if (path === "/api/recommendations") return json(route, { recommended: [recommendation], additionalInformationNeeded: [], excludedCount: 0 });
+    if (path === "/api/recommendations") return json(route, additionalInformation ? { recommended: [], additionalInformationNeeded: [missingRecommendation], excludedCount: 0 } : { recommended: [recommendation], additionalInformationNeeded: [], excludedCount: 0 });
     if (path === "/api/financial-journey") return json(route, journey);
     if (path === "/api/eligibility/pre-check") return json(route, eligibility);
     if (path === "/api/ai/explanation") return json(route, { eligibilityStatus: "NEED_BANK_CONFIRMATION", accessStatus: "ACCESS_UNKNOWN", facts: { visaType: "E-9", visaRemainingMonths: 12, residencyMonths: 24, passedCount: 1, failedCount: 0, externalCheckCount: 0, unknownCount: 0 }, explanation: "Official conditions checked.", nextActions: ["Ask the bank."], disclaimer: "Not final approval.", easyTerms: [], inquiry: null, guardrailsApplied: [] });
@@ -58,7 +60,7 @@ test("Season 3 language, purpose, readiness, dynamic fields, and access flow", a
   await page.getByRole("button", { name: "Show financial services for me" }).click();
   await expect(page).toHaveURL(/\/products$/); expect(captured.birthDate).toBeNull(); expect(captured.financialPurpose).toBe("GET_LOAN");
   await expect(page.getByText("My financial journey in Korea")).toBeVisible();
-  await page.getByRole("button", { name: /Prepare in my financial journey/ }).click();
+  await page.getByRole("button", { name: /Next: review preparation and application steps/ }).click();
   await expect(page.locator("#financial-journey")).toBeInViewport();
   await expect(page.locator("#financial-journey section[aria-live='polite']").getByRole("heading", { name: "Loans & housing" })).toBeVisible();
   await expect(page.getByRole("link", { name: /Official institution information/ })).toHaveAttribute("href", sourceUrl);
@@ -78,4 +80,16 @@ test("Season 3 mobile landing and profile have no horizontal overflow", async ({
   await page.getByRole("button", { name: /English/ }).click(); await page.getByRole("button", { name: "I want to save money" }).click(); await page.getByRole("button", { name: "Start my financial life" }).click();
   const overflow = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, content: document.documentElement.scrollWidth }));
   expect(overflow.content).toBeLessThanOrEqual(overflow.viewport); await expect(page.getByRole("heading", { name: "Nationality + goal", exact: true })).toBeVisible();
+});
+
+test("missing recommendation information is prominent and editable inline", async ({ page }) => {
+  const captured: Record<string, unknown> = {};
+  await page.addInitScript(() => { localStorage.setItem("visafyProfileId", "1"); localStorage.setItem("visafyProfileSessionId", "e2e-session"); });
+  await mockApi(page, captured, true); await page.goto("/products");
+  await expect(page.getByRole("heading", { name: "추가 정보 필요" })).toBeVisible();
+  await expect(page.getByText("이 정보를 입력하면 다시 진단할 수 있어요").first()).toBeVisible();
+  await page.getByRole("button", { name: /지금 입력하기/ }).first().click();
+  await page.getByLabel("한국 세법·은행 기준의 거주자 상태를 알고 있나요?").last().selectOption("RESIDENT");
+  await page.getByRole("button", { name: "저장하고 다시 분석" }).click();
+  await expect.poll(() => captured.residentStatus).toBe("RESIDENT");
 });

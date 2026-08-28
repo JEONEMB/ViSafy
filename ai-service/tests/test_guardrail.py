@@ -6,6 +6,7 @@ from app.guardrail.answer_builder import (
     NO_EVIDENCE_MESSAGES,
     GroundedAnswerBuilder,
     contains_prompt_injection,
+    response_language,
 )
 from app.rag.models import RagAnswerRequest, RetrievedDocument
 
@@ -39,7 +40,7 @@ def test_answer_keeps_eligibility_result_separate_from_official_evidence() -> No
 
     assert "NEED_BANK_CONFIRMATION" not in answer
     assert "VISA_TYPE" not in answer
-    assert "공식 자료에서 확인한 내용" in answer
+    assert "질문과 관련해 공식 자료에서 확인되는 내용" in answer
     assert DISCLAIMERS["ko"] in answer
     assert "ELIGIBILITY_RESULT_IMMUTABLE" in GUARDRAILS
     assert "NO_FOREIGNER_INELIGIBILITY_INFERENCE" in GUARDRAILS
@@ -90,3 +91,35 @@ def test_prompt_injection_is_detected_without_changing_structured_result() -> No
     assert "PUBLIC_CONDITIONS_NOT_MET" not in answer
     assert "VISA_TYPE" not in answer
     assert "not accepted" in answer
+
+
+def test_question_language_overrides_profile_language_and_greeting_does_not_dump_sources() -> None:
+    request = RagAnswerRequest(
+        productId=10,
+        ruleKey="IS_FOREIGNER",
+        query="hello",
+        topK=3,
+        eligibilityStatus="NEED_BANK_CONFIRMATION",
+        ruleResult="외국인 개인",
+        language="ko",
+    )
+
+    answer = GroundedAnswerBuilder().build(request, [])
+
+    assert response_language(request.query, request.language) == "en"
+    assert answer.startswith("Hello!")
+    assert "official materials are not sufficient" not in answer
+
+
+def test_korean_jamo_only_question_requests_clarification() -> None:
+    request = RagAnswerRequest(
+        productId=10,
+        ruleKey="IS_FOREIGNER",
+        query="ㄴㅇㄴㅇ",
+        topK=3,
+        eligibilityStatus="NEED_BANK_CONFIRMATION",
+        ruleResult="외국인 개인",
+        language="ko",
+    )
+
+    assert "질문을 이해하기 어렵습니다" in GroundedAnswerBuilder().build(request, [])

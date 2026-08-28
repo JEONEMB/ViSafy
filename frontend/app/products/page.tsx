@@ -40,9 +40,9 @@ export default function ProductsPage() {
       <h1 className="ui-page-heading mt-2">{text.title}</h1>
       <p className="mt-3 max-w-reading text-base leading-7 text-muted">{text.description}</p>
 
-      <AgentWorkspace products={journeyProducts.data ?? []} />
-      <RecommendationBoard onContinueJourney={(focus) => setJourneyFocus({ ...focus })} />
+      <AgentWorkspace products={journeyProducts.data ?? []} onContinueJourney={(focus) => setJourneyFocus({ ...focus })} />
       <FinancialJourneyPanel focus={journeyFocus} products={journeyProducts.data} />
+      <RecommendationBoard onContinueJourney={(focus) => setJourneyFocus({ ...focus })} />
 
       <section className="ui-card mt-8 grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-5" aria-label="Product filters">
         <label className="ui-label">{text.purpose}<select className="ui-input text-sm" value={filters.financialPurpose ?? ""} onChange={(event) => setFilter("financialPurpose", event.target.value)}><option value="">{text.all}</option><option value="ACCOUNT">{text.account}</option><option value="SAVINGS">{text.savings}</option><option value="LOAN">{text.loan}</option><option value="CARD">{text.card}</option><option value="INVESTMENT">{text.investment}</option></select></label>
