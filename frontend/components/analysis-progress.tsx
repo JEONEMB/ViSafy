@@ -1,17 +1,19 @@
 "use client";
 
 import { useLocale } from "@/components/providers/locale-provider";
-import { toLegacyLocale } from "@/i18n/config";
 
 const copy = {
   ko: ["사용자 조건 확인", "검수된 상품조건 비교", "추가 확인 조건 탐지", "공식 근거 불러오기"],
   en: ["Checking your information", "Comparing reviewed product conditions", "Detecting additional checks", "Loading official evidence"],
   vi: ["Kiểm tra điều kiện người dùng", "So sánh điều kiện sản phẩm đã duyệt", "Phát hiện điều kiện cần xác nhận", "Tải căn cứ chính thức"],
+  zh: ["确认用户条件", "比较已审核的产品条件", "检测需额外确认的条件", "载入官方依据"],
+  ja: ["利用者情報の確認", "審査済み商品条件との比較", "追加確認が必要な条件の検出", "公式根拠の読み込み"],
+  th: ["ตรวจสอบข้อมูลของคุณ", "เปรียบเทียบเงื่อนไขผลิตภัณฑ์ที่ตรวจสอบแล้ว", "ตรวจหาเงื่อนไขที่ต้องยืนยันเพิ่มเติม", "กำลังโหลดหลักฐานอย่างเป็นทางการ"],
 } as const;
 
 export function AnalysisProgress({ recommendationDone = false, evidenceRequested = false, evidenceDone = false }: { recommendationDone?: boolean; evidenceRequested?: boolean; evidenceDone?: boolean }) {
   const { locale } = useLocale();
-  const labels = copy[toLegacyLocale(locale)];
+  const labels = copy[locale];
   const states: Array<"done" | "active" | "idle"> = recommendationDone
     ? ["done", "done", "done", evidenceRequested ? (evidenceDone ? "done" : "active") : "idle"]
     : ["active", "active", "active", "idle"];

@@ -9,12 +9,15 @@ import { FinancialJourneyPanel, type JourneyFocus } from "@/components/financial
 import { AgentWorkspace } from "@/components/agent-workspace";
 import { getProducts } from "@/services/product";
 import type { DiagnosisStatus, ProductAudience, ProductCategory, ProductFilters } from "@/types/product";
-import { toLegacyLocale, type LegacyLocale } from "@/i18n/config";
+import type { Locale } from "@/i18n/config";
 
 const copy = {
   ko: { eyebrow: "FR-202 · 금융상품", title: "공식 근거가 있는 금융상품", description: "진단 준비 상태를 확인하고 상품 정보를 비교하세요.", purpose: "금융 목적", type: "상품 유형", bank: "은행 검색", foreigner: "외국인 대상만", status: "진단 가능 여부", all: "전체", account: "계좌", savings: "예·적금", loan: "대출", card: "카드", investment: "투자", checking: "입출금 계좌", ready: "진단 가능", partial: "일부 진단", notReady: "공식 조건 부족", source: "승인 Rule", detail: "상세보기", empty: "조건에 맞는 상품이 없습니다.", baseDate: "정보 기준일", identity: "신분확인", channel: "가입채널", documents: "준비서류", missingPackage: "공식 근거 보완 필요" },
   en: { eyebrow: "FR-202 · Products", title: "Financial products with official sources", description: "Compare product information and check diagnostic readiness.", purpose: "Purpose", type: "Product type", bank: "Search bank", foreigner: "For foreigners only", status: "Readiness", all: "All", account: "Account", savings: "Savings", loan: "Loan", card: "Card", investment: "Investment", checking: "Checking account", ready: "Ready", partial: "Partial", notReady: "Official conditions missing", source: "Approved rules", detail: "View details", empty: "No products match these filters.", baseDate: "Information date", identity: "Identity", channel: "Channel", documents: "Documents", missingPackage: "Official evidence needed" },
   vi: { eyebrow: "FR-202 · Sản phẩm", title: "Sản phẩm tài chính có nguồn chính thức", description: "So sánh thông tin và kiểm tra trạng thái sẵn sàng chẩn đoán.", purpose: "Mục đích", type: "Loại sản phẩm", bank: "Tìm ngân hàng", foreigner: "Chỉ dành cho người nước ngoài", status: "Trạng thái", all: "Tất cả", account: "Tài khoản", savings: "Tiết kiệm", loan: "Khoản vay", card: "Thẻ", investment: "Đầu tư", checking: "Tài khoản thanh toán", ready: "Sẵn sàng", partial: "Một phần", notReady: "Thiếu điều kiện chính thức", source: "Quy tắc đã duyệt", detail: "Xem chi tiết", empty: "Không có sản phẩm phù hợp.", baseDate: "Ngày thông tin", identity: "Danh tính", channel: "Kênh đăng ký", documents: "Giấy tờ", missingPackage: "Cần bổ sung căn cứ chính thức" },
+  zh: { eyebrow: "FR-202 · 金融产品", title: "有官方依据的金融产品", description: "确认可诊断状态并比较产品信息。", purpose: "金融目的", type: "产品类型", bank: "搜索银行", foreigner: "仅限外国人对象", status: "可否诊断", all: "全部", account: "账户", savings: "存款・定存", loan: "贷款", card: "卡片", investment: "投资", checking: "活期存款账户", ready: "可诊断", partial: "部分诊断", notReady: "官方条件不足", source: "已审核规则", detail: "查看详情", empty: "没有符合条件的产品。", baseDate: "信息基准日", identity: "身份确认", channel: "加入渠道", documents: "准备材料", missingPackage: "需补充官方依据" },
+  ja: { eyebrow: "FR-202 · 金融商品", title: "公式根拠のある金融商品", description: "診断可能かどうかを確認し、商品情報を比較しましょう。", purpose: "金融目的", type: "商品タイプ", bank: "銀行を検索", foreigner: "外国人対象のみ", status: "診断可否", all: "すべて", account: "口座", savings: "預金・積立", loan: "ローン", card: "カード", investment: "投資", checking: "普通預金口座", ready: "診断可能", partial: "一部診断", notReady: "公式条件が不足", source: "承認済みルール", detail: "詳細を見る", empty: "条件に合う商品がありません。", baseDate: "情報基準日", identity: "本人確認", channel: "申込チャネル", documents: "必要書類", missingPackage: "公式根拠の補完が必要" },
+  th: { eyebrow: "FR-202 · ผลิตภัณฑ์การเงิน", title: "ผลิตภัณฑ์การเงินที่มีหลักฐานอย่างเป็นทางการ", description: "ตรวจสอบสถานะความพร้อมในการวินิจฉัยและเปรียบเทียบข้อมูลผลิตภัณฑ์", purpose: "วัตถุประสงค์ทางการเงิน", type: "ประเภทผลิตภัณฑ์", bank: "ค้นหาธนาคาร", foreigner: "เฉพาะสำหรับชาวต่างชาติ", status: "สถานะการวินิจฉัย", all: "ทั้งหมด", account: "บัญชี", savings: "เงินฝาก/ออมทรัพย์", loan: "สินเชื่อ", card: "บัตร", investment: "การลงทุน", checking: "บัญชีเงินฝากกระแสรายวัน", ready: "วินิจฉัยได้", partial: "วินิจฉัยได้บางส่วน", notReady: "เงื่อนไขอย่างเป็นทางการไม่เพียงพอ", source: "กฎที่อนุมัติแล้ว", detail: "ดูรายละเอียด", empty: "ไม่มีผลิตภัณฑ์ที่ตรงกับเงื่อนไข", baseDate: "วันที่อ้างอิงข้อมูล", identity: "การยืนยันตัวตน", channel: "ช่องทางการสมัคร", documents: "เอกสารที่ต้องเตรียม", missingPackage: "ต้องเพิ่มหลักฐานอย่างเป็นทางการ" },
 } as const;
 
 const readinessClass: Record<DiagnosisStatus, string> = {
@@ -25,7 +28,7 @@ const readinessClass: Record<DiagnosisStatus, string> = {
 
 export default function ProductsPage() {
   const { locale } = useLocale();
-  const uiLocale = toLegacyLocale(locale);
+  const uiLocale = locale;
   const text = copy[uiLocale];
   const [filters, setFilters] = useState<ProductFilters>({});
   const [journeyFocus, setJourneyFocus] = useState<JourneyFocus>(null);
@@ -72,20 +75,26 @@ export default function ProductsPage() {
   );
 }
 
-function audienceLabel(locale: LegacyLocale, audience: ProductAudience) {
+function audienceLabel(locale: Locale, audience: ProductAudience) {
   const labels = {
     ko: { GENERAL: "일반상품", FOREIGNER_SPECIALIZED: "외국인 특화상품", POLICY: "정책금융" },
     en: { GENERAL: "General product", FOREIGNER_SPECIALIZED: "Foreigner-specialized", POLICY: "Policy finance" },
     vi: { GENERAL: "Sản phẩm chung", FOREIGNER_SPECIALIZED: "Dành cho người nước ngoài", POLICY: "Tài chính chính sách" },
+    zh: { GENERAL: "普通产品", FOREIGNER_SPECIALIZED: "外国人专属产品", POLICY: "政策金融" },
+    ja: { GENERAL: "一般商品", FOREIGNER_SPECIALIZED: "外国人向け商品", POLICY: "政策金融" },
+    th: { GENERAL: "ผลิตภัณฑ์ทั่วไป", FOREIGNER_SPECIALIZED: "ผลิตภัณฑ์เฉพาะชาวต่างชาติ", POLICY: "การเงินเชิงนโยบาย" },
   } as const;
   return labels[locale][audience];
 }
 
-function categoryLabel(locale: LegacyLocale, category: ProductCategory) {
-  const labels: Record<LegacyLocale, Record<ProductCategory, string>> = {
+function categoryLabel(locale: Locale, category: ProductCategory) {
+  const labels: Record<Locale, Record<ProductCategory, string>> = {
     ko: { DEMAND_DEPOSIT: "입출금계좌", SAVINGS: "적금", TIME_DEPOSIT: "예금", DEBIT_CARD: "체크카드", CREDIT_CARD: "신용카드", PERSONAL_LOAN: "신용대출", HOUSING_LOAN: "주거대출", REMITTANCE: "해외송금", SECURITIES: "증권", POLICY_FINANCE: "정책금융" },
     en: { DEMAND_DEPOSIT: "Demand deposit", SAVINGS: "Savings", TIME_DEPOSIT: "Time deposit", DEBIT_CARD: "Debit card", CREDIT_CARD: "Credit card", PERSONAL_LOAN: "Personal loan", HOUSING_LOAN: "Housing loan", REMITTANCE: "Remittance", SECURITIES: "Securities", POLICY_FINANCE: "Policy finance" },
     vi: { DEMAND_DEPOSIT: "Tài khoản thanh toán", SAVINGS: "Tiết kiệm", TIME_DEPOSIT: "Tiền gửi kỳ hạn", DEBIT_CARD: "Thẻ ghi nợ", CREDIT_CARD: "Thẻ tín dụng", PERSONAL_LOAN: "Vay cá nhân", HOUSING_LOAN: "Vay nhà ở", REMITTANCE: "Chuyển tiền", SECURITIES: "Chứng khoán", POLICY_FINANCE: "Tài chính chính sách" },
+    zh: { DEMAND_DEPOSIT: "活期存款账户", SAVINGS: "零存整取", TIME_DEPOSIT: "定期存款", DEBIT_CARD: "借记卡", CREDIT_CARD: "信用卡", PERSONAL_LOAN: "信用贷款", HOUSING_LOAN: "住房贷款", REMITTANCE: "海外汇款", SECURITIES: "证券", POLICY_FINANCE: "政策金融" },
+    ja: { DEMAND_DEPOSIT: "普通預金口座", SAVINGS: "積立預金", TIME_DEPOSIT: "定期預金", DEBIT_CARD: "デビットカード", CREDIT_CARD: "クレジットカード", PERSONAL_LOAN: "信用ローン", HOUSING_LOAN: "住宅ローン", REMITTANCE: "海外送金", SECURITIES: "証券", POLICY_FINANCE: "政策金融" },
+    th: { DEMAND_DEPOSIT: "บัญชีเงินฝากกระแสรายวัน", SAVINGS: "บัญชีออมทรัพย์แบบฝากประจำ", TIME_DEPOSIT: "เงินฝากประจำ", DEBIT_CARD: "บัตรเดบิต", CREDIT_CARD: "บัตรเครดิต", PERSONAL_LOAN: "สินเชื่อส่วนบุคคล", HOUSING_LOAN: "สินเชื่อที่อยู่อาศัย", REMITTANCE: "การโอนเงินต่างประเทศ", SECURITIES: "หลักทรัพย์", POLICY_FINANCE: "การเงินเชิงนโยบาย" },
   };
   return labels[locale][category];
 }

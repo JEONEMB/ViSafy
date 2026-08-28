@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { changeSourceStatus, createRuleCandidate, createSource, getRagQuality, getRuleCandidates, getSources, reindexRag, reviewRule, reviewSource, updateSource } from "@/services/data-pipeline";
+import { changeSourceStatus, createRuleCandidate, createSource, extractRuleCandidates, getRagQuality, getRuleCandidates, getSources, reindexRag, reviewRule, reviewSource, updateSource } from "@/services/data-pipeline";
 import { AdminSourceEditForm } from "@/components/admin-source-edit-form";
 import { AdminRuleHistoryPanel } from "@/components/admin-rule-history-panel";
 import { getAdminProducts } from "@/services/product";
@@ -30,6 +30,7 @@ export default function SourceAdminPage() {
   const [message, setMessage] = useState("");
   const [editingSource, setEditingSource] = useState<SourceDocument | null>(null);
   const [historyRuleId, setHistoryRuleId] = useState<number | null>(null);
+  const [extractProductCode, setExtractProductCode] = useState<Record<number, string>>({});
 
   const sourceMutation = useMutation({
     mutationFn: createSource,
@@ -54,6 +55,18 @@ export default function SourceAdminPage() {
   const ragMutation = useMutation({
     mutationFn: reindexRag,
     onSuccess: (result) => { void queryClient.invalidateQueries({ queryKey: ["rag-quality"] }); setMessage(`RAG 색인 완료: 문서 ${result.indexedDocuments}개 · Chunk ${result.indexedChunks}개 · 미연결 Source ${result.skippedUnlinkedSources}개 · 본문/Evidence 없음 ${result.skippedUnavailableSnapshots}개`); },
+    onError: (error: Error) => setMessage(error.message),
+  });
+  const extractMutation = useMutation({
+    mutationFn: ({ sourceDocumentId, productCode }: { sourceDocumentId: number; productCode: string }) =>
+      extractRuleCandidates(sourceDocumentId, productCode),
+    onSuccess: (result) => {
+      void queryClient.invalidateQueries({ queryKey: ["rule-candidates"] });
+      const model = result.modelAttempted
+        ? `AI 문서 분석 채택 ${result.savedByModel}개 · 원문 대조 실패로 AI 제안 폐기 ${result.rejectedByVerifier}개`
+        : "AI 문서 분석 미사용(규칙 기반 추출만 수행)";
+      setMessage(`조건 후보 추출: 제안 ${result.proposedCandidates}개 · PENDING 저장 ${result.savedCandidates}개 · 원문 대조 실패로 폐기 ${result.rejectedUngrounded}개 · 기존 후보와 중복 ${result.skippedDuplicates}개. ${model}. 저장된 후보는 검수 전까지 진단에 사용되지 않습니다.`);
+    },
     onError: (error: Error) => setMessage(error.message),
   });
   const sourceEditMutation = useMutation({
@@ -165,6 +178,18 @@ export default function SourceAdminPage() {
             <p className="mt-3 break-all text-xs text-muted">{source.language.toUpperCase()} · 기준일 {source.informationBaseDate} · SHA-256 {source.contentHash}</p>
             <dl className="mt-3 grid gap-3 rounded-control border border-line bg-surface-subtle p-4 text-xs sm:grid-cols-3"><div><dt className="font-bold text-ink">최근 검증일</dt><dd className="text-muted">{new Date(source.lastVerifiedAt).toLocaleString()}</dd></div><div><dt className="font-bold text-ink">수집일</dt><dd className="text-muted">{new Date(source.retrievedAt).toLocaleString()}</dd></div><div><dt className="font-bold text-ink">유효기간</dt><dd className="text-muted">{source.validFrom ?? "제한 없음"} ~ {source.validTo ?? "제한 없음"}</dd></div></dl>
             <details className="mt-3 rounded-control border border-line"><summary className="min-h-11 cursor-pointer px-4 py-3 font-semibold text-ink">저장 Snapshot 보기</summary><pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words border-t border-line bg-surface-subtle p-4 text-sm text-muted">{source.snapshotText ?? source.snapshotPath ?? "Snapshot 없음"}</pre></details>
+            <div className="mt-3 rounded-control border border-status-info-border bg-status-info-bg p-4">
+              <p className="text-sm font-bold text-ink">AI 조건 후보 추출</p>
+              <p className="mt-1 text-xs leading-5 text-muted">AI가 저장된 Snapshot 원문을 읽어 조건 후보를 제안하고, 규칙 기반 검증기가 인용 문장·숫자·비자코드를 원문과 대조합니다. 원문에 그대로 존재하지 않는 제안은 저장하지 않고, 저장된 후보도 승인 전까지 진단에 사용되지 않습니다. AI 호출이 실패하면 규칙 기반 추출만으로 계속 동작합니다.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <select aria-label="추출 대상 상품" className={`${inputClass} max-w-md flex-1`} value={extractProductCode[source.id] ?? ""} onChange={(event) => setExtractProductCode((current) => ({ ...current, [source.id]: event.target.value }))}>
+                  <option value="" disabled>추출 대상 상품 선택</option>
+                  {products.data?.map((product) => <option key={product.id} value={product.productCode}>{product.institution} · {product.productName} ({product.productCode})</option>)}
+                </select>
+                <button className="ui-button ui-button-primary min-h-9 px-3 py-1.5" disabled={!extractProductCode[source.id] || !source.snapshotText || extractMutation.isPending} onClick={() => extractMutation.mutate({ sourceDocumentId: source.id, productCode: extractProductCode[source.id] })}>{extractMutation.isPending ? "추출 중..." : "이 문서에서 조건 후보 추출"}</button>
+              </div>
+              {!source.snapshotText ? <p className="mt-2 text-xs font-semibold text-status-warning">Snapshot 원문이 저장된 Source만 추출할 수 있습니다.</p> : null}
+            </div>
             <div className="mt-4 flex flex-wrap gap-2"><button className="ui-button ui-button-primary min-h-9 px-3 py-1.5" onClick={() => setEditingSource(source)}>정보 수정</button>{source.lifecycleStatus !== "EXPIRED" ? <><button className="ui-button ui-button-secondary min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "ACTIVE" })}>ACTIVE</button><button className="ui-button ui-button-secondary min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "NEED_REVIEW" })}>NEED_REVIEW</button><button className="ui-button ui-button-quiet min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "SUPERSEDED" })}>SUPERSEDED</button><button className="ui-button ui-button-quiet min-h-9 px-3 py-1.5" onClick={() => lifecycleMutation.mutate({ id: source.id, status: "UNKNOWN" })}>UNKNOWN</button><button className="ui-button ui-button-danger min-h-9 px-3 py-1.5" onClick={() => { if (window.confirm("이 Source를 만료 처리할까요?")) lifecycleMutation.mutate({ id: source.id, status: "EXPIRED" }); }}>EXPIRED</button><button className="ui-button ui-button-danger min-h-9 px-3 py-1.5" onClick={() => sourceReviewMutation.mutate({ id: source.id, status: "REJECTED" })}>REJECTED</button></> : null}</div>
             {editingSource?.id === source.id ? <AdminSourceEditForm source={editingSource} pending={sourceEditMutation.isPending} onCancel={() => setEditingSource(null)} onSave={(body) => sourceEditMutation.mutate({ id: source.id, body })} /> : null}
           </article>)}

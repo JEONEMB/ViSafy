@@ -26,9 +26,11 @@ import java.security.Principal;
 @RequestMapping("/api/admin")
 public class RuleCandidateController {
     private final RuleCandidateService service;
+    private final RuleExtractionService extractionService;
 
-    public RuleCandidateController(RuleCandidateService service) {
+    public RuleCandidateController(RuleCandidateService service, RuleExtractionService extractionService) {
         this.service = service;
+        this.extractionService = extractionService;
     }
 
     @PostMapping("/rule-candidates")
@@ -39,6 +41,16 @@ public class RuleCandidateController {
                 request.ruleNature(), request.mandatory(), request.sourceExcerpt(), request.sourceLocator(),
                 request.pageNumber(), request.sectionName(), request.validFrom(),
                 request.validTo(), request.description(), request.confidence()));
+    }
+
+    @PostMapping("/rule-candidates/extract")
+    public ExtractRuleCandidatesResponse extract(@Valid @RequestBody ExtractRuleCandidatesRequest request) {
+        RuleExtractionService.ExtractionOutcome outcome =
+                extractionService.extractFromSource(request.sourceDocumentId(), request.productCode());
+        return new ExtractRuleCandidatesResponse(outcome.proposedCandidates(),
+                outcome.savedCandidates().size(), outcome.rejectedUngrounded(), outcome.skippedDuplicates(),
+                outcome.modelAttempted(), outcome.savedByModel(), outcome.rejectedByVerifier(),
+                outcome.warnings(), outcome.savedCandidates().stream().map(RuleCandidateResponse::from).toList());
     }
 
     @GetMapping("/rule-candidates")
@@ -89,6 +101,19 @@ public class RuleCandidateController {
             LocalDate validTo,
             @NotBlank String description,
             @NotNull @DecimalMin("0.0") @DecimalMax("1.0") BigDecimal confidence
+    ) {
+    }
+
+    public record ExtractRuleCandidatesRequest(
+            @NotNull Long sourceDocumentId,
+            @NotBlank String productCode
+    ) {
+    }
+
+    public record ExtractRuleCandidatesResponse(
+            int proposedCandidates, int savedCandidates, int rejectedUngrounded, int skippedDuplicates,
+            boolean modelAttempted, int savedByModel, int rejectedByVerifier,
+            List<String> warnings, List<RuleCandidateResponse> candidates
     ) {
     }
 

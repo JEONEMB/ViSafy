@@ -6,11 +6,27 @@ import org.junit.jupiter.api.Test;
 
 class EligibilityMessagesTest {
     @Test
-    void createsKoreanEnglishAndVietnameseMessages() {
+    void createsAMessageInEverySupportedLanguage() {
         assertThat(new EligibilityMessages("ko").disclaimer())
                 .contains("금융기관의 최종 심사 결과에 따라 달라질 수 있습니다");
         assertThat(new EligibilityMessages("en").disclaimer()).contains("not final approval");
         assertThat(new EligibilityMessages("vi").disclaimer()).contains("không phải phê duyệt cuối cùng");
+        assertThat(new EligibilityMessages("zh").disclaimer()).contains("金融机构的最终审核结果");
+        assertThat(new EligibilityMessages("ja").disclaimer()).contains("金融機関の最終審査結果");
+        assertThat(new EligibilityMessages("th").disclaimer()).contains("สถาบันการเงิน");
+    }
+
+    @Test
+    void translatesRuleLabelsInsteadOfFallingBackToEnglish() {
+        assertThat(new EligibilityMessages("zh").passed("VISA_TYPE", "F-2", "F-2")).contains("签证类型");
+        assertThat(new EligibilityMessages("ja").passed("VISA_TYPE", "F-2", "F-2")).contains("ビザの種類");
+        assertThat(new EligibilityMessages("th").passed("VISA_TYPE", "F-2", "F-2")).contains("ประเภทวีซ่า");
+    }
+
+    @Test
+    void fallsBackToKoreanForAnUnsupportedLanguage() {
+        assertThat(new EligibilityMessages("fr").disclaimer()).contains("사전자격 안내");
+        assertThat(new EligibilityMessages(null).disclaimer()).contains("사전자격 안내");
     }
 
     @Test

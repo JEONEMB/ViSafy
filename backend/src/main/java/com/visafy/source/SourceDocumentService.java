@@ -60,7 +60,8 @@ public class SourceDocumentService {
         repository.findFirstBySourceUrlOrderByRetrievedAtDesc(sourceUrl.strip())
                 .filter(previous -> !previous.getContentHash().equalsIgnoreCase(hash))
                 .filter(previous -> previous.getReviewStatus() == ReviewStatus.APPROVED)
-                .ifPresent(previous -> previous.review(ReviewStatus.NEED_REVIEW, "content-change-detector"));
+                .ifPresent(previous ->
+                        previous.review(ReviewStatus.NEED_REVIEW, SourceDocument.CONTENT_CHANGE_REVIEWER));
         return repository.save(new SourceDocument(
                 institution.strip(), sourceType, title.strip(), sourceUrl.strip(), normalizedSnapshot,
                 normalizedPath, hash, informationBaseDate, validFrom, validTo, language));

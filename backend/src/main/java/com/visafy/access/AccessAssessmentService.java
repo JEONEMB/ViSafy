@@ -45,7 +45,10 @@ public class AccessAssessmentService {
                     message(profile.getLanguage(),
                             "'실명의 개인' 문구만으로 외국인 이용 가능 여부를 확정할 수 없습니다.",
                             "The phrase 'real-name individual' alone does not prove access for foreign customers.",
-                            "Chỉ cụm từ 'cá nhân có danh tính thực' không đủ để xác nhận người nước ngoài có thể sử dụng."),
+                            "Chỉ cụm từ 'cá nhân có danh tính thực' không đủ để xác nhận người nước ngoài có thể sử dụng.",
+                            "仅凭“实名个人”这一表述，无法确定外国人是否可以使用。",
+                            "「実名の個人」という表現だけでは、外国人が利用できるかどうかを確定できません。",
+                            "เพียงข้อความว่า 'บุคคลที่ยืนยันตัวตนจริง' ไม่สามารถยืนยันได้ว่าชาวต่างชาติใช้บริการได้หรือไม่"),
                     null, null, product.getSourceDocument().getSourceUrl()));
             return new AccessAssessment(AccessStatus.ACCESS_UNKNOWN, AccessAvailability.NEED_CONFIRMATION,
                     branch, online, List.copyOf(details), true);
@@ -131,15 +134,21 @@ public class AccessAssessmentService {
         return new AccessDetail(category, candidate.getRuleKey(), "OFFICIAL_ACCESS_EVIDENCE",
                 message(language, "공식 자료에 확인된 이용 방법입니다.",
                         "This access method is confirmed by an official source.",
-                        "Cách sử dụng này được xác nhận trong nguồn chính thức."),
+                        "Cách sử dụng này được xác nhận trong nguồn chính thức.",
+                        "这是官方资料中已确认的使用方法。",
+                        "公式資料で確認された利用方法です。",
+                        "เป็นวิธีการใช้บริการที่ยืนยันจากเอกสารอย่างเป็นทางการ"),
                 candidate.getSourceExcerpt(), candidate.getSourceLocator(),
                 candidate.getSourceDocument().getSourceUrl());
     }
 
-    private String message(String language, String ko, String en, String vi) {
-        return switch (language == null ? "ko" : language) {
+    private String message(String language, String ko, String en, String vi, String zh, String ja, String th) {
+        return switch (language == null ? "ko" : language.toLowerCase(Locale.ROOT)) {
             case "en" -> en;
             case "vi" -> vi;
+            case "zh" -> zh;
+            case "ja" -> ja;
+            case "th" -> th;
             default -> ko;
         };
     }

@@ -109,6 +109,7 @@ class SourceDocumentServiceTest {
 
         assertThat(previous.getReviewStatus()).isEqualTo(com.visafy.common.domain.ReviewStatus.NEED_REVIEW);
         assertThat(previous.getReviewedBy()).isEqualTo("content-change-detector");
+        assertThat(previous.awaitsReviewAfterContentChange()).isTrue();
         assertThat(replacement.getReviewStatus()).isEqualTo(com.visafy.common.domain.ReviewStatus.PENDING);
     }
 }

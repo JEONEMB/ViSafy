@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends
 
 from app.api.rag import require_internal_token
+from app.config import settings
+from app.extraction.composite_extractor import CompositeRuleCandidateExtractor
+from app.extraction.llm_rule_extractor import LlmRuleCandidateProposer
 from app.extraction.models import RuleCandidateExtractionRequest, RuleCandidateExtractionResponse
-from app.extraction.rule_candidate_extractor import ConservativeRuleCandidateExtractor
 
 router = APIRouter(prefix="/internal/extraction", tags=["extraction"], dependencies=[Depends(require_internal_token)])
-extractor = ConservativeRuleCandidateExtractor()
+extractor = CompositeRuleCandidateExtractor(LlmRuleCandidateProposer(settings))
 
 
 @router.post("/rule-candidates", response_model=RuleCandidateExtractionResponse)

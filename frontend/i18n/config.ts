@@ -1,5 +1,4 @@
 export type Locale = "ko" | "en" | "vi" | "zh" | "ja" | "th";
-export type LegacyLocale = "ko" | "en" | "vi";
 
 export const localeOptions: Array<{ locale: Locale; flag: string; language: string }> = [
   { locale: "ko", flag: "🇰🇷", language: "한국어" },
@@ -12,10 +11,6 @@ export const localeOptions: Array<{ locale: Locale; flag: string; language: stri
 
 export function isLocale(value: string | null): value is Locale {
   return localeOptions.some((option) => option.locale === value);
-}
-
-export function toLegacyLocale(locale: Locale): LegacyLocale {
-  return locale === "ko" || locale === "vi" ? locale : "en";
 }
 
 const sharedEnglish = {

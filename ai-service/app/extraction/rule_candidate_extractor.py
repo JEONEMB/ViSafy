@@ -35,7 +35,10 @@ class ConservativeRuleCandidateExtractor:
             codes = sorted({code.upper() for code in self.VISA_CODE.findall(sentence)})
             if codes and self._explicit_visa_condition(sentence):
                 operator = "NOT_IN" if re.search(r"제외|불가|제한|except|not eligible", sentence, re.IGNORECASE) else "IN"
-                results.append(self._candidate(request, page, sentence, "VISA_TYPE", operator, json.dumps(codes), 0.88))
+                # Compact separators keep the value byte-identical to hand-reviewed rules, so an
+                # approved rule with the same meaning is never flagged as a source conflict.
+                value = json.dumps(codes, separators=(",", ":"))
+                results.append(self._candidate(request, page, sentence, "VISA_TYPE", operator, value, 0.88))
             for pattern, key in ((self.AGE, "AGE"), (self.VISA_MONTHS, "VISA_REMAINING_MONTH"), (self.EMPLOYMENT_MONTHS, "EMPLOYMENT_DURATION_MONTHS")):
                 match = pattern.search(sentence)
                 if match:

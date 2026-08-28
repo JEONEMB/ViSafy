@@ -93,15 +93,17 @@ Season 3 PARTIAL: 3개
 
 담당: 사용자 자료 수집 + Codex 데이터 반영 지원
 
-현재 누락:
+현재 누락 (2026-08-28 실행 DB 기준 재측정):
 
 ```text
-외국인 신분확인 Evidence: 7개 상품
-Channel Evidence: 7개 상품
-필요서류 Evidence: 6개 상품
+활성 상품 11개 중 8개는 신분확인·Channel·필요서류 Evidence를 모두 보유
+Evidence 미보유 3개는 전부 FOREIGNER_SPECIALIZED
+  SHINHAN-SOL-GLOBAL-JEONSE        승인 Rule 자체가 없어 진단 불가
+  HANA-EZ-LOAN                     가입조건 Rule은 있으나 Access Evidence 0건
+  SHINHAN-SOL-GLOBAL-SAVINGS-2025  가입조건 Rule은 있으나 Access Evidence 0건
 ```
 
-- [ ] 외국인등록증·여권·국내거소신고증 등 사용 가능한 신분증 확인
+- [ ] 위 3개 상품의 외국인등록증·여권·국내거소신고증 등 사용 가능한 신분증 확인
 - [ ] 신분증 안내가 가입조건인지 단순 신분확인 방법인지 분류
 - [ ] 영업점 이용 가능 여부 확인
 - [ ] 모바일 앱 이용 가능 여부 확인
@@ -155,15 +157,17 @@ Identity / Branch / Mobile 상태가 각각 표시됨
 
 담당: Codex 구현 + 사용자 Provider 선택
 
-선택지 A — 실제 LLM 연결:
+선택지 A — 실제 LLM 연결 (채택, 2026-08-28 실호출 검증 완료):
 
-- [ ] OpenAI, Gemini, Anthropic 중 하나 선택
-- [ ] Provider Adapter 구현
-- [ ] 검색된 공식 Context만 LLM에 전달
-- [ ] Eligibility와 Access 상태는 읽기 전용으로 전달
-- [ ] 구조화 숫자·금액·Visa Code 보존
-- [ ] 근거가 없으면 고정 Fallback 반환
-- [ ] 템플릿 설명을 장애 시 Fallback으로 유지
+- [x] OpenAI, Gemini, Anthropic 중 하나 선택 — OpenAI Responses API
+- [x] Provider Adapter 구현
+- [x] 검색된 공식 Context만 LLM에 전달
+- [x] Eligibility와 Access 상태는 읽기 전용으로 전달
+- [x] 구조화 숫자·금액·Visa Code 보존
+- [x] 근거가 없으면 고정 Fallback 반환
+- [x] 템플릿 설명을 장애 시 Fallback으로 유지
+- [x] 로컬 실호출에서 `OPENAI_RESPONSES_API`, `OPENAI_STRUCTURED_OUTPUT` guardrail 확인
+- [ ] 운영 배포환경 Secret으로 같은 호출 재검증하고 응답 캡처 보관
 
 선택지 B — 현재 구조 유지:
 
@@ -216,11 +220,17 @@ Identity / Branch / Mobile 상태가 각각 표시됨
 
 ### P1-3. AI Rule Candidate 추출
 
-- [ ] 공식 문서에서 Rule Candidate 추출
-- [ ] `ruleKey`, `operator`, `value`, `ruleLevel`, `ruleNature` 구조화
-- [ ] Source Excerpt와 Locator 필수 반환
-- [ ] 관리자 승인 전 Runtime 사용 금지
-- [ ] 승인·수정·거절 이력 저장
+- [x] 공식 문서에서 Rule Candidate 추출
+- [x] `ruleKey`, `operator`, `value`, `ruleLevel`, `ruleNature` 구조화
+- [x] Source Excerpt와 Locator 필수 반환
+- [x] 관리자 승인 전 Runtime 사용 금지
+- [x] 승인·수정·거절 이력 저장
+- [x] Backend `POST /api/admin/rule-candidates/extract`와 `/admin/sources` 화면 연결
+- [x] 추출 문장이 저장 Snapshot 원문에 실재하는지 재대조 후 미검증 후보 폐기
+- [x] 같은 Source의 동일 조건 재추출 시 중복 저장 금지
+- [x] 정규식 추출기를 LLM 후보 제안 + 원문 대조 검증 구조로 확장
+- [x] LLM 제안 값이 Rule Engine 비교 형식과 다르면 저장 전 폐기
+- [x] API Key 누락·Provider 장애 시 규칙 기반 추출만으로 계속 동작
 
 ### P1-4. 문서 처리
 
@@ -228,8 +238,9 @@ Identity / Branch / Mobile 상태가 각각 표시됨
 - [ ] PDF 페이지 번호 보존
 - [ ] 스캔 PDF OCR 검토
 - [ ] HTML 본문 추출기 구현
-- [ ] `contentHash` 변경 감지
-- [ ] 변경 Source 재검수 알림
+- [x] `contentHash` 변경 감지
+- [x] 변경 Source 재검수 대기 상태를 상품 상세에서 사용자에게 표시(6개 언어)
+- [ ] 변경 Source 재검수 알림(메일·푸시 등 별도 채널)
 
 ---
 
@@ -301,7 +312,7 @@ ANTHROPIC_API_KEY + ANTHROPIC_MODEL
 - [ ] Demo C Branch AVAILABLE / Mobile UNKNOWN
 - [ ] Demo D Visa Rule에 따른 동적 입력
 - [ ] Demo E ACCESS_UNKNOWN과 은행 확인 안내
-- [ ] 한국어·영어·베트남어 핵심 값 동일
+- [ ] 한국어·영어·베트남어·중국어·일본어·태국어 핵심 값 동일
 - [ ] Source Conflict 자동 선택 금지
 - [ ] 만료 Rule 진단 제외
 - [ ] RAG 다른 상품 Source 혼입 금지

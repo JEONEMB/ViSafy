@@ -165,6 +165,9 @@ public class ProductGuidanceService {
         return switch (language == null ? "ko" : language.toLowerCase(Locale.ROOT)) {
             case "en" -> "Only documents confirmed by an approved official Source are shown. Conditional or bank-confirmation documents are not automatically promoted to official requirements.";
             case "vi" -> "Chỉ hiển thị tài liệu được xác nhận bởi nguồn chính thức đã duyệt. Tài liệu có điều kiện hoặc cần ngân hàng xác nhận không tự động được nâng thành tài liệu bắt buộc chính thức.";
+            case "zh" -> "仅显示已在获批的官方来源中确认的材料。附条件材料或需银行确认的材料不会自动升级为官方必备材料。";
+            case "ja" -> "承認済みの公式ソースで確認された書類のみを表示します。条件付き書類や銀行確認が必要な書類を公式の必須書類へ自動的に格上げすることはありません。";
+            case "th" -> "แสดงเฉพาะเอกสารที่ยืนยันจากแหล่งข้อมูลอย่างเป็นทางการที่ผ่านการอนุมัติแล้ว เอกสารแบบมีเงื่อนไขหรือที่ต้องให้ธนาคารยืนยันจะไม่ถูกยกระดับเป็นเอกสารบังคับโดยอัตโนมัติ";
             default -> "승인된 공식 Source에서 확인된 서류만 표시합니다. 조건부 또는 은행 확인 서류를 공식 필수서류로 자동 승격하지 않습니다.";
         };
     }

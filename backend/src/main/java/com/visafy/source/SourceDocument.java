@@ -14,6 +14,9 @@ import java.time.LocalDate;
 
 @Entity
 public class SourceDocument {
+    /** Reviewer recorded when a new snapshot of the same URL arrives with a different content hash. */
+    public static final String CONTENT_CHANGE_REVIEWER = "content-change-detector";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -147,6 +150,13 @@ public class SourceDocument {
             case UNKNOWN -> SourceLifecycleStatus.UNKNOWN;
             default -> SourceLifecycleStatus.PENDING;
         };
+    }
+
+    /**
+     * True while this snapshot is held for re-review because the official page changed underneath it.
+     */
+    public boolean awaitsReviewAfterContentChange() {
+        return reviewStatus == ReviewStatus.NEED_REVIEW && CONTENT_CHANGE_REVIEWER.equals(reviewedBy);
     }
 
     public boolean isEffective(LocalDate date) {

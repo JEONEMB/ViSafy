@@ -170,7 +170,8 @@ public class FinancialProductController {
     }
 
     public record SourceTrustSummary(String freshnessStatus, Instant lastVerifiedAt, LocalDate validTo,
-                                     int evidenceCoveragePercent, boolean ragEligible) {
+                                     int evidenceCoveragePercent, boolean ragEligible,
+                                     boolean officialContentChanged, Instant officialContentChangedAt) {
         static SourceTrustSummary from(ProductView view) {
             FinancialProduct product = view.product();
             var source = product.getSourceDocument();
@@ -182,8 +183,10 @@ public class FinancialProductController {
                     + (p.hardRuleEvidence() ? 1 : 0) + (p.identityEvidence() ? 1 : 0)
                     + (p.channelEvidence() ? 1 : 0) + (p.documentEvidence() ? 1 : 0)
                     + (p.applicationStepEvidence() ? 1 : 0) + (p.informationBaseDate() ? 1 : 0);
+            boolean contentChanged = source.awaitsReviewAfterContentChange();
             return new SourceTrustSummary(freshness, source.getLastVerifiedAt(), source.getValidTo(),
-                    present * 100 / 8, source.isEffective(LocalDate.now()));
+                    present * 100 / 8, source.isEffective(LocalDate.now()),
+                    contentChanged, contentChanged ? source.getLastVerifiedAt() : null);
         }
     }
 }

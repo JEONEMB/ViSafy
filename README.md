@@ -7,11 +7,12 @@
 - ENV-001~005 개발환경 및 Docker 통합환경
 - DATA-001 공식 Source 등록과 공식 도메인 allowlist
 - DATA-002 원문 Snapshot 및 SHA-256 hash 저장
-- DATA-003 Rule Candidate 저장 화면(현재 수동 입력, 자동 AI 추출은 후속 단계)
+- DATA-003 공식 Snapshot에서 LLM 조건 후보 제안·원문 대조 검증과 수동 Rule Candidate 등록
 - DATA-004 Source 및 Rule Human Verification
 - DATA-005 공식 자료 간 Rule conflict 감지
 - DATA-006 유효기간, 최근 검증일, Source 링크 및 상태 표시
 - FR-101 한국어·영어·베트남어·중국어·일본어·태국어 선택과 브라우저 저장
+- 화면 문구, Rule Engine 판정 메시지, 접근성 안내, 필요서류 안내를 6개 언어로 모두 제공(영어 대체 없음)
 - FR-102 24시간 임시 금융 프로필
 - FR-103 지원 비자 선택(D-2, D-4, E-7, E-9, F-2, F-5, F-6)
 - FR-201 승인된 공식 Source 기반 금융상품 등록
@@ -25,6 +26,8 @@ SSAFIN은 은행 상품을 번역하는 화면에 그치지 않고, 사용자의
 
 | 구성요소 | 실제 역할 | 안전 경계 |
 | --- | --- | --- |
+| 조건 후보 추출 | OpenAI가 공식 Snapshot을 읽어 가입조건 후보를 제안하고 규칙 기반 검증기가 원문과 대조 | 인용문이 원문에 없거나, 원문에 없는 숫자·비자코드를 쓰거나, Rule Engine 비교 형식과 다르면 저장하지 않음. LLM 장애 시 규칙 기반 추출로 자동 복귀 |
+| 공식정보 변경 감지 | 같은 공식 URL의 Snapshot `contentHash`가 달라지면 이전 승인본을 재검수 대기로 전환 | 사용자에게 변경 사실과 확인일을 알리고, 진단 결과가 이전 검수본 기준임을 명시 |
 | Rule Engine | 검수된 공개조건과 프로필을 결정론적으로 비교 | LLM이 판정값을 생성하거나 변경할 수 없음 |
 | Access Model | 신분확인·필요서류·영업점·모바일 이용 가능성을 별도 판단 | 가입조건과 채널 접근성을 혼동하지 않음 |
 | 공식 Source RAG | 해당 상품의 승인·유효 Source만 다국어 의미 검색 | 다른 상품, 미승인·만료 Source, 비공식 도메인을 배제 |
@@ -162,7 +165,7 @@ SSAFIN은 가입확률을 계산하거나 최종 승인을 보장하지 않습�
 상품 상세의 **공식 금융문서에 질문하기**에서 검수된 조건과 질문을 선택합니다.
 
 - 승인되고 현재 유효한 해당 상품의 공식 Source만 검색합니다.
-- 다국어 Semantic Embedding으로 한국어·영어·베트남어 질문을 의미 기반 검색합니다.
+- 다국어 Semantic Embedding으로 한국어·영어·베트남어·중국어·일본어·태국어 질문을 의미 기반 검색합니다.
 - OpenAI Responses API는 쉬운 설명, 번역, 다음 행동과 필요한 경우 은행 문의문을 생성합니다.
 - AI는 Backend의 사전자격·접근성 결과를 변경할 수 없습니다.
 - 근거가 없으면 임의의 답을 만들지 않고 금융기관 확인이 필요하다고 안내합니다.
@@ -172,6 +175,8 @@ SSAFIN은 가입확률을 계산하거나 최종 승인을 보장하지 않습�
 1. http://localhost:3000/admin/login 에서 로그인합니다.
 2. `/admin/products`에서 상품을 등록·수정·비활성화합니다.
 3. `/admin/sources`에서 공식 Source·Snapshot을 등록하고 Rule Candidate를 검수합니다.
+   Source 카드의 **이 문서에서 조건 후보 추출**을 누르면 저장된 원문에서 조건 후보를 뽑아 `PENDING`으로 저장합니다.
+   원문에 그대로 존재하지 않는 문장과 이미 등록된 동일 조건은 저장하지 않으며, 저장된 후보는 승인 전까지 진단에 사용되지 않습니다.
 4. Source 또는 Rule을 승인·수정·만료하면 트랜잭션 완료 후 RAG가 자동 재색인됩니다.
 5. 필요할 때만 관리자 화면의 **RAG 전체 재색인**을 사용합니다.
 
@@ -277,7 +282,7 @@ Runtime `PRODUCT_RULE`은 `product_id`, `rule_key`, `operator`, `rule_value`, `r
 | --- | --- | --- |
 | READY 상품 5개 이상 | `5/5` | 하나·신한·KB증권, 적금·계좌·투자 유형 |
 | Source·Snapshot·Evidence·검수일 | 적용 | 추가 상품도 동일 기준으로 등록 |
-| 한국어·영어·베트남어 사용자 흐름 | 적용 | 제출 전 전체 문구 최종 검수 |
+| 한국어·영어·베트남어·중국어·일본어·태국어 사용자 흐름 | 적용 | 제출 전 전체 문구 최종 검수 |
 | 언어와 국적 분리 | 적용 | 언어 변경 후 국적 불변 E2E 포함 |
 | Profile → 추천 → 근거 → 서류 → 절차 → 문의문 | 적용 | 고정 Demo 데이터 최종 확정 |
 | SOURCE_INSUFFICIENT Demo | 적용 | EZ Loan·SOL글로벌 전세대출 |
@@ -355,7 +360,7 @@ AI와 RAG는 외국인이라는 이유만으로 미가입을 추정하거나, `�
 상품 상세에서 사전자격 진단을 실행하면 `POST /api/ai/explanation`이 현재 임시 프로필과 상품으로 Eligibility Engine을 다시 실행합니다. Frontend가 상태나 숫자를 임의로 전달하지 않으며, Backend가 확정한 구조화 값만 AI Service에 전달합니다.
 
 - AI-201: `PUBLIC_CONDITIONS_MET`, `NEED_BANK_CONFIRMATION`, `PUBLIC_CONDITIONS_NOT_MET`, `INSUFFICIENT_INFORMATION` 상태를 가입 보장 표현 없이 자연어로 설명
-- AI-202: 프로필 언어에 따라 한국어·영어·베트남어로 설명하고 비자코드·기간·조건 수는 구조화 필드로 별도 반환
+- AI-202: 프로필 언어에 따라 한국어·영어·베트남어·중국어·일본어·태국어로 설명하고 비자코드·기간·조건 수는 구조화 필드로 별도 반환
 - AI-203: `체류자격 (Status of Stay)`, `소득증빙 (Proof of Income)`, `보증보험증권`과 은행 내부 신용평가를 쉬운 말로 설명
 - AI-204: EXTERNAL_CHECK 또는 UNKNOWN이 있을 때 한국어 은행 문의문과 선택 언어 번역을 함께 생성하며 화면에서 복사 가능
 
@@ -393,7 +398,7 @@ AI Chat은 P1 보조기능입니다. 현재 상품과 선택 Rule에 연결된 �
 | TEST-101 | D-2 허용 PASS, F-5 전용 FAIL | `RuleEvaluatorTest` |
 | TEST-102 | 기준일에서 완전히 경과한 달만 계산하여 2개월 30일 FAIL, 정확히 3개월 PASS | `RuleEvaluatorTest` |
 | TEST-103 | Context와 Rule 결과에 없는 Visa·소득·기간을 답변에 생성하지 않음 | `test_specification_22.py` |
-| TEST-104 | 한국어·영어·베트남어에서 상태·Visa·개월·금액·Source 이름 보존 | `test_specification_22.py` |
+| TEST-104 | 한국어·영어·베트남어·중국어·일본어·태국어에서 상태·Visa·개월·금액·Source 이름 보존 | `test_specification_22.py` |
 | TEST-105 | 기대 문서의 Top-K 포함과 다른 상품 Source 배제 | `test_document_store.py` |
 | TEST-106 | 언어 선택부터 프로필·금융목적·진단·근거·서류·절차·문의문까지 Chromium E2E | `user-journey.spec.ts` |
 | TEST-107 | E-9의 비공개 세부조건을 FAIL이 아닌 `NEED_BANK_CONFIRMATION`으로 처리 | `EligibilityServiceTest` |
@@ -435,7 +440,7 @@ docker run --rm --ipc=host -e E2E_BASE_URL=http://host.docker.internal:3000 -v "
 - [ ] `RAG_INTERNAL_TOKEN`, 관리자 비밀번호 등 저장소 기본값을 충분히 긴 운영용 비밀값으로 교체하고 배포 환경의 Secret으로 관리
 - [ ] 등록된 Source URL, Snapshot, 상품 연결, 언어, 유효기간 및 검수 상태를 실제 공식 문서 기준으로 재검증
 - [ ] Source 만료·Rule 충돌·색인 누락 시 사용자에게 `확인 필요`가 표시되는 통합 시나리오 재검증
-- [ ] RAG 답변이 Eligibility Engine 결과를 변경하거나 가입을 보장하지 않는지 한국어·영어·베트남어 회귀 테스트
+- [ ] RAG 답변이 Eligibility Engine 결과를 변경하거나 가입을 보장하지 않는지 한국어·영어·베트남어·중국어·일본어·태국어 회귀 테스트
 - [ ] 운영 배포에서 `/internal/rag/**`가 외부 네트워크에 직접 노출되지 않는지 확인
 
 **P1 · 문서 수집과 전처리 자동화**
@@ -656,7 +661,7 @@ Official Source가 사실의 기준이며, Human Verification을 거쳐 `APPROVE
 
 - `Official Source → Human Verification → Rule Engine → RAG → 설명`의 권한 경계를 유지합니다. AI 응답은 Backend가 계산한 Eligibility 상태와 Rule 결과를 변경할 수 없습니다.
 - RAG 검색 결과가 없으면 조건을 추측하지 않고 “현재 등록된 공식 자료만으로는 해당 조건을 정확히 확인할 수 없습니다. 금융기관에 추가 확인이 필요합니다.”라는 고정 안내를 반환합니다.
-- 모든 사전자격 설명에는 실제 가입 여부와 한도·금리가 금융기관의 최종 심사에 따라 달라진다는 공통 면책문구를 한국어·영어·베트남어로 제공합니다.
+- 모든 사전자격 설명에는 실제 가입 여부와 한도·금리가 금융기관의 최종 심사에 따라 달라진다는 공통 면책문구를 한국어·영어·베트남어·중국어·일본어·태국어로 제공합니다.
 - 사용자 질문은 신뢰할 수 없는 검색 입력으로만 취급합니다. System Prompt 공개, 기존 지침 무시, Eligibility/Rule/Source 정책 변경을 요구하는 대표적인 Prompt Injection은 검색 전에 차단하며 내부 AI API는 `RAG_INTERNAL_TOKEN`으로 보호합니다.
 - 벡터 검색은 `product_id`, `review_status=APPROVED`, 현재 유효기간을 동시에 필터링합니다. 반환 직전에도 Source URL이 `SOURCE_ALLOWED_DOMAINS`의 공식 도메인인지 다시 확인합니다.
 - 임시 프로필에는 주민등록번호, 외국인등록번호, 여권번호, 계좌번호, 카드번호 필드가 없습니다. 자유입력 필드에 해당 형식의 값을 붙여 넣어도 Backend가 `400 Bad Request`로 거부합니다.
