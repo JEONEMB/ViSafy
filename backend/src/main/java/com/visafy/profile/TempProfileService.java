@@ -62,6 +62,18 @@ public class TempProfileService {
         return profile;
     }
 
+    /**
+     * Switches only the stored language. Diagnosis messages, access details, guidance, the
+     * journey, and AI answers all read the profile language, so a language change in the UI has
+     * to reach the profile for those to follow.
+     */
+    @Transactional
+    public TempProfile updateLanguage(Long id, String sessionId, String language) {
+        TempProfile profile = getOwned(id, sessionId);
+        profile.changeLanguage(language);
+        return profile;
+    }
+
     @Transactional
     public TempProfile updateOwned(Long id, String sessionId, ProfileData data) {
         validate(data);

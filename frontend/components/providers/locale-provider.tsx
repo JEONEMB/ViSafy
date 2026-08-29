@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { isLocale, messages, type Locale } from "@/i18n/config";
+import { updateProfileLanguage } from "@/services/profile";
 
 type LocaleContextValue = {
   locale: Locale;
@@ -26,6 +27,21 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     updateLocale(nextLocale);
     localStorage.setItem("visafyLocale", nextLocale);
     document.documentElement.lang = nextLocale;
+    syncProfileLanguage(nextLocale);
+  }
+
+  /**
+   * Diagnosis messages, access details, guidance, the financial journey, and AI answers are all
+   * generated in the language stored on the profile. Without this, switching language left every
+   * one of them in the language the profile was created with.
+   */
+  function syncProfileLanguage(nextLocale: Locale) {
+    const id = Number(localStorage.getItem("visafyProfileId"));
+    const sessionId = localStorage.getItem("visafyProfileSessionId");
+    if (!id || !sessionId) return;
+    void updateProfileLanguage(id, sessionId, nextLocale).catch(() => {
+      // An expired or missing profile must never block a language change.
+    });
   }
 
   const value = useMemo(() => ({ locale, setLocale, text: messages[locale] }), [locale]);

@@ -42,6 +42,13 @@ public class TempProfileController {
         return ProfileResponse.from(service.getOwned(id, sessionId));
     }
 
+    @PutMapping("/{id}/language")
+    public ProfileResponse changeLanguage(@PathVariable Long id,
+                                          @RequestHeader("X-Profile-Session-Id") String sessionId,
+                                          @Valid @RequestBody LanguageRequest request) {
+        return ProfileResponse.from(service.updateLanguage(id, sessionId, request.language()));
+    }
+
     @PutMapping("/{id}")
     public ProfileResponse update(@PathVariable Long id,
                                   @RequestHeader("X-Profile-Session-Id") String sessionId,
@@ -87,6 +94,9 @@ public class TempProfileController {
         }
 
         private String clean(String value) { return value == null || value.isBlank() ? null : value.strip(); }
+    }
+
+    public record LanguageRequest(@NotBlank @Pattern(regexp = "ko|en|vi|zh|ja|th") String language) {
     }
 
     public record ProfileResponse(

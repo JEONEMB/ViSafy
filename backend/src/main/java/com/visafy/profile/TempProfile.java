@@ -147,6 +147,8 @@ public class TempProfile {
     public BigDecimal getMonthlyIncome() { return monthlyIncome; }
     public Integer getEmploymentDurationMonths() { return employmentDurationMonths; }
     public String getFinancialPurpose() { return financialPurpose; }
+    /** Keeps the stored language in step with the language the user is reading the app in. */
+    public void changeLanguage(String value) { this.language = value; }
     public String getLanguage() { return language; }
     public Boolean getHasBankAccount() { return hasBankAccount; }
     public String getHousingType() { return housingType; }
