@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 077
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$repo_root"
@@ -26,8 +27,9 @@ compose=(docker compose -f infra/docker-compose.yml -f infra/docker-compose.prod
 "${compose[@]}" ps --status running mysql ai-service >/dev/null
 
 echo "Backing up MySQL ..."
+# MySQL 8.4 otherwise reads tablespace metadata, which requires the global PROCESS privilege.
 "${compose[@]}" exec -T -e MYSQL_PWD="$MYSQL_PASSWORD" mysql \
-  mysqldump --single-transaction --routines --triggers --events \
+  mysqldump --single-transaction --routines --triggers --events --no-tablespaces \
   -u "$MYSQL_USER" "$MYSQL_DATABASE" > "${target}/mysql.sql"
 
 mapfile -t rag_volumes < <(docker volume ls \
@@ -40,15 +42,19 @@ if [[ ${#rag_volumes[@]} -ne 1 ]]; then
 fi
 
 echo "Backing up RAG index ..."
+# The host shell opens this file, so it belongs to the login user rather than container root.
 docker run --rm \
   -v "${rag_volumes[0]}:/source:ro" \
-  -v "${target}:/backup" \
-  alpine:3.22 tar -C /source -czf /backup/rag-index.tar.gz .
+  alpine:3.22 tar -C /source -czf - . > "${target}/rag-index.tar.gz"
 
 git rev-parse HEAD > "${target}/git-commit.txt"
 (
   cd "$target"
   sha256sum mysql.sql rag-index.tar.gz git-commit.txt > SHA256SUMS
 )
-chmod 600 "${target}"/*
+chmod 600 -- \
+  "${target}/mysql.sql" \
+  "${target}/rag-index.tar.gz" \
+  "${target}/git-commit.txt" \
+  "${target}/SHA256SUMS"
 echo "Production backup created: $target"
