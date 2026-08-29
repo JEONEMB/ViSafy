@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
+import { institutionLabel } from "@/lib/product-localization";
 import { askOfficialDocuments } from "@/services/rag";
 import type { ProductRule } from "@/types/product";
 
@@ -64,7 +65,7 @@ export function RagQuestionPanel({ productId, rules }: { productId: number; rule
     {answer.data ? <div className="border-t border-line bg-surface p-6 sm:p-8" aria-live="polite">
       <div className="whitespace-pre-wrap rounded-card border border-line bg-surface-subtle p-5 text-sm leading-7 text-ink">{answer.data.answer}</div>
       <h3 className="mt-7 text-lg font-bold text-ink">{text.sources}</h3>
-      {answer.data.documents.length === 0 ? <p className="mt-3 text-sm text-muted">{text.noSource}</p> : <div className="mt-3 grid gap-3">{answer.data.documents.map((document, index) => <article className="rounded-card border border-line p-4" key={`${document.documentId}-${index}`}><a className="ui-link" href={document.sourceUrl} rel="noreferrer" target="_blank">{document.title} ↗</a><p className="mt-2 line-clamp-4 whitespace-pre-line text-sm leading-6 text-muted">{document.content}</p><p className="mt-2 text-xs text-quiet">{document.institution} · {text.retrieved} {new Date(document.retrievedAt).toLocaleDateString()}</p></article>)}</div>}
+      {answer.data.documents.length === 0 ? <p className="mt-3 text-sm text-muted">{text.noSource}</p> : <div className="mt-3 grid gap-3">{answer.data.documents.map((document, index) => <article className="rounded-card border border-line p-4" key={`${document.documentId}-${index}`}><a className="ui-link" href={document.sourceUrl} rel="noreferrer" target="_blank">{document.title} ↗</a><p className="mt-2 line-clamp-4 whitespace-pre-line text-sm leading-6 text-muted">{document.content}</p><p className="mt-2 text-xs text-quiet">{institutionLabel(uiLocale, document.institution)} · {text.retrieved} {new Date(document.retrievedAt).toLocaleDateString()}</p></article>)}</div>}
     </div> : null}
   </section>;
 }
