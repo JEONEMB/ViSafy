@@ -27,9 +27,19 @@ def fixture(item: dict) -> OfficialDocument:
     )
 
 
+# Mirrors app.source.allowed-domains in backend/src/main/resources/application.yml, so the
+# evaluation applies the same official-domain guard the runtime does.
+ALLOWED_SOURCE_DOMAINS = (
+    "kbstar.com,kebhana.com,hanabank.com,shinhan.com,kbsec.com,wooribank.com,ibk.co.kr,"
+    "nhbank.com,kdb.co.kr,sc.co.kr,citibank.co.kr,kakaobank.com,kbanknow.com,tossbank.com,"
+    "fss.or.kr,fsc.go.kr,finlife.fss.or.kr"
+)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", default="evaluation/rag_eval_dataset.json")
+    parser.add_argument("--output", default=None, help="Write the JSON report to this path.")
     args = parser.parse_args()
     payload = json.loads(Path(args.dataset).read_text(encoding="utf-8"))
     cases = [
@@ -50,11 +60,15 @@ def main() -> None:
         settings = Settings(
             vector_db_path=directory,
             rag_collection_name="evaluation",
-            allowed_source_domains="kbstar.com,shinhan.com,kebhana.com",
+            allowed_source_domains=ALLOWED_SOURCE_DOMAINS,
         )
         store = OfficialDocumentStore(settings)
         store.sync([fixture(item) for item in payload["documents"]])
-        print(json.dumps(RagEvaluator(store).evaluate(cases), ensure_ascii=False, indent=2))
+        report = RagEvaluator(store).evaluate(cases)
+        rendered = json.dumps(report, ensure_ascii=False, indent=2)
+        if args.output:
+            Path(args.output).write_text(rendered, encoding="utf-8")
+        print(rendered)
 
 
 if __name__ == "__main__":

@@ -6,6 +6,8 @@ from app.guardrail.answer_builder import NO_EVIDENCE_MESSAGES, GroundedAnswerBui
 from app.rag.models import RagAnswerRequest
 from app.rag.store import OfficialDocumentStore
 
+SUPPORTED_LANGUAGES = ("ko", "en", "vi", "zh", "ja", "th")
+
 
 @dataclass(frozen=True)
 class EvaluationCase:
@@ -55,6 +57,7 @@ class RagEvaluator:
             group_results[case.group_id][case.language] = set(retrieved_ids)
             evaluated.append({
                 "caseId": case.case_id,
+                "productId": case.product_id,
                 "language": case.language,
                 "retrievedDocumentIds": retrieved_ids,
                 "topKHit": expected_hit,
@@ -78,15 +81,38 @@ class RagEvaluator:
             "unsupportedAnswerBlockingRate": self._rate(unsupported, "unsupportedBlocked"),
             "crossProductContaminationRate": self._rate(evaluated, "crossProductContamination"),
             "multilingualTopKOverlap": round(sum(overlaps) / len(overlaps), 4) if overlaps else None,
+            "multilingualGroupsScored": len(overlaps),
+            "byProduct": self._breakdown(supported, "productId"),
+            "byLanguage": self._breakdown(supported, "language"),
             "cases": evaluated,
         }
 
+    def _breakdown(self, items: list[dict], key: str) -> dict:
+        """Per-product and per-language slices, so the report can name where retrieval is weak."""
+        grouped: dict[object, list[dict]] = defaultdict(list)
+        for item in items:
+            grouped[item[key]].append(item)
+        return {
+            str(value): {
+                "caseCount": len(rows),
+                "topKRecall": self._rate(rows, "topKHit"),
+                "citationAccuracy": self._rate(rows, "citationCorrect"),
+                "crossProductContaminationRate": self._rate(rows, "crossProductContamination"),
+            }
+            for value, rows in sorted(grouped.items(), key=lambda entry: str(entry[0]))
+        }
+
     def _language_overlaps(self, groups: dict[str, dict[str, set[int]]]) -> list[float]:
+        """Jaccard overlap of the Top-K sets a group returns across every supported language.
+
+        Only groups asked in all six languages are scored, so a partially translated group
+        cannot inflate the result.
+        """
         scores = []
         for languages in groups.values():
-            if not {"ko", "en", "vi"}.issubset(languages):
+            if not set(SUPPORTED_LANGUAGES).issubset(languages):
                 continue
-            sets = [languages[language] for language in ("ko", "en", "vi")]
+            sets = [languages[language] for language in SUPPORTED_LANGUAGES]
             union = set.union(*sets)
             intersection = set.intersection(*sets)
             scores.append(len(intersection) / len(union) if union else 1.0)

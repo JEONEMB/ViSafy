@@ -1,0 +1,803 @@
+{
+  "caseCount": 48,
+  "topKRecall": 1.0,
+  "citationAccuracy": 0.9524,
+  "meanTopKPrecision": 0.7857,
+  "numericIntegrityRate": 0.7708,
+  "unsupportedAnswerBlockingRate": 1.0,
+  "crossProductContaminationRate": 0.0,
+  "multilingualTopKOverlap": 0.85,
+  "multilingualGroupsScored": 5,
+  "byProduct": {
+    "12": {
+      "caseCount": 10,
+      "topKRecall": 1.0,
+      "citationAccuracy": 0.9,
+      "crossProductContaminationRate": 0.0
+    },
+    "13": {
+      "caseCount": 10,
+      "topKRecall": 1.0,
+      "citationAccuracy": 1.0,
+      "crossProductContaminationRate": 0.0
+    },
+    "3": {
+      "caseCount": 10,
+      "topKRecall": 1.0,
+      "citationAccuracy": 0.9,
+      "crossProductContaminationRate": 0.0
+    },
+    "5": {
+      "caseCount": 10,
+      "topKRecall": 1.0,
+      "citationAccuracy": 1.0,
+      "crossProductContaminationRate": 0.0
+    },
+    "6": {
+      "caseCount": 2,
+      "topKRecall": 1.0,
+      "citationAccuracy": 1.0,
+      "crossProductContaminationRate": 0.0
+    }
+  },
+  "byLanguage": {
+    "en": {
+      "caseCount": 8,
+      "topKRecall": 1.0,
+      "citationAccuracy": 1.0,
+      "crossProductContaminationRate": 0.0
+    },
+    "ja": {
+      "caseCount": 5,
+      "topKRecall": 1.0,
+      "citationAccuracy": 1.0,
+      "crossProductContaminationRate": 0.0
+    },
+    "ko": {
+      "caseCount": 12,
+      "topKRecall": 1.0,
+      "citationAccuracy": 0.9167,
+      "crossProductContaminationRate": 0.0
+    },
+    "th": {
+      "caseCount": 5,
+      "topKRecall": 1.0,
+      "citationAccuracy": 0.8,
+      "crossProductContaminationRate": 0.0
+    },
+    "vi": {
+      "caseCount": 7,
+      "topKRecall": 1.0,
+      "citationAccuracy": 1.0,
+      "crossProductContaminationRate": 0.0
+    },
+    "zh": {
+      "caseCount": 5,
+      "topKRecall": 1.0,
+      "citationAccuracy": 1.0,
+      "crossProductContaminationRate": 0.0
+    }
+  },
+  "cases": [
+    {
+      "caseId": "p12-limit-ko",
+      "productId": 12,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        23,
+        24,
+        17
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p12-limit-en",
+      "productId": 12,
+      "language": "en",
+      "retrievedDocumentIds": [
+        23,
+        24,
+        17
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": false,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p12-limit-vi",
+      "productId": 12,
+      "language": "vi",
+      "retrievedDocumentIds": [
+        23,
+        24,
+        17
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": false,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p12-limit-zh",
+      "productId": 12,
+      "language": "zh",
+      "retrievedDocumentIds": [
+        24,
+        23,
+        17
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": false,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p12-limit-ja",
+      "productId": 12,
+      "language": "ja",
+      "retrievedDocumentIds": [
+        24,
+        23,
+        17
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": false,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p12-limit-th",
+      "productId": 12,
+      "language": "th",
+      "retrievedDocumentIds": [
+        23,
+        24,
+        17
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": false,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p12-term-ko",
+      "productId": 12,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        24,
+        23,
+        17
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p12-channel-en",
+      "productId": 12,
+      "language": "en",
+      "retrievedDocumentIds": [
+        23,
+        17,
+        24
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p12-account-ko",
+      "productId": 12,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        24,
+        23,
+        17
+      ],
+      "topKHit": true,
+      "citationCorrect": false,
+      "topKPrecision": 0.3333,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p12-id-vi",
+      "productId": 12,
+      "language": "vi",
+      "retrievedDocumentIds": [
+        17,
+        24,
+        23
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.3333,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p3-target-ko",
+      "productId": 3,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        6,
+        29,
+        5
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p3-target-en",
+      "productId": 3,
+      "language": "en",
+      "retrievedDocumentIds": [
+        5,
+        6,
+        18
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p3-target-vi",
+      "productId": 3,
+      "language": "vi",
+      "retrievedDocumentIds": [
+        5,
+        6,
+        29
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p3-target-zh",
+      "productId": 3,
+      "language": "zh",
+      "retrievedDocumentIds": [
+        5,
+        29,
+        6
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p3-target-ja",
+      "productId": 3,
+      "language": "ja",
+      "retrievedDocumentIds": [
+        5,
+        29,
+        18
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p3-target-th",
+      "productId": 3,
+      "language": "th",
+      "retrievedDocumentIds": [
+        5,
+        29,
+        6
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p3-amount-ko",
+      "productId": 3,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        5,
+        29,
+        6
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p3-channel-ja",
+      "productId": 3,
+      "language": "ja",
+      "retrievedDocumentIds": [
+        29,
+        5,
+        18
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p3-nonresident-zh",
+      "productId": 3,
+      "language": "zh",
+      "retrievedDocumentIds": [
+        5,
+        6,
+        29
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p3-id-th",
+      "productId": 3,
+      "language": "th",
+      "retrievedDocumentIds": [
+        5,
+        18,
+        29
+      ],
+      "topKHit": true,
+      "citationCorrect": false,
+      "topKPrecision": 0.3333,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p13-channel-ko",
+      "productId": 13,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        25,
+        26,
+        18
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p13-channel-en",
+      "productId": 13,
+      "language": "en",
+      "retrievedDocumentIds": [
+        25,
+        26,
+        18
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p13-channel-vi",
+      "productId": 13,
+      "language": "vi",
+      "retrievedDocumentIds": [
+        25,
+        26,
+        18
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p13-channel-zh",
+      "productId": 13,
+      "language": "zh",
+      "retrievedDocumentIds": [
+        25,
+        26,
+        18
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p13-channel-ja",
+      "productId": 13,
+      "language": "ja",
+      "retrievedDocumentIds": [
+        25,
+        26,
+        18
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p13-channel-th",
+      "productId": 13,
+      "language": "th",
+      "retrievedDocumentIds": [
+        25,
+        26,
+        18
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p13-amount-ko",
+      "productId": 13,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        25,
+        26,
+        18
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p13-account-en",
+      "productId": 13,
+      "language": "en",
+      "retrievedDocumentIds": [
+        25,
+        26,
+        18
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.6667,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p13-id-vi",
+      "productId": 13,
+      "language": "vi",
+      "retrievedDocumentIds": [
+        18,
+        25,
+        26
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 0.3333,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p13-mobile-ko",
+      "productId": 13,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        25,
+        18,
+        26
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p5-visa-ko",
+      "productId": 5,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        16
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p5-visa-en",
+      "productId": 5,
+      "language": "en",
+      "retrievedDocumentIds": [
+        16
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": false,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p5-visa-vi",
+      "productId": 5,
+      "language": "vi",
+      "retrievedDocumentIds": [
+        16
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": false,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p5-visa-zh",
+      "productId": 5,
+      "language": "zh",
+      "retrievedDocumentIds": [
+        16
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": false,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p5-visa-ja",
+      "productId": 5,
+      "language": "ja",
+      "retrievedDocumentIds": [
+        16
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": false,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p5-visa-th",
+      "productId": 5,
+      "language": "th",
+      "retrievedDocumentIds": [
+        16
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": false,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p5-residency-ko",
+      "productId": 5,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        16
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p5-income-en",
+      "productId": 5,
+      "language": "en",
+      "retrievedDocumentIds": [
+        16
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": false,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p5-docs-vi",
+      "productId": 5,
+      "language": "vi",
+      "retrievedDocumentIds": [
+        16
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p5-channel-ko",
+      "productId": 5,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        16
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p6-existence-ko",
+      "productId": 6,
+      "language": "ko",
+      "retrievedDocumentIds": [
+        9
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "p6-terms-en",
+      "productId": 6,
+      "language": "en",
+      "retrievedDocumentIds": [
+        9
+      ],
+      "topKHit": true,
+      "citationCorrect": true,
+      "topKPrecision": 1.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": null,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "none-ko",
+      "productId": 999,
+      "language": "ko",
+      "retrievedDocumentIds": [],
+      "topKHit": false,
+      "citationCorrect": false,
+      "topKPrecision": 0.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": true,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "none-en",
+      "productId": 999,
+      "language": "en",
+      "retrievedDocumentIds": [],
+      "topKHit": false,
+      "citationCorrect": false,
+      "topKPrecision": 0.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": true,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "none-vi",
+      "productId": 999,
+      "language": "vi",
+      "retrievedDocumentIds": [],
+      "topKHit": false,
+      "citationCorrect": false,
+      "topKPrecision": 0.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": true,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "none-zh",
+      "productId": 999,
+      "language": "zh",
+      "retrievedDocumentIds": [],
+      "topKHit": false,
+      "citationCorrect": false,
+      "topKPrecision": 0.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": true,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "none-ja",
+      "productId": 999,
+      "language": "ja",
+      "retrievedDocumentIds": [],
+      "topKHit": false,
+      "citationCorrect": false,
+      "topKPrecision": 0.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": true,
+      "crossProductContamination": false
+    },
+    {
+      "caseId": "none-th",
+      "productId": 999,
+      "language": "th",
+      "retrievedDocumentIds": [],
+      "topKHit": false,
+      "citationCorrect": false,
+      "topKPrecision": 0.0,
+      "numericIntegrity": true,
+      "unsupportedBlocked": true,
+      "crossProductContamination": false
+    }
+  ]
+}

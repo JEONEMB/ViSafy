@@ -1,0 +1,84 @@
+{
+  "description": "Demo A~E fixed-product RAG evaluation. Document IDs, product IDs, and content match the approved sources in the running database on 2026-08-29.",
+  "minimumQuestionsPerProduct": 5,
+  "demoProducts": {
+    "A": {"productId": 12, "productCode": "KB-MY-SAVINGS"},
+    "B": {"productId": 12, "productCode": "KB-MY-SAVINGS", "comparedWith": {"productId": 3, "productCode": "HANA-EASY-SAVINGS-2025"}},
+    "C": {"productId": 13, "productCode": "HANA-SALARY-COMPOUND-SAVINGS"},
+    "D": {"productId": 5, "productCode": "HANA-EZ-LOAN"},
+    "E": {"productId": 6, "productCode": "SHINHAN-SOL-GLOBAL-JEONSE"}
+  },
+  "documents": [
+    {"documentId":17,"productId":12,"institution":"KB국민은행","title":"KB국민은행 고객확인의무 안내","sourceType":"PUBLIC_GUIDE","sourceUrl":"https://obank.kbstar.com/quics?page=C029250","content":"KB국민은행 고객확인의무 안내: 외국인 개인 고객의 실명확인증표로 외국인등록증 또는 여권 등을 확인하며, 거래 목적에 따라 추가 서류를 요청할 수 있다."},
+    {"documentId":23,"productId":12,"institution":"KB국민은행","title":"KB나만의 적금 공식 상품페이지","sourceType":"PRODUCT_PAGE","sourceUrl":"https://obank.kbstar.com/quics?cc=b061761%3Ab061770&isNew=N&page=C020702&prcode=DP01001632","content":"KB나만의 적금. 가입대상은 실명의 개인(1인 2계좌 제한), 계약기간 3개월 이상 12개월 이하, 월 저축금액 1만원 이상 100만원 이하. 가입방법은 KB스타뱅킹과 영업점이다."},
+    {"documentId":24,"productId":12,"institution":"KB국민은행","title":"KB나만의 적금 공식 상품정보","sourceType":"PRODUCT_DESCRIPTION","sourceUrl":"https://obank.kbstar.com/quics?cc=b061496%3Ab061645&isNew=Y&page=C016613&prcode=DP01001632","content":"KB나만의 적금 거래조건: 실명의 개인, 월 1만원 이상 100만원 이하, 3개월 이상 12개월 이하, KB스타뱅킹 및 영업점 신규."},
+
+    {"documentId":5,"productId":3,"institution":"하나은행","title":"하나더이지 적금 공식 상품페이지","sourceType":"PRODUCT_PAGE","sourceUrl":"https://www.kebhana.com/cont/mall/mall08/mall0801/mall080102/1508308_115157.jsp","content":"하나더이지 적금. 가입대상: 실명의 외국인(1인 1계좌, 비거주자 제외). 가입금액 및 적립한도: 매월 1만원 이상 30만원 이하. 판매기간: 2025-05-28부터 2026-12-31까지. 가입채널: 영업점, 스마트폰."},
+    {"documentId":6,"productId":3,"institution":"하나은행","title":"하나더이지 적금 특약","sourceType":"TERMS","sourceUrl":"https://image.kebhana.com/cont/download/documents/provide/0100324000101_20250528.pdf","content":"하나더이지 적금 특약 제2조 가입대상: 이 예금의 가입대상은 실명의 외국인으로, 1인 1계좌만 가입이 가능합니다(비거주자 제외). 제6조 가입금액: 1만원 이상 30만원 이하."},
+    {"documentId":29,"productId":3,"institution":"하나은행","title":"하나더이지 적금 상품설명서 (2025.12.31)","sourceType":"PRODUCT_DESCRIPTION","sourceUrl":"https://image.kebhana.com/cont/download/documents/manual/0100324000101_20251231_m.pdf","content":"하나더이지 적금 상품설명서. 가입대상은 실명의 외국인으로 1인 1계좌이며 비거주자는 제외한다. 신규 채널은 영업점과 스마트폰뱅킹이다. 가입 및 적립한도는 매월 1만원 이상 30만원 이하이다."},
+    {"documentId":18,"productId":3,"institution":"하나은행","title":"하나은행 외국인 고객 실명확인 안내","sourceType":"PUBLIC_GUIDE","sourceUrl":"https://image.kebhana.com/cont/download/documents/provide/0000000220407_20251218.pdf","content":"하나은행 외국인 고객 실명확인 안내: 영업점 실명확인 시 여권, 외국인등록증 등 공식 실명확인증표를 사용한다. 외국인 비대면 계좌개설은 별도 지원 범위가 적용되므로 개별 상품의 모바일 가입 가능 여부를 뜻하지 않는다."},
+
+    {"documentId":25,"productId":13,"institution":"하나은행","title":"급여하나 월복리 적금 공식 상품페이지","sourceType":"PRODUCT_PAGE","sourceUrl":"https://www.kebhana.com/cont/mall/mall08/mall0801/mall080102/1455929_115157.jsp","content":"급여하나 월복리 적금. 가입대상은 실명의 개인 또는 개인사업자(1인 1계좌). 가입금액은 1만원 이상 300만원 이하. 신규 채널은 영업점, 인터넷뱅킹, 스마트폰뱅킹이다."},
+    {"documentId":26,"productId":13,"institution":"하나은행","title":"급여하나 월복리 적금 상품설명서","sourceType":"PRODUCT_DESCRIPTION","sourceUrl":"https://image.kebhana.com/cont/download/documents/manual/0100272000101_20260731_m.pdf","content":"급여하나 월복리 적금 상품설명서: 실명의 개인 또는 개인사업자(1인 1계좌), 신규 영업점·인터넷뱅킹·스마트폰뱅킹, 가입금액 1만원 이상 300만원 이하."},
+    {"documentId":18,"productId":13,"institution":"하나은행","title":"하나은행 외국인 고객 실명확인 안내","sourceType":"PUBLIC_GUIDE","sourceUrl":"https://image.kebhana.com/cont/download/documents/provide/0000000220407_20251218.pdf","content":"하나은행 외국인 고객 실명확인 안내: 영업점 실명확인 시 여권, 외국인등록증 등 공식 실명확인증표를 사용한다. 외국인 비대면 계좌개설은 별도 지원 범위가 적용되므로 개별 상품의 모바일 가입 가능 여부를 뜻하지 않는다."},
+
+    {"documentId":16,"productId":5,"institution":"하나은행","title":"하나 외국인 EZ Loan 공식 상세페이지","sourceType":"PRODUCT_PAGE","sourceUrl":"https://www.hanabank.com/cont/mall/mall08/mall0802/mall080204/1510586_115200.jsp","content":"하나 외국인 EZ Loan 공식 상세페이지. 대출대상: 외국인등록증을 보유한 국내 거주 외국인 중 체류자격 E-7 또는 E-9, 국내 거주기간 3개월 이상, 현 직장 급여소득 3개월 이상, 하나은행을 거래외국환 지정은행으로 등록한 고객. E-9는 최초 1회차 입국자. 필요서류: 외국인등록증, 여권, 고용허가서 또는 표준근로계약서, 건강보험득실확인서, 재직 및 연소득 증빙서류. 영업점 상품."},
+
+    {"documentId":9,"productId":6,"institution":"신한은행","title":"SOL글로벌 적금 상품설명서 내 전세대출 보조 근거","sourceType":"PRODUCT_DESCRIPTION","sourceUrl":"https://img.shinhan.com/sbank2016/seol/20170630814200000030LC000030.PDF","content":"SOL글로벌 적금 상품설명서의 외국인 패키지 상품 예시에 SOL글로벌 전세대출(서울보증_외국인)이 기재되어 있습니다. 이 문서는 전세대출의 직접 상품설명서가 아니므로 가입조건 Rule 근거로 사용하지 않습니다."}
+  ],
+  "cases": [
+    {"caseId":"p12-limit-ko","groupId":"p12-limit","productId":12,"ruleKey":"DESIRED_MONTHLY_AMOUNT","language":"ko","query":"월 저축금액 한도는 얼마인가요?","expectedDocumentIds":[23,24],"structuredValues":"MIN_MAN=1; MAX_MAN=100"},
+    {"caseId":"p12-limit-en","groupId":"p12-limit","productId":12,"ruleKey":"DESIRED_MONTHLY_AMOUNT","language":"en","query":"What is the monthly saving limit?","expectedDocumentIds":[23,24],"structuredValues":"MIN_MAN=1; MAX_MAN=100"},
+    {"caseId":"p12-limit-vi","groupId":"p12-limit","productId":12,"ruleKey":"DESIRED_MONTHLY_AMOUNT","language":"vi","query":"Hạn mức gửi hàng tháng là bao nhiêu?","expectedDocumentIds":[23,24],"structuredValues":"MIN_MAN=1; MAX_MAN=100"},
+    {"caseId":"p12-limit-zh","groupId":"p12-limit","productId":12,"ruleKey":"DESIRED_MONTHLY_AMOUNT","language":"zh","query":"每月存款限额是多少？","expectedDocumentIds":[23,24],"structuredValues":"MIN_MAN=1; MAX_MAN=100"},
+    {"caseId":"p12-limit-ja","groupId":"p12-limit","productId":12,"ruleKey":"DESIRED_MONTHLY_AMOUNT","language":"ja","query":"毎月の積立限度額はいくらですか？","expectedDocumentIds":[23,24],"structuredValues":"MIN_MAN=1; MAX_MAN=100"},
+    {"caseId":"p12-limit-th","groupId":"p12-limit","productId":12,"ruleKey":"DESIRED_MONTHLY_AMOUNT","language":"th","query":"วงเงินฝากรายเดือนเท่าไร?","expectedDocumentIds":[23,24],"structuredValues":"MIN_MAN=1; MAX_MAN=100"},
+    {"caseId":"p12-term-ko","groupId":"p12-term","productId":12,"ruleKey":"INFORMATION","language":"ko","query":"계약기간은 몇 개월인가요?","expectedDocumentIds":[23,24],"structuredValues":"MIN=3; MAX=12"},
+    {"caseId":"p12-channel-en","groupId":"p12-channel","productId":12,"ruleKey":"PREFERRED_CHANNEL","language":"en","query":"Which channels can I use to open this account?","expectedDocumentIds":[23,24]},
+    {"caseId":"p12-account-ko","groupId":"p12-account","productId":12,"ruleKey":"HAS_EXISTING_PRODUCT_ACCOUNT","language":"ko","query":"한 사람이 몇 계좌까지 만들 수 있나요?","expectedDocumentIds":[23]},
+    {"caseId":"p12-id-vi","groupId":"p12-id","productId":12,"ruleKey":"HAS_RESIDENCE_CARD","language":"vi","query":"Người nước ngoài dùng giấy tờ tùy thân nào?","expectedDocumentIds":[17]},
+
+    {"caseId":"p3-target-ko","groupId":"p3-target","productId":3,"ruleKey":"IS_FOREIGNER","language":"ko","query":"이 적금의 가입대상은 누구인가요?","expectedDocumentIds":[5,6,29]},
+    {"caseId":"p3-target-en","groupId":"p3-target","productId":3,"ruleKey":"IS_FOREIGNER","language":"en","query":"Who is eligible to open this savings account?","expectedDocumentIds":[5,6,29]},
+    {"caseId":"p3-target-vi","groupId":"p3-target","productId":3,"ruleKey":"IS_FOREIGNER","language":"vi","query":"Ai đủ điều kiện mở sổ tiết kiệm này?","expectedDocumentIds":[5,6,29]},
+    {"caseId":"p3-target-zh","groupId":"p3-target","productId":3,"ruleKey":"IS_FOREIGNER","language":"zh","query":"这款存款产品的加入对象是谁？","expectedDocumentIds":[5,6,29]},
+    {"caseId":"p3-target-ja","groupId":"p3-target","productId":3,"ruleKey":"IS_FOREIGNER","language":"ja","query":"この積立預金の加入対象は誰ですか？","expectedDocumentIds":[5,6,29]},
+    {"caseId":"p3-target-th","groupId":"p3-target","productId":3,"ruleKey":"IS_FOREIGNER","language":"th","query":"ใครมีสิทธิ์เปิดบัญชีออมทรัพย์นี้?","expectedDocumentIds":[5,6,29]},
+    {"caseId":"p3-amount-ko","groupId":"p3-amount","productId":3,"ruleKey":"DESIRED_MONTHLY_AMOUNT","language":"ko","query":"매월 적립 한도는 얼마인가요?","expectedDocumentIds":[5,6,29],"structuredValues":"MIN_MAN=1; MAX_MAN=30"},
+    {"caseId":"p3-channel-ja","groupId":"p3-channel","productId":3,"ruleKey":"PREFERRED_CHANNEL","language":"ja","query":"どのチャネルで加入できますか？","expectedDocumentIds":[5,29]},
+    {"caseId":"p3-nonresident-zh","groupId":"p3-nonresident","productId":3,"ruleKey":"RESIDENT_STATUS","language":"zh","query":"非居住者可以加入吗？","expectedDocumentIds":[5,6,29]},
+    {"caseId":"p3-id-th","groupId":"p3-id","productId":3,"ruleKey":"HAS_RESIDENCE_CARD","language":"th","query":"ใช้เอกสารยืนยันตัวตนอะไรได้บ้าง?","expectedDocumentIds":[18]},
+
+    {"caseId":"p13-channel-ko","groupId":"p13-channel","productId":13,"ruleKey":"PREFERRED_CHANNEL","language":"ko","query":"신규 가입 채널은 무엇인가요?","expectedDocumentIds":[25,26]},
+    {"caseId":"p13-channel-en","groupId":"p13-channel","productId":13,"ruleKey":"PREFERRED_CHANNEL","language":"en","query":"Which channels can I use to sign up?","expectedDocumentIds":[25,26]},
+    {"caseId":"p13-channel-vi","groupId":"p13-channel","productId":13,"ruleKey":"PREFERRED_CHANNEL","language":"vi","query":"Có thể đăng ký qua kênh nào?","expectedDocumentIds":[25,26]},
+    {"caseId":"p13-channel-zh","groupId":"p13-channel","productId":13,"ruleKey":"PREFERRED_CHANNEL","language":"zh","query":"可以通过哪些渠道新开户？","expectedDocumentIds":[25,26]},
+    {"caseId":"p13-channel-ja","groupId":"p13-channel","productId":13,"ruleKey":"PREFERRED_CHANNEL","language":"ja","query":"どのチャネルで新規申込できますか？","expectedDocumentIds":[25,26]},
+    {"caseId":"p13-channel-th","groupId":"p13-channel","productId":13,"ruleKey":"PREFERRED_CHANNEL","language":"th","query":"สมัครใหม่ได้ผ่านช่องทางใดบ้าง?","expectedDocumentIds":[25,26]},
+    {"caseId":"p13-amount-ko","groupId":"p13-amount","productId":13,"ruleKey":"DESIRED_MONTHLY_AMOUNT","language":"ko","query":"가입금액 범위를 알려주세요.","expectedDocumentIds":[25,26],"structuredValues":"MIN_MAN=1; MAX_MAN=300"},
+    {"caseId":"p13-account-en","groupId":"p13-account","productId":13,"ruleKey":"HAS_EXISTING_PRODUCT_ACCOUNT","language":"en","query":"How many accounts can one person hold?","expectedDocumentIds":[25,26]},
+    {"caseId":"p13-id-vi","groupId":"p13-id","productId":13,"ruleKey":"HAS_RESIDENCE_CARD","language":"vi","query":"Xác minh danh tính cho người nước ngoài thế nào?","expectedDocumentIds":[18]},
+    {"caseId":"p13-mobile-ko","groupId":"p13-mobile","productId":13,"ruleKey":"PREFERRED_CHANNEL","language":"ko","query":"외국인도 모바일로 가입할 수 있나요?","expectedDocumentIds":[18,25,26]},
+
+    {"caseId":"p5-visa-ko","groupId":"p5-visa","productId":5,"ruleKey":"VISA_TYPE","language":"ko","query":"어떤 체류자격이 신청할 수 있나요?","expectedDocumentIds":[16],"structuredValues":"VISA_TYPE=E-7,E-9"},
+    {"caseId":"p5-visa-en","groupId":"p5-visa","productId":5,"ruleKey":"VISA_TYPE","language":"en","query":"Which visa types can apply for this loan?","expectedDocumentIds":[16],"structuredValues":"VISA_TYPE=E-7,E-9"},
+    {"caseId":"p5-visa-vi","groupId":"p5-visa","productId":5,"ruleKey":"VISA_TYPE","language":"vi","query":"Loại visa nào có thể vay khoản này?","expectedDocumentIds":[16],"structuredValues":"VISA_TYPE=E-7,E-9"},
+    {"caseId":"p5-visa-zh","groupId":"p5-visa","productId":5,"ruleKey":"VISA_TYPE","language":"zh","query":"哪些停留资格可以申请这笔贷款？","expectedDocumentIds":[16],"structuredValues":"VISA_TYPE=E-7,E-9"},
+    {"caseId":"p5-visa-ja","groupId":"p5-visa","productId":5,"ruleKey":"VISA_TYPE","language":"ja","query":"どの在留資格が申請できますか？","expectedDocumentIds":[16],"structuredValues":"VISA_TYPE=E-7,E-9"},
+    {"caseId":"p5-visa-th","groupId":"p5-visa","productId":5,"ruleKey":"VISA_TYPE","language":"th","query":"วีซ่าประเภทใดสมัครสินเชื่อนี้ได้?","expectedDocumentIds":[16],"structuredValues":"VISA_TYPE=E-7,E-9"},
+    {"caseId":"p5-residency-ko","groupId":"p5-residency","productId":5,"ruleKey":"RESIDENCY_MONTH","language":"ko","query":"국내 거주기간 조건이 있나요?","expectedDocumentIds":[16],"structuredValues":"MONTH=3"},
+    {"caseId":"p5-income-en","groupId":"p5-income","productId":5,"ruleKey":"DOMESTIC_INCOME_MONTH","language":"en","query":"How long must I have salary income?","expectedDocumentIds":[16],"structuredValues":"MONTH=3"},
+    {"caseId":"p5-docs-vi","groupId":"p5-docs","productId":5,"ruleKey":"INFORMATION","language":"vi","query":"Cần chuẩn bị những giấy tờ nào?","expectedDocumentIds":[16]},
+    {"caseId":"p5-channel-ko","groupId":"p5-channel","productId":5,"ruleKey":"PREFERRED_CHANNEL","language":"ko","query":"영업점에서만 신청할 수 있나요?","expectedDocumentIds":[16]},
+
+    {"caseId":"p6-existence-ko","groupId":"p6-existence","productId":6,"ruleKey":"INFORMATION","language":"ko","query":"이 전세대출 상품이 실제로 있나요?","expectedDocumentIds":[9]},
+    {"caseId":"p6-terms-en","groupId":"p6-terms","productId":6,"ruleKey":"INFORMATION","language":"en","query":"What are the eligibility conditions for this jeonse loan?","expectedDocumentIds":[9]},
+
+    {"caseId":"none-ko","groupId":"none","productId":999,"ruleKey":"UNKNOWN","language":"ko","query":"이 상품의 승인 확률은 얼마인가요?","expectedDocumentIds":[],"unsupported":true},
+    {"caseId":"none-en","groupId":"none","productId":999,"ruleKey":"UNKNOWN","language":"en","query":"What is my approval probability for this product?","expectedDocumentIds":[],"unsupported":true},
+    {"caseId":"none-vi","groupId":"none","productId":999,"ruleKey":"UNKNOWN","language":"vi","query":"Xác suất được duyệt của tôi là bao nhiêu?","expectedDocumentIds":[],"unsupported":true},
+    {"caseId":"none-zh","groupId":"none","productId":999,"ruleKey":"UNKNOWN","language":"zh","query":"我获批的概率是多少？","expectedDocumentIds":[],"unsupported":true},
+    {"caseId":"none-ja","groupId":"none","productId":999,"ruleKey":"UNKNOWN","language":"ja","query":"私の承認確率はどれくらいですか？","expectedDocumentIds":[],"unsupported":true},
+    {"caseId":"none-th","groupId":"none","productId":999,"ruleKey":"UNKNOWN","language":"th","query":"โอกาสที่ฉันจะได้รับอนุมัติมีเท่าไร?","expectedDocumentIds":[],"unsupported":true}
+  ]
+}
