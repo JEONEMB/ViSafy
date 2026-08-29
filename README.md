@@ -288,13 +288,13 @@ Runtime `PRODUCT_RULE`은 `product_id`, `rule_key`, `operator`, `rule_value`, `r
 | SOURCE_INSUFFICIENT Demo | 적용 | EZ Loan·SOL글로벌 전세대출 |
 | EXTERNAL_CHECK/UNKNOWN 실제 Demo | 충족 | KB증권 강화된 고객확인 `EXTERNAL_CHECK`, Easy-One Pack 통장 온라인 신규 `UNKNOWN` |
 | 관리자/일반 사용자 접근 분리 | 적용 | 운영 관리자 비밀번호 교체 |
-| HTTPS 배포 URL | 미충족 | 제출용 Hosting과 Monitoring 구성 |
+| HTTPS 배포 URL | 미충족 | 제출용 Hosting과 Monitoring 구성 (현재 유일한 미충족 Gate) |
 
 공식 Source가 필요한 미충족 Gate는 테스트용 가상 Rule로 채우지 않습니다.
 
 P1 운영 보완으로 관리자 Source 화면에서 `ACTIVE`, `NEED_REVIEW`, `SUPERSEDED`, `UNKNOWN`, `EXPIRED`, `REJECTED` 상태를 직접 관리할 수 있습니다. 같은 화면의 RAG 품질 Dashboard는 진단 가능 상품 수, 유효 Source, 색인 대상 Source, 근거가 완성된 Rule과 Evidence 연결률을 표시합니다. 지표 API는 `GET /api/admin/rag/quality`입니다.
 
-중국어 UI와 READY 8개 확대는 중요 Gate인 READY 5개·Demo 4개·배포 URL 안정성을 먼저 충족한 뒤 진행합니다. 일본어·태국어, 자동 Rule 추출, Source 변경 자동감지, AI Chat 고도화는 제출 이후 범위로 유지합니다.
+READY 8개 확대, 한국어·영어·베트남어·중국어·일본어·태국어 UI, AI Rule Candidate 추출, `contentHash` 기반 Source 변경 감지는 모두 적용을 마쳤습니다. 남은 미충족 Gate는 HTTPS 배포 URL 하나이며, AI Chat 고도화와 문서 수집 자동화는 제출 이후 범위로 유지합니다.
 
 ### 7. 사전자격 진단
 
@@ -557,17 +557,19 @@ Season 3의 `READY`는 상품 페이지와 약관만 존재한다고 충족되�
 
 두 시즌의 `READY`는 기준이 다릅니다. Season 2의 `READY 5개`는 승인된 Eligibility Rule과 공식 Source를 이용해 공개조건을 평가할 수 있다는 뜻입니다. Season 3의 `READY`는 여기에 외국인 신분확인, 영업점·모바일 채널, 필요서류, 신청절차 Evidence까지 모두 갖춘 상품만 의미합니다.
 
-2026-08-25 실행 데이터 측정값은 다음과 같습니다.
+2026-08-29 실행 데이터 측정값은 다음과 같습니다.
 
 | 항목 | 현재 값 |
 | --- | ---: |
 | 활성 상품 | 11개 |
-| 금융기관 | 3곳 |
+| 금융기관 | 4곳 (KB국민은행·신한은행·하나은행·KB증권) |
 | `GENERAL` | 5개 |
 | `FOREIGNER_SPECIALIZED` | 6개 |
 | Season 3 `READY` | 8개 |
-| Season 3 `PARTIAL` | 기존 상품은 근거 보강 상태에 따라 별도 표시 |
-| 완성된 Season 3 Source 패키지 | 8개 |
+| Season 3 `PARTIAL` | 2개 (`HANA-EZ-LOAN`, `SHINHAN-SOL-GLOBAL-SAVINGS-2025`) |
+| Season 3 `NOT_READY` | 1개 (`SHINHAN-SOL-GLOBAL-JEONSE`, Demo E) |
+| 승인·유효 공식 Source | 26개 |
+| Evidence 연결률 | 100% |
 
 따라서 Season 2 Rule Engine의 동작 여부와 Season 3 제출 데이터의 완성도를 혼동해서는 안 됩니다. 일반상품과 Access Evidence는 [`docs/season3-data-collection-prompts.md`](docs/season3-data-collection-prompts.md)의 프롬프트로 조사한 뒤 반드시 사람이 공식 원문을 다시 확인하고 관리자 화면에서 승인해야 합니다.
 
@@ -586,7 +588,7 @@ OpenAI Responses API Adapter가 선택형으로 연결되어 있습니다. `LLM_
 
 현재 개발환경에서 OpenAI Responses API 실호출, 장애 시 Fallback과 판정 불변성을 검증했습니다. 제출 전에는 운영 Secret으로 교체한 공개 배포 환경에서 동일 호출을 한 번 더 검증하고 응답 캡처를 보관합니다.
 
-PDF/HTML 추출, 페이지 번호 보존, OCR 필요 페이지 표시, `contentHash` 변경 감지, PENDING Rule Candidate 추출과 RAG 평가 실행법은 [`docs/ai-rag-quality-and-secrets.md`](docs/ai-rag-quality-and-secrets.md)에 정리되어 있습니다. RAG Dataset은 Flyway V18/V19의 실제 승인 Source ID와 일반상품 5개별 질문 5개 이상으로 교체되었습니다.
+PDF/HTML 추출, 페이지 번호 보존, OCR 필요 페이지 표시, `contentHash` 변경 감지, PENDING Rule Candidate 추출과 RAG 평가 실행법은 [`docs/ai-rag-quality-and-secrets.md`](docs/ai-rag-quality-and-secrets.md)에 정리되어 있습니다. RAG Dataset은 실제 승인 Source ID를 사용하며, 고정 Demo A~E 상품 기준 6개 언어 48 Case 평가 결과는 [`docs/season3-demo-rag-evaluation-2026-08-29.md`](docs/season3-demo-rag-evaluation-2026-08-29.md)에 있습니다.
 
 운영 LLM은 OpenAI를 선택했습니다. 실제 호출을 활성화하려면 OpenAI Project API Key와 계정에서 사용 가능한 모델 ID를 배포환경 Secret으로 설정해야 합니다. 공식 OpenAI 문서의 Responses API 방식으로 호출하며 Key는 저장소나 문서에 기록하지 않습니다.
 

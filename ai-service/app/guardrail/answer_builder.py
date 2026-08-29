@@ -179,6 +179,7 @@ class GroundedAnswerBuilder:
                 "identity": "Official identity documents include a passport or residence card.",
                 "unlimited": "The published amount and term have no stated limit.",
                 "generic": "The registered official source contains relevant published product conditions.",
+                "original": "Official source text (Korean)",
             },
             "vi": {
                 "foreigner": "Đối tượng được công bố là cá nhân người nước ngoài có danh tính thật hoặc hộ kinh doanh cá thể người nước ngoài.",
@@ -186,10 +187,11 @@ class GroundedAnswerBuilder:
                 "identity": "Giấy tờ xác minh chính thức gồm hộ chiếu hoặc thẻ cư trú.",
                 "unlimited": "Số tiền và thời hạn được công bố không có giới hạn.",
                 "generic": "Nguồn chính thức đã đăng ký có điều kiện sản phẩm liên quan.",
+                "original": "Nguyên văn nguồn chính thức (tiếng Hàn)",
             },
-            "zh": {"foreigner": "公布的客户对象为实名外国个人或外国个体经营者。", "branch": "新开户需在网点办理。", "identity": "官方身份证件包括护照或居留证。", "unlimited": "公布的金额和期限没有限制。", "generic": "已登记的官方来源包含相关产品条件。"},
-            "ja": {"foreigner": "公表された対象者は、実名の外国人個人または外国人個人事業者です。", "branch": "新規申込は店舗で受け付けます。", "identity": "公式の本人確認書類にはパスポートまたは在留カードが含まれます。", "unlimited": "公表された金額と期間に制限はありません。", "generic": "登録済みの公式情報源に関連する商品条件があります。"},
-            "th": {"foreigner": "กลุ่มลูกค้าที่ประกาศคือบุคคลต่างชาติที่ยืนยันตัวตนหรือผู้ประกอบการรายย่อยต่างชาติ", "branch": "การสมัครใหม่ดำเนินการที่สาขา", "identity": "เอกสารยืนยันตัวตนทางการรวมถึงหนังสือเดินทางหรือบัตรผู้พำนัก", "unlimited": "จำนวนเงินและระยะเวลาที่ประกาศไม่มีข้อจำกัด", "generic": "แหล่งข้อมูลทางการที่ลงทะเบียนมีเงื่อนไขผลิตภัณฑ์ที่เกี่ยวข้อง"},
+            "zh": {"foreigner": "公布的客户对象为实名外国个人或外国个体经营者。", "branch": "新开户需在网点办理。", "identity": "官方身份证件包括护照或居留证。", "unlimited": "公布的金额和期限没有限制。", "generic": "已登记的官方来源包含相关产品条件。", "original": "官方原文（韩语）"},
+            "ja": {"foreigner": "公表された対象者は、実名の外国人個人または外国人個人事業者です。", "branch": "新規申込は店舗で受け付けます。", "identity": "公式の本人確認書類にはパスポートまたは在留カードが含まれます。", "unlimited": "公表された金額と期間に制限はありません。", "generic": "登録済みの公式情報源に関連する商品条件があります。", "original": "公式原文（韓国語）"},
+            "th": {"foreigner": "กลุ่มลูกค้าที่ประกาศคือบุคคลต่างชาติที่ยืนยันตัวตนหรือผู้ประกอบการรายย่อยต่างชาติ", "branch": "การสมัครใหม่ดำเนินการที่สาขา", "identity": "เอกสารยืนยันตัวตนทางการรวมถึงหนังสือเดินทางหรือบัตรผู้พำนัก", "unlimited": "จำนวนเงินและระยะเวลาที่ประกาศไม่มีข้อจำกัด", "generic": "แหล่งข้อมูลทางการที่ลงทะเบียนมีเงื่อนไขผลิตภัณฑ์ที่เกี่ยวข้อง", "original": "ข้อความต้นฉบับอย่างเป็นทางการ (ภาษาเกาหลี)"},
         }.get(language)
         if translations is None:
             return self._clip(content, 320)
@@ -201,7 +203,11 @@ class GroundedAnswerBuilder:
             facts.append(translations["identity"])
         if "제한 없음" in content:
             facts.append(translations["unlimited"])
-        return " ".join(facts) if facts else translations["generic"]
+        summary = " ".join(facts) if facts else translations["generic"]
+        # The translated sentences describe the source but drop its figures. Quoting the
+        # official sentence verbatim keeps visa codes, amounts, and periods in the answer,
+        # so a non-Korean reader sees the same numbers a Korean reader does.
+        return f'{summary} {translations["original"]}: “{self._clip(content, 220)}”'
 
     def _language(self, language: str) -> str:
         return language if language in DISCLAIMERS else "en"

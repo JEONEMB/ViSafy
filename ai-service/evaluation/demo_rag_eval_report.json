@@ -3,7 +3,7 @@
   "topKRecall": 1.0,
   "citationAccuracy": 0.9524,
   "meanTopKPrecision": 0.7857,
-  "numericIntegrityRate": 0.7708,
+  "numericIntegrityRate": 1.0,
   "unsupportedAnswerBlockingRate": 1.0,
   "crossProductContaminationRate": 0.0,
   "multilingualTopKOverlap": 0.85,
@@ -107,7 +107,7 @@
       "topKHit": true,
       "citationCorrect": true,
       "topKPrecision": 0.6667,
-      "numericIntegrity": false,
+      "numericIntegrity": true,
       "unsupportedBlocked": null,
       "crossProductContamination": false
     },
@@ -123,7 +123,7 @@
       "topKHit": true,
       "citationCorrect": true,
       "topKPrecision": 0.6667,
-      "numericIntegrity": false,
+      "numericIntegrity": true,
       "unsupportedBlocked": null,
       "crossProductContamination": false
     },
@@ -139,7 +139,7 @@
       "topKHit": true,
       "citationCorrect": true,
       "topKPrecision": 0.6667,
-      "numericIntegrity": false,
+      "numericIntegrity": true,
       "unsupportedBlocked": null,
       "crossProductContamination": false
     },
@@ -155,7 +155,7 @@
       "topKHit": true,
       "citationCorrect": true,
       "topKPrecision": 0.6667,
-      "numericIntegrity": false,
+      "numericIntegrity": true,
       "unsupportedBlocked": null,
       "crossProductContamination": false
     },
@@ -171,7 +171,7 @@
       "topKHit": true,
       "citationCorrect": true,
       "topKPrecision": 0.6667,
-      "numericIntegrity": false,
+      "numericIntegrity": true,
       "unsupportedBlocked": null,
       "crossProductContamination": false
     },
@@ -583,7 +583,7 @@
       "topKHit": true,
       "citationCorrect": true,
       "topKPrecision": 1.0,
-      "numericIntegrity": false,
+      "numericIntegrity": true,
       "unsupportedBlocked": null,
       "crossProductContamination": false
     },
@@ -597,7 +597,7 @@
       "topKHit": true,
       "citationCorrect": true,
       "topKPrecision": 1.0,
-      "numericIntegrity": false,
+      "numericIntegrity": true,
       "unsupportedBlocked": null,
       "crossProductContamination": false
     },
@@ -611,7 +611,7 @@
       "topKHit": true,
       "citationCorrect": true,
       "topKPrecision": 1.0,
-      "numericIntegrity": false,
+      "numericIntegrity": true,
       "unsupportedBlocked": null,
       "crossProductContamination": false
     },
@@ -625,7 +625,7 @@
       "topKHit": true,
       "citationCorrect": true,
       "topKPrecision": 1.0,
-      "numericIntegrity": false,
+      "numericIntegrity": true,
       "unsupportedBlocked": null,
       "crossProductContamination": false
     },
@@ -639,7 +639,7 @@
       "topKHit": true,
       "citationCorrect": true,
       "topKPrecision": 1.0,
-      "numericIntegrity": false,
+      "numericIntegrity": true,
       "unsupportedBlocked": null,
       "crossProductContamination": false
     },
@@ -667,7 +667,7 @@
       "topKHit": true,
       "citationCorrect": true,
       "topKPrecision": 1.0,
-      "numericIntegrity": false,
+      "numericIntegrity": true,
       "unsupportedBlocked": null,
       "crossProductContamination": false
     },
