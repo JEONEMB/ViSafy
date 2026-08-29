@@ -81,9 +81,9 @@
 
 - [ ] README에 실제 공개 HTTPS URL 추가
 - [ ] 관리자 운영 방법과 비상 복구 절차 추가
-- [ ] 기능명세서·README·UI의 상품 수와 READY 상태 일치 확인
+- [x] 기능명세서·README·UI의 상품 수와 READY 상태 일치 확인 (2026-08-29 실측 대조)
 - [ ] 실제 OpenAI 호출 캡처와 Demo 캡처의 보관 위치 기록
-- [ ] 기획서에서 Rule Engine·Access Model·RAG·LLM 역할을 실제 구현과 동일하게 표현
+- [x] 기획서에서 Rule Engine·Access Model·RAG·LLM 역할을 실제 구현과 동일하게 표현
 
 ---
 
