@@ -55,8 +55,13 @@ test("Season 3 language, purpose, readiness, dynamic fields, and access flow", a
   const next = page.locator('button[data-profile-next="1"]');
   await expect(next).toBeEnabled(); await next.click();
   await expect(page.locator('section[data-step="2"]')).toBeVisible();
-  await page.locator('select[name="hasResidenceCard"]').selectOption("true");
-  await page.locator('select[name="hasKoreanBankAccount"]').selectOption("false");
+  for (const name of ["hasResidenceCard", "hasPassport", "hasDomesticPhone", "canDomesticPhoneVerify", "hasKoreanBankAccount", "hasKoreanCreditHistory", "preferredChannel"]) {
+    await expect(page.locator(`input[type="radio"][name="${name}"]`)).toHaveCount(3);
+  }
+  await page.locator('label[for="hasResidenceCard-true"]').click();
+  await page.locator('label[for="hasKoreanBankAccount-false"]').click();
+  await expect(page.locator('input[name="hasResidenceCard"][value="true"]')).toBeChecked();
+  await expect(page.locator('input[name="hasKoreanBankAccount"][value="false"]')).toBeChecked();
   await page.getByRole("button", { name: "Show financial services for me" }).click();
   await expect(page).toHaveURL(/\/products$/); expect(captured.birthDate).toBeNull(); expect(captured.financialPurpose).toBe("GET_LOAN");
   await expect(page.getByText("My financial journey in Korea")).toBeVisible();

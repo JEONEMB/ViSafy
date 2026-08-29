@@ -31,11 +31,31 @@ export function ProfileWizard() {
     <div className="ui-alert-info mt-6">{text.privacy}</div>{mutation.isError ? <div className="ui-alert-danger mt-4">{text.error}</div> : null}
     <form className="ui-card mt-6 p-6 sm:p-8" onSubmit={submit}><p className="text-xs font-bold text-brand">STEP {step + 1} / 5</p><h2 className="mt-2 text-2xl font-bold text-ink">{text.steps[step]}</h2>
       {step === 1 ? <section className="mt-6 grid gap-6 sm:grid-cols-2" data-step="1"><Field label={text.nationality}><select className={ui.input} name="nationality" required value={nationality} onChange={(event) => setNationality(event.target.value)}><option value="" disabled>{text.chooseNationality}</option>{nationalityOptions.map((option) => <option key={option.code} value={option.code}>{option.flag} {option.names[locale]} ({option.code})</option>)}</select></Field><Field label={text.purpose}><select className={ui.input} name="financialPurpose" value={purpose} onChange={(event) => setPurpose(event.target.value as FinancialPurposeCode)}>{allFinancialPurposes.map((value) => <option key={value} value={value}>{financialPurposeLabel(locale, value)}</option>)}</select></Field></section> : null}
-      {step === 2 ? <section className="mt-6" data-step="2"><p className="text-sm text-muted">{text.optional}</p><div className="mt-4 grid gap-5 sm:grid-cols-2"><BooleanField label={text.residenceCard} name="hasResidenceCard" locale={locale} /><BooleanField label={text.passport} name="hasPassport" locale={locale} /><BooleanField label={text.phone} name="hasDomesticPhone" locale={locale} /><BooleanField label={text.phoneVerify} name="canDomesticPhoneVerify" locale={locale} /><BooleanField label={text.account} name="hasKoreanBankAccount" locale={locale} /><BooleanField label={text.credit} name="hasKoreanCreditHistory" locale={locale} /><Field label={text.channel}><select className={ui.input} defaultValue="" name="preferredChannel"><option value="">{text.unknown}</option><option value="ONLINE">Online / Mobile</option><option value="BRANCH">Branch</option></select></Field></div></section> : null}
+      {step === 2 ? <section className="mt-6" data-step="2"><p className="text-sm text-muted">{text.optional}</p><div className="mt-5 grid gap-6 sm:grid-cols-2"><BooleanField label={text.residenceCard} name="hasResidenceCard" locale={locale} /><BooleanField label={text.passport} name="hasPassport" locale={locale} /><BooleanField label={text.phone} name="hasDomesticPhone" locale={locale} /><BooleanField label={text.phoneVerify} name="canDomesticPhoneVerify" locale={locale} /><BooleanField label={text.account} name="hasKoreanBankAccount" locale={locale} /><BooleanField label={text.credit} name="hasKoreanCreditHistory" locale={locale} /><ChoiceRadioGroup label={text.channel} name="preferredChannel" options={[{ label: text.unknown, value: "" }, { label: "Online / Mobile", value: "ONLINE" }, { label: "Branch", value: "BRANCH" }]} /></div></section> : null}
       {mutation.isPending ? <div className="ui-alert-info mt-6">{text.saving}</div> : null}<div className="mt-8 flex justify-between gap-3"><button className="ui-button ui-button-secondary disabled:invisible" disabled={step <= 1 || mutation.isPending} onClick={() => setStep((value) => Math.max(value - 1, 1))} type="button">← {text.back}</button>{step < 2 ? <button aria-label={`profile-step-${step}-next`} className="ui-button ui-button-primary" data-profile-next={step} disabled={!nationality} key={`profile-next-${step}`} onClick={(event) => { event.preventDefault(); setStep(2); }} type="button">{text.next} →</button> : <button className="ui-button ui-button-primary" disabled={mutation.isPending || !nationality} key="profile-submit" type="submit">{text.save} →</button>}</div>
     </form></main>;
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="ui-label">{label}{children}</label>; }
-function BooleanField({ label, name, locale }: { label: string; name: string; locale: Locale }) { const text = copy[locale]; return <Field label={label}><select className={ui.input} defaultValue="" name={name}><option value="">{text.unknown}</option><option value="true">{text.yes}</option><option value="false">{text.no}</option></select></Field>; }
+function BooleanField({ label, name, locale }: { label: string; name: string; locale: Locale }) {
+  const text = copy[locale];
+  return <ChoiceRadioGroup label={label} name={name} options={[{ label: text.unknown, value: "" }, { label: text.yes, value: "true" }, { label: text.no, value: "false" }]} />;
+}
+
+function ChoiceRadioGroup({ label, name, options }: { label: string; name: string; options: Array<{ label: string; value: string }> }) {
+  return <fieldset className="min-w-0">
+    <legend className="ui-label">{label}</legend>
+    <div className="mt-2 grid grid-cols-3 gap-2">
+      {options.map((option) => {
+        const id = `${name}-${option.value || "unknown"}`;
+        return <label className="relative min-w-0 cursor-pointer" htmlFor={id} key={id}>
+          <input className="peer sr-only" defaultChecked={option.value === ""} id={id} name={name} type="radio" value={option.value} />
+          <span className="flex min-h-12 items-center justify-center rounded-control border border-line-strong bg-surface px-2 py-2 text-center text-xs font-semibold leading-5 text-muted transition duration-200 hover:border-brand hover:bg-brand-soft peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:text-brand peer-focus-visible:ring-4 peer-focus-visible:ring-brand-soft sm:px-3 sm:text-sm">
+            {option.label}
+          </span>
+        </label>;
+      })}
+    </div>
+  </fieldset>;
+}
 function optionalBoolean(value: FormDataEntryValue | null): boolean | null { return value === "true" ? true : value === "false" ? false : null; }
