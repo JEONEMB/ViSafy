@@ -118,7 +118,7 @@ MySQL 데이터와 RAG 색인은 Docker named volume에 보존된다. 운영 업
 ./infra/scripts/backup-production.sh
 ```
 
-백업은 `backups/YYYYMMDDTHHMMSSZ` 아래에 저장되며 Git에서 제외된다. SQL, RAG 압축파일, Git commit과 SHA-256 manifest가 포함된다. 서버 Snapshot이나 별도 암호화 저장소로 한 번 더 복제한다.
+백업은 `backups/YYYYMMDDTHHMMSSZ` 아래에 저장되며 Git에서 제외된다. SQL, RAG 압축파일, Git commit과 SHA-256 manifest가 포함된다. MySQL 백업은 애플리케이션 계정에 `PROCESS` 권한을 추가하지 않고 `--no-tablespaces`로 수행하며, RAG 압축파일은 Docker 컨테이너의 표준출력을 호스트 셸이 저장하므로 스크립트를 실행한 로그인 사용자 소유로 생성된다. 백업 파일은 해당 사용자만 읽고 쓸 수 있는 `0600`, 백업 디렉터리는 `0700`을 사용한다. 서버 Snapshot이나 별도 암호화 저장소로 한 번 더 복제한다.
 
 복구는 현재 데이터를 교체하므로 정확한 백업 경로와 명시적 확인 문자열이 필요하다. 스크립트가 먼저 현재 상태의 안전 백업을 만든 뒤 checksum을 검증하고 복구한다.
 

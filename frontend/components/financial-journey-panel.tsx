@@ -26,6 +26,16 @@ const copy = {
   th: { eyebrow: "คู่มือชีวิตทางการเงิน", next: "ขั้นตอนถัดไป", choose: "เลือกขั้นตอนเพื่อดูสิ่งที่ต้องเตรียมและผลิตภัณฑ์ที่เกี่ยวข้อง", profile: "สถานะการเตรียมตัว", country: "สัญชาติที่กรอก", ready: "พร้อม", check: "ต้องตรวจสอบ", products: "ผลิตภัณฑ์ทางการเงินที่เกี่ยวข้อง", documents: "คำแนะนำเอกสารอย่างเป็นทางการ", channel: "วิธีสมัครอย่างเป็นทางการ", unknown: "ต้องตรวจสอบจากข้อมูลทางการที่ลงทะเบียนไว้", noProducts: "ขณะนี้ยังไม่มีผลิตภัณฑ์ทางการที่เชื่อมกับขั้นตอนนี้", detail: "ดูสิ่งที่ต้องเตรียม", official: "ข้อมูลทางการของสถาบันการเงิน", notice: "ข้อมูลนี้เป็นแนวทางเตรียมตัวก่อนเข้ารับบริการหรือสมัคร ไม่ใช่ผลการอนุมัติ" },
 } as const;
 
+/** Status is also stated in words so it never depends on colour alone, and so it stays distinct from the selection ring. */
+const statusLabels = {
+  ko: { COMPLETED: "완료", CURRENT: "현재 단계", UPCOMING: "", NEED_CONFIRMATION: "확인 필요" },
+  en: { COMPLETED: "Done", CURRENT: "Current", UPCOMING: "", NEED_CONFIRMATION: "Check" },
+  vi: { COMPLETED: "Xong", CURRENT: "Hiện tại", UPCOMING: "", NEED_CONFIRMATION: "Cần xác nhận" },
+  zh: { COMPLETED: "已完成", CURRENT: "当前阶段", UPCOMING: "", NEED_CONFIRMATION: "需确认" },
+  ja: { COMPLETED: "完了", CURRENT: "現在の段階", UPCOMING: "", NEED_CONFIRMATION: "要確認" },
+  th: { COMPLETED: "เสร็จแล้ว", CURRENT: "ขั้นปัจจุบัน", UPCOMING: "", NEED_CONFIRMATION: "ต้องตรวจสอบ" },
+} as const;
+
 export type JourneyTarget = { code: string; productId?: number };
 export type JourneyFocus = JourneyTarget | null;
 
@@ -55,7 +65,7 @@ export function FinancialJourneyPanel({ products = [], focus = null }: { product
     <div className="ui-alert-info mt-4"><strong>{text.next}:</strong> {journey.data.nextAction}</div>
     <p className="mt-4 text-sm text-muted">{text.choose}</p>
     <ol className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {journey.data.steps.map((step) => <li key={step.code}><button aria-pressed={selectedStep?.code === step.code} className={`h-full w-full rounded-card border p-4 text-left transition hover:-translate-y-0.5 hover:border-brand ${selectedStep?.code === step.code ? "ring-2 ring-brand/20" : ""} ${statusClass[step.status]}`} onClick={() => setSelectedCode(step.code)} type="button"><div className="flex items-center gap-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-current text-xs font-bold">{step.step}</span><h3 className="font-bold">{step.title}</h3></div><p className="mt-2 text-xs leading-5 opacity-80">{step.description}</p></button></li>)}
+      {journey.data.steps.map((step) => <li key={step.code}><button aria-pressed={selectedStep?.code === step.code} className={`h-full w-full rounded-card border p-4 text-left transition hover:-translate-y-0.5 hover:border-brand ${selectedStep?.code === step.code ? "ring-2 ring-brand ring-offset-2 ring-offset-surface" : ""} ${statusClass[step.status]}`} onClick={() => setSelectedCode(step.code)} type="button"><div className="flex items-center gap-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-current text-xs font-bold">{step.status === "COMPLETED" ? "✓" : step.step}</span><h3 className="font-bold">{step.title}</h3>{statusLabels[locale][step.status] ? <span className="ml-auto shrink-0 rounded-full border border-current px-2 py-0.5 text-[11px] font-semibold">{statusLabels[locale][step.status]}</span> : null}</div><p className="mt-2 text-xs leading-5 opacity-80">{step.description}</p></button></li>)}
     </ol>
 
     {selectedStep ? <section className="mt-7 rounded-panel border border-line bg-surface-subtle p-5 sm:p-6" aria-live="polite">
