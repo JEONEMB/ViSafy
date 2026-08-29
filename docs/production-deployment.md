@@ -2,6 +2,8 @@
 
 SSAFIN은 공개 기간 전까지 로컬에서 개발하고, 공개 시점에 Linux 서버에서 동일한 Docker Compose 구성을 실행한다. 서버에서 실행되므로 개발 PC와 Docker Desktop을 꺼도 서비스는 계속 제공된다.
 
+> 서버 선정부터 콘솔 조작까지 순서대로 따라 하는 실행 절차는 [first-deployment-runbook.md](first-deployment-runbook.md)에 있다. 이 문서는 배포 구성과 운영 정책을 정의한다.
+
 ## 권장 구성
 
 ```text

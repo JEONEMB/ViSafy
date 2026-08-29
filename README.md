@@ -594,7 +594,7 @@ PDF/HTML 추출, 페이지 번호 보존, OCR 필요 페이지 표시, `contentH
 
 ### 제출 배포 상태
 
-Caddy 자동 TLS와 운영 Compose 사용법은 [`docs/production-deployment.md`](docs/production-deployment.md)에 정리되어 있습니다. 저장소에는 운영 Secret을 포함하지 않으며 `.env.production`은 생성 스크립트로 만들고 Git에서 제외합니다.
+Caddy 자동 TLS와 운영 Compose 사용법은 [`docs/production-deployment.md`](docs/production-deployment.md)에 정리되어 있습니다. 서버 선정부터 공개 URL 확인까지 순서대로 따라 하는 실행 절차는 [`docs/first-deployment-runbook.md`](docs/first-deployment-runbook.md)에 있습니다. 저장소에는 운영 Secret을 포함하지 않으며 `.env.production`은 생성 스크립트로 만들고 Git에서 제외합니다.
 
 현재 문서의 URL은 로컬 개발 주소입니다. 공개 HTTPS 제출 URL은 아직 확정되지 않았으며, 배포 후 아래 항목을 실제 값으로 갱신해야 합니다.
 
