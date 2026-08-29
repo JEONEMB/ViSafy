@@ -71,7 +71,8 @@ public class RecommendationService {
         if (eligibility.unknownRules().isEmpty()) reasons.add("NO_UNKNOWN_CONDITION");
         String nextField = eligibility.requiredFields().stream()
                 .filter(field -> profileValueMissing(profile, field)).findFirst().orElse(null);
-        return new RecommendationItem(product.getId(), product.getInstitution(), product.getProductName(),
+        return new RecommendationItem(product.getId(), product.getProductCode(), product.getInstitution(),
+                product.getProductName(),
                 product.getProductType(), product.getFinancialPurpose(), product.getProductAudience(),
                 product.getProductCategory(), product.getTargetSummary(), product.getRequiredDocuments(),
                 product.getApplicationMethod(),

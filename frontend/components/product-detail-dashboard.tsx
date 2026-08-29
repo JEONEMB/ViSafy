@@ -17,6 +17,7 @@ import { getProduct } from "@/services/product";
 import { getProfile, updateProfile } from "@/services/profile";
 import type { AccessAvailability, EligibilityResult, EligibilityRuleDetail, EligibilityStatus } from "@/types/eligibility";
 import type { FinancialProduct, ProductRule } from "@/types/product";
+import { institutionLabel, productNameLabel } from "@/lib/product-localization";
 import type { TempProfile, TempProfileInput } from "@/types/profile";
 
 type Tab = "precheck" | "evidence" | "documents" | "steps" | "official";
@@ -103,7 +104,7 @@ export function ProductDetailDashboard() {
   const evidenceRequested = Boolean(precheck.data); const evidenceDone = evidenceRequested && !explanation.isPending && !personalized.isPending;
   return <main className="ui-page">
     <Link className="ui-link inline-flex min-h-11 items-center" href="/products">← {text.back}</Link>
-    <header className="ui-card mt-4 p-6 sm:p-8"><div className="flex flex-wrap items-center gap-3"><span className="rounded-full border border-line bg-surface-subtle px-3 py-1 text-xs font-semibold text-muted">{readinessLabels[uiLocale][item.diagnosisStatus]}</span><span className="text-sm font-semibold text-brand">{item.institution}</span></div><h1 className="mt-4 text-3xl font-bold leading-tight text-ink sm:text-4xl">{item.productName}</h1><p className="mt-4 max-w-reading text-base leading-7 text-muted">{item.description}</p></header>
+    <header className="ui-card mt-4 p-6 sm:p-8"><div className="flex flex-wrap items-center gap-3"><span className="rounded-full border border-line bg-surface-subtle px-3 py-1 text-xs font-semibold text-muted">{readinessLabels[uiLocale][item.diagnosisStatus]}</span><span className="text-sm font-semibold text-brand">{institutionLabel(uiLocale, item.institution)}</span></div><h1 className="mt-4 text-3xl font-bold leading-tight text-ink sm:text-4xl">{productNameLabel(uiLocale, item.productCode, item.productName).name}{productNameLabel(uiLocale, item.productCode, item.productName).original ? <span className="ml-2 align-middle text-lg font-medium text-quiet">({productNameLabel(uiLocale, item.productCode, item.productName).original})</span> : null}</h1><p className="mt-4 max-w-reading text-base leading-7 text-muted">{item.description}</p></header>
     <OfficialContentChangeNotice trust={item.sourceTrust} locale={uiLocale} />
     <nav className="sticky top-16 z-20 mt-6 overflow-x-auto rounded-card border border-line bg-surface p-1.5 shadow-card" aria-label="Product detail tabs" role="tablist"><div className="flex min-w-max gap-1">{tabs.map((tab) => <button aria-selected={activeTab === tab} className={`min-h-11 rounded-control border px-4 py-2.5 text-sm font-semibold transition duration-200 ${activeTab === tab ? "border-brand bg-brand-soft text-brand" : "border-transparent text-muted hover:bg-surface-subtle hover:text-ink"}`} key={tab} onClick={() => setActiveTab(tab)} role="tab" type="button">{text.tabs[tab]}</button>)}</div></nav>
 

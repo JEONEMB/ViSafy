@@ -3,6 +3,7 @@ import type { FinancialPurpose, ProductAudience, ProductCategory, ProductType } 
 
 export type RecommendationItem = {
   productId: number;
+  productCode: string;
   institution: string;
   productName: string;
   productType: ProductType;

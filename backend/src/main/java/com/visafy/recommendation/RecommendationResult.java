@@ -16,6 +16,7 @@ public record RecommendationResult(
 ) {
     public record RecommendationItem(
             Long productId,
+            String productCode,
             String institution,
             String productName,
             ProductType productType,
