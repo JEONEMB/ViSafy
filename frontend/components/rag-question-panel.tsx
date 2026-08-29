@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { institutionLabel } from "@/lib/product-localization";
+import { officialText } from "@/lib/official-text-localization";
 import { askOfficialDocuments } from "@/services/rag";
 import type { ProductRule } from "@/types/product";
 
@@ -55,7 +56,7 @@ export function RagQuestionPanel({ productId, rules }: { productId: number; rule
     <div className="p-6 sm:p-8"><p className="text-sm font-semibold text-accent">{text.eyebrow}</p><h2 className="mt-2 text-2xl font-bold text-ink">{text.title}</h2><p className="mt-2 text-sm leading-6 text-muted">{text.description}</p>
       {rules.length === 0 ? <p className="mt-6 rounded-card border border-line bg-surface-subtle p-4 text-sm text-muted">{text.noRules}</p> : <form className="mt-6 grid gap-4" onSubmit={submit}>
         <div className="flex flex-wrap gap-2">{quickQuestions[uiLocale].map((quick) => <button className="ui-button ui-button-secondary min-h-9 px-3 py-1.5 text-left text-xs" key={quick} onClick={() => setQuestion(quick)} type="button">{quick}</button>)}</div>
-        <label className="ui-label">{text.rule}<select className="ui-input" value={selectedRuleId} onChange={(event) => setSelectedRuleId(event.target.value)}>{rules.map((rule) => <option key={rule.id} value={rule.id}>{rule.description}</option>)}</select></label>
+        <label className="ui-label">{text.rule}<select className="ui-input" value={selectedRuleId} onChange={(event) => setSelectedRuleId(event.target.value)}>{rules.map((rule) => <option key={rule.id} value={rule.id}>{officialText(uiLocale, rule.description)}</option>)}</select></label>
         <label className="ui-label">{text.question}<textarea className="ui-input min-h-28 font-normal" maxLength={1000} minLength={2} placeholder={text.placeholder} required value={question} onChange={(event) => setQuestion(event.target.value)} /></label>
         <button className="ui-button ui-button-primary w-fit" disabled={answer.isPending}>{answer.isPending ? text.asking : text.ask}</button>
       </form>}
