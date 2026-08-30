@@ -4,7 +4,7 @@
 
 **공개 URL: <https://34-64-228-103.sslip.io>**
 
-배포 상태와 검증 결과는 [`docs/production-verification-2026-08-30.md`](docs/production-verification-2026-08-30.md)에 있고, 공개 URL에서 촬영한 Demo 캡처는 [`docs/evidence/`](docs/evidence/)에 보관합니다.
+제출물과 URL 가용성 준비는 [`docs/submission-checklist.md`](docs/submission-checklist.md)에 정리했습니다. 배포 상태와 검증 결과는 [`docs/production-verification-2026-08-30.md`](docs/production-verification-2026-08-30.md)에 있고, 공개 URL에서 촬영한 Demo 캡처는 [`docs/evidence/`](docs/evidence/)에 보관합니다.
 
 현재 구현 범위:
 

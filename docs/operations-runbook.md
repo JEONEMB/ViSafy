@@ -23,6 +23,21 @@ alias dc='docker compose -f infra/docker-compose.yml -f infra/docker-compose.pro
 | 공개 점검 | `./infra/scripts/verify-production.sh 34-64-228-103.sslip.io` |
 | Demo 재현 | `python docs/evidence/demo-verification.py` |
 
+## 자동 복구 (watchdog)
+
+`infra/scripts/watchdog.sh`가 5분마다 공개 Health를 확인하고, 3회 연속 실패하면 애플리케이션 컨테이너를 재시작한다. 재빌드하지 않고 데이터 볼륨도 건드리지 않는다.
+
+```bash
+cd ~/ssafin
+chmod +x infra/scripts/watchdog.sh
+./infra/scripts/watchdog.sh                       # 1회 수동 실행
+
+( crontab -l 2>/dev/null;   echo "*/5 * * * * $HOME/ssafin/infra/scripts/watchdog.sh >> $HOME/ssafin/watchdog.log 2>&1" ) | crontab -
+tail -20 ~/ssafin/watchdog.log
+```
+
+Watchdog은 서버가 살아 있을 때만 동작한다. VM 자체가 죽는 경우를 잡으려면 GCP Monitoring의 Uptime check를 함께 건다. 설정은 [submission-checklist.md](submission-checklist.md)에 있다.
+
 ## 하루 1회 점검
 
 ```bash
