@@ -85,3 +85,28 @@ def test_general_product_without_visa_rule_never_invents_visa_sentence() -> None
     assert "visa" not in result.inquiry.localized.lower()
     assert "status of stay" not in result.inquiry.localized.lower()
     assert "NO_UNSOURCED_VISA_RULE" in result.guardrails_applied
+
+
+@pytest.mark.parametrize(
+    ("language", "marker"),
+    [("zh", "停留资格"), ("ja", "在留資格"), ("th", "สถานะการพำนัก")],
+)
+def test_added_languages_do_not_fall_back_to_english(language: str, marker: str) -> None:
+    result = ExplanationBuilder().build(request(language))
+
+    assert result.disclaimer == DISCLAIMERS[language]
+    assert marker in {term.localized_term for term in result.easy_terms}
+    for text in [result.explanation, *result.next_actions]:
+        assert not text.isascii()
+
+
+@pytest.mark.parametrize("language", ["ko", "en", "vi", "zh", "ja", "th"])
+def test_inquiry_asks_and_never_claims_a_condition_is_met(language: str) -> None:
+    """The inquiry is read out at a bank counter, so it must not assert eligibility."""
+    result = ExplanationBuilder().build(request(language))
+
+    assert result.inquiry is not None
+    claims = ["충족했습니다", "충족합니다", "가입 가능합니다", "자격이 있습니다"]
+    for claim in claims:
+        assert claim not in result.inquiry.korean
+        assert claim not in result.inquiry.localized
