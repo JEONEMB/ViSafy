@@ -31,10 +31,15 @@ https://34-64-228-103.sslip.io
 | 응답 시간 | 70~120ms | `/api/health` 3회 측정 |
 | 컨테이너 재시작 정책 | `restart: unless-stopped` | Docker 시작 시 자동 복구 |
 | GCP 크레딧 | 여유 | 10일 운영 약 $39 / $300 |
+| **인스턴스 종류** | **표준 (Spot 아님)** | 2026-08-30 서버 확인 `preemptible=FALSE` |
+| 디스크 | 48G 중 11G · 23% | 2026-08-30 확인 |
+| 메모리 | 16G 중 13.4G 사용 가능 · Swap 없음 | 2026-08-30 확인 |
+| Docker 자동시작 | `enabled` | 재부팅 후 자동 복구 |
+| **Watchdog cron** | **동작 중** | 2026-08-30 05:30:02 UTC 첫 자동 실행 `OK` 기록 |
 
-### 서버에서 1회 확인할 것
+### 서버 점검 (2026-08-30 완료)
 
-아래를 실행해 결과를 확인한다. **Spot(선점형) 인스턴스면 GCP가 임의로 종료할 수 있어 즉시 조치해야 한다.**
+아래를 실행해 결과를 확인한다. **Spot(선점형) 인스턴스면 GCP가 임의로 종료할 수 있어 즉시 조치해야 한다.** 2026-08-30 실행 결과는 위 표에 기록했고 모두 기대값을 만족했다.
 
 ```bash
 echo "=== 인스턴스 종류 (spot이면 위험) ==="
@@ -95,7 +100,7 @@ GCP 콘솔 → **Monitoring → Uptime checks → CREATE UPTIME CHECK**
 
 - `docker compose ... down -v` — 운영 DB와 RAG 색인 삭제
 - VM 중지·삭제·머신 유형 변경
-- 무근거 재배포 — 불가피하면 백업 → `git pull` → 배포 → `verify-production.sh`
+- 무근거 재배포 — 불가피하면 백업 → `git pull` → 배포 → `verify-production.sh`. Swap이 없어 재빌드 중 메모리가 몰리면 여유가 적다
 - 관리자 화면에서 Rule 승인·상품 변경 (판정 결과가 즉시 바뀐다)
 - **외부 IP 해제** — IP가 바뀌면 sslip.io 도메인이 바뀌어 제출 URL이 죽는다
 
@@ -210,7 +215,7 @@ SSAFIN은 공식 자료에 근거해 조건을 판정하고, 그 결과를 **창
 - [ ] 제출 URL을 **다른 기기·다른 네트워크**(휴대폰 LTE)에서 열어 확인
 - [ ] `verify-production.sh` 전 항목 PASS
 - [ ] `demo-verification.py` 10건 PASS
-- [ ] watchdog cron 등록 확인 (`crontab -l`)
+- [x] watchdog cron 등록 확인 (`crontab -l`) — 2026-08-30 등록, 첫 자동 실행 확인
 - [ ] GCP Uptime check 알림 메일 수신 테스트
 
 **09-07(월) 10:00 이전**
