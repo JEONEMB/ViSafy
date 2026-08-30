@@ -31,6 +31,8 @@ include = ["app*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# tests/test_production_config.py imports scripts/, which the editable install does not expose.
+pythonpath = ["."]
 
 [tool.ruff]
 target-version = "py311"

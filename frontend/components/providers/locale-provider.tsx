@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { isLocale, messages, type Locale } from "@/i18n/config";
 import { updateProfileLanguage } from "@/services/profile";
 
@@ -12,39 +12,41 @@ type LocaleContextValue = {
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
+/**
+ * Diagnosis messages, access details, guidance, the financial journey, and AI answers are all
+ * generated in the language stored on the profile. Without this, switching language left every
+ * one of them in the language the profile was created with.
+ */
+function syncProfileLanguage(nextLocale: Locale) {
+  const id = Number(localStorage.getItem("visafyProfileId"));
+  const sessionId = localStorage.getItem("visafyProfileSessionId");
+  if (!id || !sessionId) return;
+  void updateProfileLanguage(id, sessionId, nextLocale).catch(() => {
+    // An expired or missing profile must never block a language change.
+  });
+}
+
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, updateLocale] = useState<Locale>("ko");
 
   useEffect(() => {
     const saved = localStorage.getItem("visafyLocale");
-    if (isLocale(saved)) {
-      updateLocale(saved);
-      document.documentElement.lang = saved;
-    }
+    if (isLocale(saved)) updateLocale(saved);
   }, []);
 
-  function setLocale(nextLocale: Locale) {
+  // <html lang> lives outside React, so it is mirrored from the state rather than written by
+  // whichever handler happened to change the language.
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
+  const setLocale = useCallback((nextLocale: Locale) => {
     updateLocale(nextLocale);
     localStorage.setItem("visafyLocale", nextLocale);
-    document.documentElement.lang = nextLocale;
     syncProfileLanguage(nextLocale);
-  }
+  }, []);
 
-  /**
-   * Diagnosis messages, access details, guidance, the financial journey, and AI answers are all
-   * generated in the language stored on the profile. Without this, switching language left every
-   * one of them in the language the profile was created with.
-   */
-  function syncProfileLanguage(nextLocale: Locale) {
-    const id = Number(localStorage.getItem("visafyProfileId"));
-    const sessionId = localStorage.getItem("visafyProfileSessionId");
-    if (!id || !sessionId) return;
-    void updateProfileLanguage(id, sessionId, nextLocale).catch(() => {
-      // An expired or missing profile must never block a language change.
-    });
-  }
-
-  const value = useMemo(() => ({ locale, setLocale, text: messages[locale] }), [locale]);
+  const value = useMemo(() => ({ locale, setLocale, text: messages[locale] }), [locale, setLocale]);
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
 

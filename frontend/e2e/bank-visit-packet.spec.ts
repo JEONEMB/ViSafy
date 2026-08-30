@@ -15,6 +15,9 @@ const guidance = {
   disclaimer: "Official sources only.",
 };
 
+// The API omits the inquiry when there is nothing left to confirm, so the fixture must widen to null.
+type Inquiry = { korean: string; localized: string; language: string; confirmationItems: string[] } | null;
+
 const eligibility = {
   status: "NEED_BANK_CONFIRMATION",
   productId: 10,
@@ -29,7 +32,7 @@ const eligibility = {
 };
 
 const inquiryKorean = "안녕하세요. 현재 체류자격은 E-9입니다. 외국인 전용 입출금통장 상품의 실명확인 가능 여부 조건을 확인 부탁드립니다.";
-const explanation = { eligibilityStatus: "NEED_BANK_CONFIRMATION", accessStatus: "ACCESS_READY_BRANCH_ONLY", facts: { visaType: "E-9", visaRemainingMonths: 14, residencyMonths: 24, passedCount: 2, failedCount: 0, externalCheckCount: 1, unknownCount: 1 }, explanation: "Checked.", nextActions: ["Ask the bank."], disclaimer: "Not final approval.", easyTerms: [], inquiry: { korean: inquiryKorean, localized: "Hello. My current status of stay is E-9. Please confirm the real-name verification condition.", language: "en", confirmationItems: ["real-name verification availability"] }, guardrailsApplied: [] };
+const explanation = { eligibilityStatus: "NEED_BANK_CONFIRMATION", accessStatus: "ACCESS_READY_BRANCH_ONLY", facts: { visaType: "E-9", visaRemainingMonths: 14, residencyMonths: 24, passedCount: 2, failedCount: 0, externalCheckCount: 1, unknownCount: 1 }, explanation: "Checked.", nextActions: ["Ask the bank."], disclaimer: "Not final approval.", easyTerms: [], inquiry: { korean: inquiryKorean, localized: "Hello. My current status of stay is E-9. Please confirm the real-name verification condition.", language: "en", confirmationItems: ["real-name verification availability"] } as Inquiry, guardrailsApplied: [] };
 
 async function json(route: Route, body: unknown, status = 200) {
   await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
