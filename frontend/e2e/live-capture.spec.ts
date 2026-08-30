@@ -56,6 +56,19 @@ test("capture the demo screens from the deployed site", async ({ page, request }
   }
 });
 
+test("capture the packet in English to show the six-language coverage", async ({ page, request }) => {
+  test.setTimeout(180_000);
+  const ids = await productIds(request);
+  await seedProfile(request, page, { language: "en" });
+  await page.setViewportSize({ width: 1280, height: 1000 });
+
+  await page.goto(`/products/${ids["KB-STAR-TIME-DEPOSIT"]}/packet`);
+  await page.getByRole("heading", { name: /5\./ }).waitFor({ timeout: 120_000 });
+  await page.waitForTimeout(2500);
+  await page.screenshot({ path: `${outputDirectory}/10-packet-english.png`, fullPage: true });
+  console.log("captured english packet");
+});
+
 test("capture the packet on a phone-sized screen", async ({ page, request }) => {
   test.setTimeout(180_000);
   const ids = await productIds(request);

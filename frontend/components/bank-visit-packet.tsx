@@ -13,7 +13,7 @@ import { getProduct } from "@/services/product";
 import { getPersonalizedGuidance } from "@/services/guidance";
 import { precheckEligibility } from "@/services/eligibility";
 import { getAiExplanation } from "@/services/ai-explanation";
-import { conditionAsks, tellerExchangesFor } from "@/lib/teller-questions";
+import { conditionAsks, openingRequest, tellerExchangesFor } from "@/lib/teller-questions";
 import type { ProductDocumentRequirement } from "@/types/guidance";
 
 const copy = {
@@ -45,7 +45,10 @@ export function BankVisitPacket() {
   if (!product.data || !guidance.data || !precheck.data || !explanation.data) return <Shell><p className="text-sm text-muted" aria-live="polite">{text.loading}</p></Shell>;
 
   const name = productNameLabel(locale, product.data.productCode, product.data.productName);
-  const inquiry = explanation.data.inquiry;
+  // Nothing left for the bank to confirm still needs an opening line, and section 2 must not
+  // vanish and leave the packet numbered 1, 3, 4, 5.
+  const inquiry = explanation.data.inquiry
+    ?? { korean: openingRequest(product.data.productName).ko, localized: openingRequest(product.data.productName)[locale] };
   const confirmations = [...precheck.data.externalChecks, ...precheck.data.unknownRules];
   const exchanges = tellerExchangesFor(product.data.rules.map((rule) => rule.ruleKey));
   const groups: Array<{ title: string; tone: string; items: ProductDocumentRequirement[] }> = [
@@ -78,14 +81,14 @@ export function BankVisitPacket() {
       </div>}
     </Section>
 
-    {inquiry ? <Section title={text.script}>
+    <Section title={text.script}>
       <p className="text-sm text-muted print:hidden">{text.scriptHint}</p>
       <div className="mt-3 rounded-panel border-2 border-brand bg-surface p-5">
         <p className="text-xl font-bold leading-9 text-ink sm:text-2xl">{inquiry.korean}</p>
         {locale === "ko" ? null : <p className="mt-4 border-t border-line pt-4 text-sm leading-7 text-muted">{inquiry.localized}</p>}
       </div>
       <button className="ui-button ui-button-primary mt-3 print:hidden" onClick={() => setShowing(true)} type="button">{text.show}</button>
-    </Section> : null}
+    </Section>
 
     <Section title={text.confirm}>
       <h3 className="text-sm font-bold text-ink">{text.iAsk}</h3>
@@ -118,7 +121,7 @@ export function BankVisitPacket() {
 
     <p className="mt-8 rounded-card border border-line bg-surface-subtle p-4 text-xs leading-5 text-muted">{text.notice}</p>
 
-    {showing && inquiry ? <div className="fixed inset-0 z-50 flex flex-col bg-surface p-6 print:hidden" role="dialog" aria-modal="true">
+    {showing ? <div className="fixed inset-0 z-50 flex flex-col bg-surface p-6 print:hidden" role="dialog" aria-modal="true">
       <button className="ui-button ui-button-secondary self-end" onClick={() => setShowing(false)} type="button">{text.close}</button>
       <div className="flex flex-1 items-center overflow-y-auto py-6"><p className="text-2xl font-bold leading-10 text-ink sm:text-4xl sm:leading-[3.5rem]">{inquiry.korean}</p></div>
     </div> : null}

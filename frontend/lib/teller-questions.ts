@@ -245,6 +245,22 @@ export const conditionAsks: Record<string, Phrase> = {
   },
 };
 
+/**
+ * Opening line for a product where nothing is left for the bank to confirm. The customer still has
+ * to start the conversation, so the packet always carries a sentence to show. It asks; it claims
+ * nothing.
+ */
+export function openingRequest(productName: string): Phrase {
+  return {
+    ko: `안녕하세요. ${productName} 상품에 가입하고 싶습니다. 필요한 서류와 절차를 안내해 주시겠어요?`,
+    en: `Hello. I would like to open ${productName}. Could you tell me which documents and steps are needed?`,
+    vi: `Xin chào. Tôi muốn đăng ký ${productName}. Bạn có thể cho tôi biết cần giấy tờ và quy trình nào không?`,
+    zh: `您好。我想申请${productName}。能否告诉我需要哪些材料和办理流程？`,
+    ja: `こんにちは。${productName}に加入したいです。必要な書類と手続きを教えていただけますか。`,
+    th: `สวัสดีค่ะ/ครับ ฉันต้องการสมัคร ${productName} ช่วยแจ้งเอกสารและขั้นตอนที่ต้องใช้ได้ไหม`,
+  };
+}
+
 /** Baseline questions first, then the ones the product's own conditions bring in. */
 export function tellerExchangesFor(ruleKeys: string[]): TellerExchange[] {
   const matched = Array.from(new Set(ruleKeys))

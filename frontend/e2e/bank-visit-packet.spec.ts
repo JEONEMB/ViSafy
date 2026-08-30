@@ -35,7 +35,7 @@ async function json(route: Route, body: unknown, status = 200) {
   await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 }
 
-async function mockPacketApi(page: Page) {
+async function mockPacketApi(page: Page, eligibilityOverride = eligibility, explanationOverride = explanation) {
   await page.addInitScript(() => {
     localStorage.setItem("visafyProfileId", "1");
     localStorage.setItem("visafyProfileSessionId", "e2e-session");
@@ -45,8 +45,8 @@ async function mockPacketApi(page: Page) {
     const path = new URL(route.request().url()).pathname;
     if (path === "/api/products/10") return json(route, product);
     if (path === "/api/products/10/guidance") return json(route, guidance);
-    if (path === "/api/eligibility/pre-check") return json(route, eligibility);
-    if (path === "/api/ai/explanation") return json(route, explanation);
+    if (path === "/api/eligibility/pre-check") return json(route, eligibilityOverride);
+    if (path === "/api/ai/explanation") return json(route, explanationOverride);
     if (path === "/api/profiles/1") return json(route, { id: 1, sessionId: "e2e-session", nationality: "VN", language: "en" });
     return json(route, { message: `Unhandled ${path}` }, 500);
   });
@@ -109,4 +109,18 @@ test("the packet asks for a profile before it is built", async ({ page }) => {
 
   await expect(page.getByText("먼저 임시 금융 프로필을 입력해 주세요.")).toBeVisible();
   await expect(page.getByRole("link", { name: /프로필 입력/ })).toBeVisible();
+});
+
+test("a product with nothing left to confirm still gets all five sections", async ({ page }) => {
+  await mockPacketApi(page, { ...eligibility, externalChecks: [], unknownRules: [] },
+    { ...explanation, inquiry: null });
+  await page.goto("/products/10/packet");
+
+  // Section 2 must not vanish and leave the packet numbered 1, 3, 4, 5.
+  for (const heading of ["1. Documents to bring", "2. What to show at the counter",
+    "3. Talking with the teller", "4. Official application steps", "5. Official evidence"]) {
+    await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+  }
+  await expect(page.getByText("안녕하세요. 외국인 전용 입출금통장 상품에 가입하고 싶습니다.")).toBeVisible();
+  await expect(page.getByText("There is nothing further to confirm.")).toBeVisible();
 });
