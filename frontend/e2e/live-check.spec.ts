@@ -68,6 +68,35 @@ test("every official source and application URL is reachable", async ({ request 
   expect(broken, broken.join("\n")).toHaveLength(0);
 });
 
+test("no live product still shows untranslated Korean official text", async ({ request }) => {
+  const { officialText } = await import("../lib/official-text-localization");
+  const hangul = /[가-힣]/;
+  const products = await (await request.get("/api/products")).json();
+  const untranslated = new Set<string>();
+
+  const collect = (value: string | null | undefined) => {
+    if (value && hangul.test(value) && officialText("en", value) === value) untranslated.add(value);
+  };
+
+  for (const product of products) {
+    for (const rule of product.rules ?? []) collect(rule.description);
+    const guidance = await (await request.get(`/api/products/${product.id}/guidance?language=ko`)).json();
+    for (const group of ["officialRequired", "conditional", "bankConfirmation"] as const) {
+      for (const item of guidance[group] ?? []) {
+        collect(item.documentName);
+        collect(item.description);
+      }
+    }
+    for (const step of guidance.applicationSteps ?? []) {
+      collect(step.title);
+      collect(step.description);
+      collect(step.channel);
+    }
+  }
+  console.log(`untranslated official strings: ${untranslated.size}`);
+  expect([...untranslated], [...untranslated].join("\n")).toHaveLength(0);
+});
+
 test("the mobile layout never scrolls sideways", async ({ page }) => {
   watchConsole(page, "mobile");
   await page.setViewportSize({ width: 360, height: 780 });
