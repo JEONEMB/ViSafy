@@ -57,7 +57,7 @@ echo "=== Docker 자동시작 ==="; systemctl is-enabled docker
 
 ### 자동 복구 설치
 
-`infra/scripts/watchdog.sh`가 5분마다 공개 Health를 확인하고, 3회 연속 실패하면 애플리케이션 컨테이너를 재시작한다. 데이터 볼륨은 건드리지 않고 재빌드도 하지 않는다.
+`infra/scripts/watchdog.sh`가 5분마다 공개 Health를 확인하고, 비정상인 서비스만 골라 재시작한다. `down`·`rm`·`prune`·`-v`를 쓰지 않아 DB와 RAG 볼륨에 영향이 없고 재빌드도 하지 않는다. 동작 규칙은 [operations-runbook.md](operations-runbook.md)에 정리했다.
 
 ```bash
 cd ~/ssafin

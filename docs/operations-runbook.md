@@ -25,16 +25,32 @@ alias dc='docker compose -f infra/docker-compose.yml -f infra/docker-compose.pro
 
 ## 자동 복구 (watchdog)
 
-`infra/scripts/watchdog.sh`가 5분마다 공개 Health를 확인하고, 3회 연속 실패하면 애플리케이션 컨테이너를 재시작한다. 재빌드하지 않고 데이터 볼륨도 건드리지 않는다.
+`infra/scripts/watchdog.sh`가 공개 Health를 확인하고, 문제가 있는 서비스만 골라 재시작한다.
+
+판정 방식은 서비스마다 다르다. `mysql`·`ai-service`·`backend`는 Compose에 healthcheck가 있어 health 상태로, healthcheck가 없는 `frontend`·`caddy`는 실행 상태로만 판정한다.
+
+| 상황 | 조치 |
+| --- | --- |
+| 공개 URL 정상 + 전 서비스 정상 | `OK` 한 줄만 기록 |
+| 공개 URL 정상 + 일부 서비스 비정상 | **그 서비스만** 재시작. 규칙 엔진은 계속 응답한다 |
+| 공개 URL 실패 + 비정상 서비스 있음 | 해당 서비스만 재시작 후 최대 4분 회복 대기 |
+| 공개 URL 실패 + 전 서비스 정상 | 서빙 경로(`caddy`, `frontend`)만 재시작 |
+| 컨테이너 자체가 없음 | `up -d --no-deps --no-build`로 기동 (재빌드 없음) |
+| Docker 데몬 정지 | 무암호 sudo가 가능하면 기동 시도, 아니면 조치 방법을 기록하고 종료 |
+
+`down`, `rm`, `prune`, `-v`를 쓰지 않으므로 DB와 RAG 볼륨에 영향이 없다. 회복이 5분을 넘길 수 있어 `flock`으로 중복 실행을 막고, 로그가 5MB를 넘으면 최근 2000줄만 남긴다.
 
 ```bash
 cd ~/ssafin
 chmod +x infra/scripts/watchdog.sh
-./infra/scripts/watchdog.sh                       # 1회 수동 실행
+./infra/scripts/watchdog.sh                       # 1회 수동 실행해 OK 확인
 
 ( crontab -l 2>/dev/null;   echo "*/5 * * * * $HOME/ssafin/infra/scripts/watchdog.sh >> $HOME/ssafin/watchdog.log 2>&1" ) | crontab -
+crontab -l
 tail -20 ~/ssafin/watchdog.log
 ```
+
+종료 코드는 정상·회복 `0`, 회복 실패 `1`, 실행 불가 `2`다.
 
 Watchdog은 서버가 살아 있을 때만 동작한다. VM 자체가 죽는 경우를 잡으려면 GCP Monitoring의 Uptime check를 함께 건다. 설정은 [submission-checklist.md](submission-checklist.md)에 있다.
 

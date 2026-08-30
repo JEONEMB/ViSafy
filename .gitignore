@@ -38,6 +38,8 @@ ai-service/chroma-data/
 data-pipeline/snapshots/*
 !data-pipeline/snapshots/.gitkeep
 backups/
+watchdog.log
+watchdog.log.tmp
 
 # IDE / OS
 .idea/
