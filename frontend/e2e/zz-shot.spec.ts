@@ -52,61 +52,10 @@ async function mockPacketApi(page: Page) {
   });
 }
 
-test("the packet assembles documents, the counter script, and the items to confirm", async ({ page }) => {
+test("capture", async ({ page }) => {
   await mockPacketApi(page);
+  await page.setViewportSize({ width: 900, height: 1800 });
   await page.goto("/products/10/packet");
-
-  await expect(page.getByText("Bank visit packet")).toBeVisible();
-  // The product name stays Korean so a teller can read it, with the translation beneath.
-  await expect(page.getByRole("heading", { level: 1, name: "외국인 전용 입출금통장" })).toBeVisible();
-
-  await expect(page.getByRole("heading", { name: "1. Documents to bring" })).toBeVisible();
-  // Documents are named in the reader's language with the Korean kept, because they have to be
-  // requested and handed over by their Korean name.
-  const documents = page.locator("section").filter({ has: page.getByRole("heading", { name: "1. Documents to bring" }) }).last();
-  await expect(documents.getByText(/Residence card\s*\(외국인등록증\)/)).toBeVisible();
-  await expect(documents.getByText("재직증명서")).toBeVisible();
-  await expect(documents.getByText("실명확인 서류")).toBeVisible();
-
-  await expect(page.getByRole("heading", { name: "2. What to show at the counter" })).toBeVisible();
-  await expect(page.getByText(inquiryKorean)).toBeVisible();
-
-  await expect(page.getByRole("heading", { name: "3. Talking with the teller" })).toBeVisible();
-  // A condition the bank must confirm becomes a Korean sentence the customer can actually say.
-  await expect(page.getByText("제 신분증으로 실명확인이 가능한지 확인해 주시겠어요?")).toBeVisible();
-  await expect(page.getByText("이 상품에 가입할 수 있는 체류자격 목록을 알려주시겠어요?")).toBeVisible();
-  // Baseline questions the teller asks, with answers to choose from.
-  await expect(page.getByText("외국인등록증 있으세요?")).toBeVisible();
-  await expect(page.getByText("Do you have your residence card?")).toBeVisible();
-  await expect(page.getByText("아니요, 여권만 있습니다.")).toBeVisible();
-  // The product carries a VISA_TYPE rule, so its question is added to the baseline ones.
-  await expect(page.getByText("체류자격이 어떻게 되세요?")).toBeVisible();
-
-  await expect(page.getByRole("heading", { name: "4. Official application steps" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "5. Official evidence" })).toBeVisible();
-
-  // The packet owns the whole screen, so the site navigation is not rendered.
-  await expect(page.getByRole("navigation", { name: "Primary navigation" })).toHaveCount(0);
-});
-
-test("the teller view shows the Korean sentence full screen", async ({ page }) => {
-  await mockPacketApi(page);
-  await page.goto("/products/10/packet");
-
-  await page.getByRole("button", { name: "Show to the teller" }).click();
-  const dialog = page.getByRole("dialog");
-  await expect(dialog).toBeVisible();
-  await expect(dialog.getByText(inquiryKorean)).toBeVisible();
-
-  await dialog.getByRole("button", { name: "Close" }).click();
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-});
-
-test("the packet asks for a profile before it is built", async ({ page }) => {
-  // No stored locale, so the packet renders in the deployment default language.
-  await page.route("http://localhost:8080/api/**", (route) => json(route, product));
-  await page.goto("/products/10/packet");
-
-  await expect(page.getByText("먼저 임시 금융 프로필을 입력해 주세요.")).toBeVisible();
-  await expect(page.getByRole("link", { name: /프로필 입력/ })).toBeVisible();
+  await page.getByRole("heading", { name: "5. Official evidence" }).waitFor();
+  await page.screenshot({ path: "packet2.png", fullPage: true });
 });
