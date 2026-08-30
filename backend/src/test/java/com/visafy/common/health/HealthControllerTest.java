@@ -35,5 +35,25 @@ class HealthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"));
     }
+
+    @Test
+    void passesTheAiProviderFieldsThroughTheProxy() throws Exception {
+        given(aiHealthClient.getHealth()).willReturn(
+                new HealthResponse("UP", null, "fastembed", "intfloat/multilingual-e5-small", "openai", true));
+
+        mockMvc.perform(get("/api/health/ai"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.llmProvider").value("openai"))
+                .andExpect(jsonPath("$.llmConfigured").value(true))
+                .andExpect(jsonPath("$.embeddingProvider").value("fastembed"));
+    }
+
+    @Test
+    void omitsTheAiFieldsFromTheBackendOwnHealth() throws Exception {
+        mockMvc.perform(get("/api/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.llmProvider").doesNotExist())
+                .andExpect(jsonPath("$.message").doesNotExist());
+    }
 }
 
