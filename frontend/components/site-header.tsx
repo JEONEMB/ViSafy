@@ -9,7 +9,8 @@ export function SiteHeader() {
   const pathname = usePathname();
   const { text } = useLocale();
   const { authenticated, logout } = useAdminAuth();
-  if (pathname === "/") return null;
+  // The bank-visit packet is read at a counter and printed, so it owns the whole screen and page.
+  if (pathname === "/" || pathname.endsWith("/packet")) return null;
   const navLink = (href: string) => {
     const active = pathname === href || (href !== "/profile" && pathname.startsWith(`${href}/`));
     return `inline-flex min-h-11 items-center rounded-control px-3 text-sm font-semibold transition ${active ? "bg-brand-soft text-brand" : "text-muted hover:bg-surface-subtle hover:text-ink"}`;

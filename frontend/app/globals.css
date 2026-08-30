@@ -166,3 +166,22 @@ summary {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* The bank-visit packet is carried to a counter on paper, so printing keeps ink low and links readable. */
+@media print {
+  html,
+  body {
+    background: #ffffff;
+  }
+
+  main {
+    max-width: none;
+    padding: 0;
+  }
+
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.7rem;
+    word-break: break-all;
+  }
+}
