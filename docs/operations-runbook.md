@@ -21,7 +21,7 @@ alias dc='docker compose -f infra/docker-compose.yml -f infra/docker-compose.pro
 | 최근 로그 | `dc logs --tail 200 caddy backend ai-service` |
 | 특정 서비스 재시작 | `dc restart backend ai-service` |
 | 공개 점검 | `./infra/scripts/verify-production.sh 34-64-228-103.sslip.io` |
-| Demo 재현 | `python docs/evidence/demo-verification.py` |
+| Demo 재현 | `python3 docs/evidence/demo-verification.py` |
 
 ## 자동 복구 (watchdog)
 
@@ -59,7 +59,7 @@ Watchdog은 서버가 살아 있을 때만 동작한다. VM 자체가 죽는 경
 ```bash
 cd ~/ssafin
 ./infra/scripts/verify-production.sh 34-64-228-103.sslip.io
-python docs/evidence/demo-verification.py
+python3 docs/evidence/demo-verification.py
 ```
 
 앞의 스크립트는 공개 엔드포인트·차단 경로·보안 헤더를, 뒤의 스크립트는 Demo A~E와 6개 언어 답변을 확인한다. 둘 다 실패 시 0이 아닌 코드로 종료하므로 cron에 걸어도 된다.

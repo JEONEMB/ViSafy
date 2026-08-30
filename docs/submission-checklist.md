@@ -114,7 +114,7 @@ GCP 콘솔 → **Monitoring → Uptime checks → CREATE UPTIME CHECK**
 ```bash
 cd ~/ssafin
 ./infra/scripts/verify-production.sh 34-64-228-103.sslip.io
-python docs/evidence/demo-verification.py
+python3 docs/evidence/demo-verification.py
 tail -5 watchdog.log
 ```
 

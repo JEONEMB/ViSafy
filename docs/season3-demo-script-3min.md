@@ -143,7 +143,7 @@ KB생계비계좌              일반상품      공개조건 충족
 **30분 전**
 
 - [ ] `./infra/scripts/verify-production.sh 34-64-228-103.sslip.io` 통과 확인
-- [ ] `python docs/evidence/demo-verification.py` 10건 통과 확인
+- [ ] `python3 docs/evidence/demo-verification.py` 10건 통과 확인
 - [ ] 사이트 1회 접속해 예열 (유휴 후 첫 요청이 느릴 수 있다)
 
 **5분 전**

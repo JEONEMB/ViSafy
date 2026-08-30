@@ -1,6 +1,6 @@
 """Reproduces the Demo A~E and six-language checks against a deployed SSAFIN instance.
 
-    python docs/evidence/demo-verification.py [BASE_URL]
+    python3 docs/evidence/demo-verification.py [BASE_URL]
 
 Creates throwaway temporary profiles, which expire on their own after 24 hours.
 """
