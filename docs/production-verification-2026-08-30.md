@@ -120,7 +120,21 @@ python docs/evidence/demo-verification.py
 E2E_BASE_URL=https://34-64-228-103.sslip.io npx playwright test e2e/live-capture.spec.ts
 ```
 
-## 7. 아직 사람이 해야 하는 것
+## 7. 3분 시연 리허설
+
+```bash
+E2E_BASE_URL=https://34-64-228-103.sslip.io npx playwright test e2e/live-demo-script.spec.ts
+```
+
+[season3-demo-script-3min.md](season3-demo-script-3min.md)의 클릭 흐름을 그대로 재현한다. 3건 모두 통과했다.
+
+| 검사 | 결과 |
+| --- | --- |
+| Landing → English → 목적 → Profile → 상세(id=3) → 패킷 진입점 | PASS |
+| 패킷 5개 섹션 + 한국어 문장 + 은행원 질문 + 보여주기 화면 | PASS |
+| 추천에 두 Audience 혼합, Demo D 포함, Demo E는 추가정보 필요 | PASS |
+
+## 8. 아직 사람이 해야 하는 것
 
 - [ ] Demo 결과와 공식 원문을 사람이 최종 대조 (자동화 불가)
 - [ ] 실기기(휴대폰)에서 터치 조작 확인 — 자동 검증은 뷰포트 기준이다
