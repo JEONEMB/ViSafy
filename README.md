@@ -2,6 +2,10 @@
 
 공식 금융 Source와 사람이 검수한 Rule을 기반으로 외국인 사용자의 금융상품 사전자격을 안내하기 위한 MVP 모노레포입니다.
 
+**공개 URL: <https://34-64-228-103.sslip.io>**
+
+배포 상태와 검증 결과는 [`docs/production-verification-2026-08-30.md`](docs/production-verification-2026-08-30.md)에 있고, 공개 URL에서 촬영한 Demo 캡처는 [`docs/evidence/`](docs/evidence/)에 보관합니다.
+
 현재 구현 범위:
 
 - ENV-001~005 개발환경 및 Docker 통합환경
@@ -594,7 +598,7 @@ PDF/HTML 추출, 페이지 번호 보존, OCR 필요 페이지 표시, `contentH
 
 ### 제출 배포 상태
 
-Caddy 자동 TLS와 운영 Compose 사용법은 [`docs/production-deployment.md`](docs/production-deployment.md)에 정리되어 있습니다. 서버 선정부터 공개 URL 확인까지 순서대로 따라 하는 실행 절차는 [`docs/first-deployment-runbook.md`](docs/first-deployment-runbook.md)에 있습니다. 저장소에는 운영 Secret을 포함하지 않으며 `.env.production`은 생성 스크립트로 만들고 Git에서 제외합니다.
+Caddy 자동 TLS와 운영 Compose 사용법은 [`docs/production-deployment.md`](docs/production-deployment.md)에 정리되어 있습니다. 서버 선정부터 공개 URL 확인까지 순서대로 따라 하는 실행 절차는 [`docs/first-deployment-runbook.md`](docs/first-deployment-runbook.md)에 있습니다. 공개 기간의 점검·장애 대응·비상 복구는 [`docs/operations-runbook.md`](docs/operations-runbook.md)에 있습니다. 저장소에는 운영 Secret을 포함하지 않으며 `.env.production`은 생성 스크립트로 만들고 Git에서 제외합니다.
 
 현재 문서의 URL은 로컬 개발 주소입니다. 공개 HTTPS 제출 URL은 아직 확정되지 않았으며, 배포 후 아래 항목을 실제 값으로 갱신해야 합니다.
 

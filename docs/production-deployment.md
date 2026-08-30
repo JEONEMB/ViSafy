@@ -30,10 +30,10 @@ Internet
 - [x] 운영 Secret 생성 스크립트
 - [x] 컨테이너 재부팅 자동 복구 정책
 - [x] 배포 후 공개 Health 검증 스크립트
-- [ ] Linux 서버 계정과 고정 IP 확보
-- [ ] 도메인 DNS A/AAAA 레코드 연결
-- [ ] 운영용 OpenAI Key 발급 또는 기존 Key 교체
-- [ ] 공개 URL 브라우저 E2E
+- [x] Linux 서버 계정과 고정 IP 확보
+- [x] 도메인 DNS A/AAAA 레코드 연결
+- [x] 운영용 OpenAI Key 발급 또는 기존 Key 교체
+- [x] 공개 URL 브라우저 E2E
 
 ## 공개일 전 서버 준비
 

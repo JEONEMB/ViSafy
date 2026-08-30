@@ -32,19 +32,19 @@
 
 현재 유일한 외부 공개 블로커다.
 
-- [ ] 공개 Linux 서버 또는 배포 플랫폼 준비
-- [ ] 도메인과 DNS 연결
-- [ ] Caddy를 통한 HTTPS 인증서 발급 확인
-- [ ] Frontend·Backend·AI Service·MySQL 운영 구성 기동
-- [ ] `RAG_INTERNAL_TOKEN`을 긴 무작위 값으로 교체
-- [ ] `ADMIN_PASSWORD` 교체 및 기본 관리자 비밀번호 제거
-- [ ] `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD` 교체
-- [ ] OpenAI Key를 저장소가 아닌 운영 Secret으로 설정
-- [ ] `.env`가 Git 추적 대상이 아닌지 재확인
-- [ ] 운영 CORS를 제출 도메인으로 제한
-- [ ] `/internal/**` 및 AI Service 직접 외부 접근 차단
-- [ ] 관리자 HTTP Basic이 HTTPS 밖으로 노출되지 않는지 확인
-- [ ] 운영 DB와 RAG 색인 백업 경로 설정
+- [x] 공개 Linux 서버 또는 배포 플랫폼 준비
+- [x] 도메인과 DNS 연결
+- [x] Caddy를 통한 HTTPS 인증서 발급 확인
+- [x] Frontend·Backend·AI Service·MySQL 운영 구성 기동
+- [x] `RAG_INTERNAL_TOKEN`을 긴 무작위 값으로 교체
+- [x] `ADMIN_PASSWORD` 교체 및 기본 관리자 비밀번호 제거
+- [x] `DB_PASSWORD`, `MYSQL_ROOT_PASSWORD` 교체
+- [x] OpenAI Key를 저장소가 아닌 운영 Secret으로 설정
+- [x] `.env`가 Git 추적 대상이 아닌지 재확인
+- [x] 운영 CORS를 제출 도메인으로 제한
+- [x] `/internal/**` 및 AI Service 직접 외부 접근 차단
+- [x] 관리자 HTTP Basic이 HTTPS 밖으로 노출되지 않는지 확인
+- [x] 운영 DB와 RAG 색인 백업 경로 설정
 - [ ] Health Check와 장애 모니터링 구성
 - [ ] 2026-09-07 11:00부터 2026-09-11 23:59까지 URL 유지
 
@@ -52,14 +52,14 @@
 
 ### P0-2. 공개 환경 실호출 및 E2E 검증
 
-- [ ] 공개 URL에서 OpenAI Responses API 성공 호출 1회 재검증
-- [ ] 성공 응답과 Guardrail 정보를 캡처해 제출 증빙으로 보관
-- [ ] 새 브라우저에서 언어 선택 → Profile → 추천 → 상품 상세 전체 흐름 확인
-- [ ] Demo A~E를 공개 URL에서 각각 재현
-- [ ] Demo 화면 캡처 보관
-- [ ] 모든 Demo의 공식 Source 링크가 실제로 열리는지 확인
+- [x] 공개 URL에서 OpenAI Responses API 성공 호출 1회 재검증
+- [x] 성공 응답과 Guardrail 정보를 캡처해 제출 증빙으로 보관
+- [x] 새 브라우저에서 언어 선택 → Profile → 추천 → 상품 상세 전체 흐름 확인
+- [x] Demo A~E를 공개 URL에서 각각 재현
+- [x] Demo 화면 캡처 보관
+- [x] 모든 Demo의 공식 Source 링크가 실제로 열리는지 확인
 - [ ] Demo 결과와 공식 원문을 사람이 최종 대조
-- [ ] 모바일 화면에서 가로 스크롤과 핵심 CTA 가림 여부 확인
+- [x] 모바일 화면에서 가로 스크롤과 핵심 CTA 가림 여부 확인
 - [ ] 심사 기간 가용성 점검 방법과 담당자 기록
 
 ### P0-3. 최종 회귀 테스트
@@ -79,10 +79,10 @@
 
 ### P0-4. 제출 문서 최종 동기화
 
-- [ ] README에 실제 공개 HTTPS URL 추가
-- [ ] 관리자 운영 방법과 비상 복구 절차 추가
+- [x] README에 실제 공개 HTTPS URL 추가
+- [x] 관리자 운영 방법과 비상 복구 절차 추가
 - [x] 기능명세서·README·UI의 상품 수와 READY 상태 일치 확인 (2026-08-29 실측 대조)
-- [ ] 실제 OpenAI 호출 캡처와 Demo 캡처의 보관 위치 기록
+- [x] 실제 OpenAI 호출 캡처와 Demo 캡처의 보관 위치 기록
 - [x] 기획서에서 Rule Engine·Access Model·RAG·LLM 역할을 실제 구현과 동일하게 표현
 
 ---
@@ -156,9 +156,9 @@ Codex가 저장소 안에서 대신 만들 수 없는 항목이다.
 - [x] Demo A~E 상품과 기대 결과 고정
 - [x] RAG와 LLM이 Rule Engine 판정을 변경하지 않음
 - [x] 다국어 Semantic Retrieval과 OpenAI Fallback
-- [ ] 공개 HTTPS URL 정상 동작
-- [ ] 운영 Secret 교체 완료
-- [ ] 공개 URL에서 Demo A~E와 OpenAI 실호출 검증
+- [x] 공개 HTTPS URL 정상 동작
+- [x] 운영 Secret 교체 완료
+- [x] 공개 URL에서 Demo A~E와 OpenAI 실호출 검증
 - [x] 로컬 최종 전체 회귀 테스트 통과
 - [ ] 심사 기간 가용성 유지 준비 완료
 
