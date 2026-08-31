@@ -11,6 +11,7 @@ import { getProducts } from "@/services/product";
 import type { DiagnosisStatus, ProductAudience, ProductCategory, ProductFilters } from "@/types/product";
 import type { Locale } from "@/i18n/config";
 import { institutionLabel, productNameLabel, targetSummaryLabel } from "@/lib/product-localization";
+import { BankLogo } from "@/components/bank-logo";
 
 const remittanceLabel: Record<Locale, string> = { ko: "해외송금", en: "Remittance", vi: "Chuyển tiền", zh: "海外汇款", ja: "海外送金", th: "การโอนเงินต่างประเทศ" };
 
@@ -61,7 +62,7 @@ export default function ProductsPage() {
       <section className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {products.data?.map((product) => (
           <article className="ui-card flex flex-col p-6 transition duration-200 hover:-translate-y-0.5 hover:border-line-strong" key={product.id}>
-            <div className="flex items-start justify-between gap-3"><p className="text-sm font-semibold text-brand">{institutionLabel(uiLocale, product.institution)}</p><span className={`whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold ${readinessClass[product.diagnosisStatus]}`}>{statusLabel[product.diagnosisStatus]}</span></div>
+            <div className="flex items-start justify-between gap-3"><p className="flex items-center gap-1.5 text-sm font-semibold text-brand"><BankLogo institution={product.institution} />{institutionLabel(uiLocale, product.institution)}</p><span className={`whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold ${readinessClass[product.diagnosisStatus]}`}>{statusLabel[product.diagnosisStatus]}</span></div>
             <div className="mt-3 flex flex-wrap gap-2"><span className="rounded-full border border-line bg-surface-subtle px-2.5 py-1 text-xs font-semibold text-muted">{audienceLabel(uiLocale, product.productAudience)}</span><span className="rounded-full border border-line bg-surface-subtle px-2.5 py-1 text-xs font-semibold text-muted">{categoryLabel(uiLocale, product.productCategory)}</span></div><h2 className="mt-4 text-xl font-bold leading-snug text-ink">{productNameLabel(uiLocale, product.productCode, product.productName).name}{productNameLabel(uiLocale, product.productCode, product.productName).original ? <span className="ml-1.5 align-middle text-sm font-medium text-quiet">({productNameLabel(uiLocale, product.productCode, product.productName).original})</span> : null}</h2>
             <p className="mt-2 text-xs font-medium text-quiet">{typeLabel[product.productType]}</p>
             <p className="mt-4 line-clamp-3 text-sm leading-6 text-muted">{targetSummaryLabel(uiLocale, product.productCode, product.targetSummary)}</p>

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 import type { Locale } from "@/i18n/config";
 import { institutionLabel, productNameLabel } from "@/lib/product-localization";
+import { BankLogo } from "@/components/bank-logo";
 import { productDetailLabel } from "@/lib/product-detail-localization";
 import { officialText } from "@/lib/official-text-localization";
 import { getProduct } from "@/services/product";
@@ -64,7 +65,7 @@ export function BankVisitPacket() {
         <p className="ui-eyebrow">{text.eyebrow}</p>
         <h1 className="mt-2 text-3xl font-bold leading-tight text-ink">{product.data.productName}</h1>
         {name.name === product.data.productName ? null : <p className="mt-1 text-lg font-semibold text-muted">{name.name}</p>}
-        <p className="mt-3 text-sm text-muted">{institutionLabel(locale, product.data.institution)} · {text.generated} {new Date().toLocaleDateString()}</p>
+        <p className="mt-3 flex items-center gap-1.5 text-sm text-muted"><BankLogo institution={product.data.institution} />{institutionLabel(locale, product.data.institution)} · {text.generated} {new Date().toLocaleDateString()}</p>
       </div>
       <div className="flex flex-wrap gap-2 print:hidden">
         <Link className="ui-button ui-button-secondary" href={`/products/${id}`}>← {text.back}</Link>
