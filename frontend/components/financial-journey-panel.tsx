@@ -110,7 +110,10 @@ function preparationForStep(code: string, profile: { hasResidenceCard: boolean; 
   const identity = profile.hasResidenceCard || profile.hasPassport;
   const common = [{ label: labels.identity, ready: identity }];
   if (code === "IDENTITY_PREPARATION") return [...common, { label: labels.passport, ready: profile.hasPassport }, { label: labels.phone, ready: profile.hasDomesticPhone }];
-  if (["DEMAND_DEPOSIT_ACCOUNT", "RECEIVE_SALARY", "DEBIT_CARD"].includes(code)) return [...common, { label: labels.phone, ready: profile.hasDomesticPhone }, { label: labels.verification, ready: profile.canDomesticPhoneVerify }];
+  // The account row has to appear here too. Step 2 counts as done only once the profile says the
+  // user holds a Korean account, so leaving it out showed every item ready beside a step that
+  // stayed open, with nothing on screen explaining what was missing.
+  if (["DEMAND_DEPOSIT_ACCOUNT", "RECEIVE_SALARY", "DEBIT_CARD"].includes(code)) return [...common, { label: labels.phone, ready: profile.hasDomesticPhone }, { label: labels.verification, ready: profile.canDomesticPhoneVerify }, { label: labels.account, ready: profile.hasKoreanBankAccount }];
   if (["SAVINGS", "REMITTANCE", "BUILD_CREDIT", "LOAN_AND_HOUSING", "INVESTMENT"].includes(code)) common.push({ label: labels.account, ready: profile.hasKoreanBankAccount });
   if (["BUILD_CREDIT", "LOAN_AND_HOUSING"].includes(code)) common.push({ label: labels.credit, ready: profile.hasKoreanCreditHistory });
   if (code === "REMITTANCE") common.push({ label: labels.destination, ready: Boolean(profile.remittanceCountry) });
