@@ -55,7 +55,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-canvas text-ink">
+    <main className="min-h-screen bg-gradient-to-b from-white via-canvas to-canvas text-ink">
       <div className="mx-auto w-full max-w-page px-5 py-6 sm:px-8">
         <header className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-control bg-ink text-lg font-bold text-white">S</span>
@@ -65,21 +65,27 @@ export default function HomePage() {
         <section className="py-12 text-center sm:py-16">
           <p className="text-sm font-bold tracking-[0.18em] text-brand sm:text-base">SELECT YOUR LANGUAGE</p>
           <div className="mx-auto mt-6 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {localeOptions.map((option) => (
-              <button
-                aria-label={`Select ${option.language}`}
-                aria-pressed={confirmed && locale === option.locale}
-                className={`rounded-card border bg-surface px-3 py-5 transition hover:-translate-y-0.5 hover:border-line-strong ${confirmed && locale === option.locale ? "border-brand bg-brand-soft ring-2 ring-brand/10" : "border-line"}`}
-                key={option.locale}
-                onClick={() => chooseLanguage(option.locale)}
-                type="button"
-              >
-                <span className="relative mx-auto block h-16 w-16 overflow-hidden rounded-full border border-line bg-white">
-                  <Image alt="" className="object-cover" fill sizes="64px" src={flagImages[option.locale]} />
-                </span>
-                <span className="mt-3 block text-sm font-bold">{option.language}</span>
-              </button>
-            ))}
+            {localeOptions.map((option) => {
+              const selected = confirmed && locale === option.locale;
+              return (
+                <button
+                  aria-label={`Select ${option.language}`}
+                  aria-pressed={selected}
+                  className={`group relative rounded-card border px-3 py-5 shadow-card transition duration-200 hover:-translate-y-1 hover:border-line-strong ${selected ? "border-brand bg-brand-soft" : "border-line bg-surface"}`}
+                  key={option.locale}
+                  onClick={() => chooseLanguage(option.locale)}
+                  type="button"
+                >
+                  {selected ? (
+                    <span aria-hidden className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[11px] font-bold leading-none text-white">✓</span>
+                  ) : null}
+                  <span className="relative mx-auto block h-16 w-16 overflow-hidden rounded-full border border-line bg-white transition duration-200 group-hover:scale-105">
+                    <Image alt="" className="object-cover" fill sizes="64px" src={flagImages[option.locale]} />
+                  </span>
+                  <span className={`mt-3 block text-sm font-bold transition duration-200 ${selected ? "text-brand" : ""}`}>{option.language}</span>
+                </button>
+              );
+            })}
           </div>
 
           {confirmed ? (
@@ -92,12 +98,12 @@ export default function HomePage() {
               <h2 className="mt-12 text-lg font-bold">{text.purpose}</h2>
               <div className="mx-auto mt-5 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {landingFinancialPurposes.map((value, index) => (
-                  <button aria-pressed={purpose === value} className={`min-h-16 rounded-card border px-4 text-left text-sm font-semibold ${purpose === value ? "border-brand bg-brand-soft text-brand" : "border-line bg-surface"}`} key={value} onClick={() => choosePurpose(value)} type="button">
+                  <button aria-pressed={purpose === value} className={`min-h-16 rounded-card border px-4 text-left text-sm font-semibold shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-line-strong ${purpose === value ? "border-brand bg-brand-soft text-brand" : "border-line bg-surface"}`} key={value} onClick={() => choosePurpose(value)} type="button">
                     {index === landingFinancialPurposes.length - 1 ? text.skip : financialPurposeLabel(locale, value)}
                   </button>
                 ))}
               </div>
-              <button className="ui-button ui-button-primary mt-9 min-h-12 px-7" disabled={!purpose} onClick={() => purpose && router.push("/profile")} type="button">{text.cta} →</button>
+              <button className="ui-button ui-button-primary mt-9 min-h-12 px-7 shadow-card transition duration-200 enabled:hover:-translate-y-0.5" disabled={!purpose} onClick={() => purpose && router.push("/profile")} type="button">{text.cta} →</button>
             </div>
           ) : null}
         </section>
