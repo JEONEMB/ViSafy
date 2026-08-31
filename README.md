@@ -221,7 +221,7 @@ Demo A~E 상품 기준 6개 언어 48 케이스 RAG 평가 결과는
 | --- | --- |
 | [`submission-checklist.md`](docs/submission-checklist.md) | 제출물과 URL 가용성 준비 |
 | [`submission-proposal-draft.md`](docs/submission-proposal-draft.md) | 공모전 기획서 작성안 |
-| [`submission-ai-functional-spec.md`](docs/submission-ai-functional-spec.md) | AI 중심 기능명세서 작성안 |
+| [`submission-functional-spec.md`](docs/submission-functional-spec.md) | 기능명세서 작성안 (첨부2 양식) |
 | [`season3-demo-manifest.md`](docs/season3-demo-manifest.md) | 고정 Demo A~E 정의 |
 | [`season3-demo-scenarios.md`](docs/season3-demo-scenarios.md) | Demo 합격 기준 |
 | [`season3-demo-script-3min.md`](docs/season3-demo-script-3min.md) | 3분 시연 대본 |

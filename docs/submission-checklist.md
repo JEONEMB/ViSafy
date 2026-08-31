@@ -20,7 +20,7 @@ https://34-64-228-103.sslip.io
 > 초안은 아래에 있다. 양식 표의 해당 칸에 옮긴 뒤 PDF로 변환한다.
 >
 > - 기획서 7개 항목: [submission-proposal-draft.md](submission-proposal-draft.md)
-> - AI 중심 기능명세서: [submission-ai-functional-spec.md](submission-ai-functional-spec.md)
+> - 기능명세서(첨부2 양식): [submission-functional-spec.md](submission-functional-spec.md)
 >
 > **팀명과 구성원 성명은 등록된 값으로 직접 채운다.**
 
