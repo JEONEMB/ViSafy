@@ -33,6 +33,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: https://${VISAFY_DOMAIN}
         NEXT_PUBLIC_DEFAULT_LANGUAGE: ${NEXT_PUBLIC_DEFAULT_LANGUAGE:-ko}
+        NEXT_PUBLIC_SITE_URL: https://${VISAFY_DOMAIN}
 
   caddy:
     image: caddy:2.10-alpine

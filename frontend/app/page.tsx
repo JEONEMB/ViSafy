@@ -58,7 +58,8 @@ export default function HomePage() {
     <main className="min-h-screen bg-gradient-to-b from-white via-canvas to-canvas text-ink">
       <div className="mx-auto w-full max-w-page px-5 py-6 sm:px-8">
         <header className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-control bg-ink text-lg font-bold text-white">S</span>
+          {/* The mark repeats the wordmark beside it, so a screen reader would announce "S SSAFIN". */}
+          <span aria-hidden className="flex h-10 w-10 items-center justify-center rounded-control bg-ink text-lg font-bold text-white">S</span>
           <span className="text-xl font-bold">SSAFIN</span>
         </header>
 
